@@ -1,23 +1,54 @@
 
-## pedigreejs
+## PedigreeJS
 
-pedigreejs is written using <a href="http://www.2ality.com/2014/09/es6-modules-final.html" rel="nofollow">ES2015 modules</a>.
+**Version** : v4.0.0-rc1  
+**Status** : 🔧 Refactoring en cours
 
-It is used for graphically building pedigree data in the web-browser. 
+PedigreeJS est une bibliothèque JavaScript modulaire permettant de construire et d'afficher des pedigrees (arbres familiaux) dans le navigateur. Le projet utilise ES2015 modules avec D3.js pour la visualisation SVG.
 
-For details visit the [project page](https://ccge-boadicea.github.io/pedigreejs/).
+## 🚀 Quick Start
 
-## Tests
-
-Jasmine tests are defined in [pedigree_spec.js](spec/javascripts/pedigree_spec.js).
-
-##  ECMAScript 5 bundle
-
-[Rollup](https://rollupjs.org/) is used to create a ECMAScript 5 bundle of the distribution (in the build directory):
-
-```
+```bash
 npm install
 npm run build
+npm test
+```
+
+Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.io/pedigreejs/).
+
+## 📊 État du projet
+
+### Architecture
+- **14 modules ES2015** (~4 500 lignes de code)
+- **Stack** : D3.js v7.9.0, jQuery 3.3.1, Rollup, Jasmine
+- **Formats de sortie** : Bundle IIFE + source maps
+- **Tests** : Jasmine (685 LOC, couverture partielle)
+
+### 📋 Statut développement
+- ✅ **Audit de code complet** - Analyse détaillée effectuée
+- 🟡 **Refactoring planifié** - Plan d'actions en 4 phases (6-10h)
+- 🔴 **Améliorations prioritaires** - Architecture, performance, tests
+
+### 📚 Documentation disponible
+- **[AUDIT_PEDIGREEJS.md](AUDIT_PEDIGREEJS.md)** - Rapport d'audit technique complet
+- **[PLAN_ACTIONS.md](PLAN_ACTIONS.md)** - Plan d'amélioration détaillé
+- **[SESSION_CONTEXT.md](SESSION_CONTEXT.md)** - Contexte technique pour contributeurs
+
+## 🧪 Tests
+
+Les tests Jasmine sont définis dans [pedigree_spec.js](spec/javascripts/pedigree_spec.js).
+
+```bash
+npm test  # Lance les tests navigateur
+```
+
+## 🔧 Build
+
+[Rollup](https://rollupjs.org/) est utilisé pour créer le bundle ECMAScript 5 :
+
+```bash
+npm run build              # Build normal + minifié
+npm run build-es           # Build ES modules
 ```
 ## License
 
