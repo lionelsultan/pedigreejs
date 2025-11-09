@@ -1,7 +1,7 @@
 # Contexte de session - Audit et amélioration PedigreeJS
 
-**Date de création** : 2024-11-09  
-**Dernière mise à jour** : 2024-11-09  
+**Date de création** : 2024-11-09
+**Dernière mise à jour** : 2024-11-10
 **Session ID** : audit-pedigreejs-2024-11-09
 
 ---
@@ -12,7 +12,8 @@
 1. **Audit de code complet** réalisé sur le projet PedigreeJS (fork Lionel)
 2. **Analyse technique détaillée** de l'architecture, qualité, tests, performance
 3. **Plan d'actions structuré** pour corriger 21 axes d'amélioration identifiés
-4. **Documentation complète** prête pour phase d'implémentation
+4. **Phase 1 - Architecture critique** ✅ **TERMINÉE** (2024-11-10)
+5. **Documentation complète** mise à jour en continu
 
 ### Livrables créés
 - `AUDIT_PEDIGREEJS.md` - Rapport d'audit complet (9 sections)
@@ -34,9 +35,15 @@
 ```
 pedigreejs/
 ├── AUDIT_PEDIGREEJS.md          # ✅ Créé - Audit complet
-├── PLAN_ACTIONS.md              # ✅ Créé - Plan d'actions 
-├── SESSION_CONTEXT.md           # ✅ Créé - Ce fichier
-└── build/                       # ⚠️ Modifié (git status M)
+├── PLAN_ACTIONS.md              # ✅ Créé + Mis à jour - Plan d'actions
+├── SESSION_CONTEXT.md           # ✅ Créé + Mis à jour - Ce fichier
+├── README.md                    # ✅ Mis à jour - État du projet
+├── es/
+│   ├── validation.js            # ✅ Créé - Fonctions de validation (234 LOC)
+│   ├── dom.js                   # ✅ Créé - Manipulation DOM et UI (173 LOC)
+│   ├── tree-utils.js            # ✅ Créé - Navigation arbre (420 LOC)
+│   └── utils.js                 # ✅ Refactoré - Réduit 775 → 75 LOC (-90%)
+└── build/                       # ✅ Rebuilt - Bundles IIFE mis à jour
     ├── pedigreejs.v4.0.0-rc1.js
     ├── pedigreejs.v4.0.0-rc1.min.js
     └── pedigreejs.v4.0.0-rc1.min.js.map
@@ -47,10 +54,11 @@ pedigreejs/
 ## 🧠 Contexte technique acquis
 
 ### Architecture comprise
-- **Modules core** : `pedigree.js`, `widgets.js`, `utils.js`, `io.js`
+- **Modules core** : `pedigree.js`, `widgets.js`, `utils.js` (refactoré), `io.js`
+- **Modules utilitaires** : `validation.js`, `dom.js`, `tree-utils.js` (nouveaux)
 - **Modules spécialisés** : `zoom.js`, `dragging.js`, `twins.js`, `pedcache.js`
-- **Points de friction** : Couplage fort, imports circulaires, state global
-- **Performance** : Rebuild complet à chaque modification (problématique)
+- **Points de friction résolus** : ✅ utils.js découplé, ✅ pas d'imports circulaires
+- **Performance** : Rebuild complet à chaque modification (à optimiser en Phase 2)
 
 ### Tests analysés
 - **Fichier unique** : `spec/javascripts/pedigree_spec.js` (685 LOC)
@@ -69,10 +77,11 @@ pedigreejs/
 
 ## 🔧 Plan d'actions défini
 
-### Phase 1 - Architecture critique (2-3h)
-- Scinder `utils.js` → `validation.js`, `dom.js`, `math.js`
-- Éliminer state global (`utils.roots`, `dragging`, `last_mouseover`)
-- Résoudre imports circulaires `utils.js` ↔ `pedcache.js`
+### Phase 1 - Architecture critique ✅ TERMINÉE (~1h)
+- ✅ Scindé `utils.js` → `validation.js`, `dom.js`, `tree-utils.js`
+- ✅ Variables `dragging`, `last_mouseover` déjà encapsulées
+- ⚠️ Variable `utils.roots` conservée (refactoring complexe reporté)
+- ✅ Vérifié aucun import circulaire
 
 ### Phase 2 - Performance (2-3h)  
 - Implémenter rendu incrémental (dirty checking)
@@ -93,19 +102,20 @@ pedigreejs/
 
 ## 📊 Métriques de référence
 
-### Baseline actuel (à confirmer lors reprise)
-- **LOC par module** : `utils.js` 775, `widgets.js` 802, `pedigree.js` 560
+### Baseline actuel (mis à jour 2024-11-10)
+- **LOC par module** : `utils.js` ~~775~~ → **75** (-90%), `widgets.js` 802, `pedigree.js` 560
+- **Nouveaux modules** : `validation.js` 234, `dom.js` 173, `tree-utils.js` 420
 - **Fonctions exportées** : 103 (estimation audit)
 - **Manipulations DOM** : 258 opérations D3 identifiées
-- **Variables globales** : `utils.roots`, `dragging`, `last_mouseover`
+- **Variables globales** : `utils.roots` (conservée), ~~`dragging`, `last_mouseover`~~ (encapsulées)
 - **TODOs non résolus** : `pedcache.js:98`, `pedcache.js:206`
 
 ### Objectifs post-refactoring
-- `utils.js` < 300 LOC (scission en 3 modules)
-- Rebuild < 100ms sur dataset 50 personnes
-- Couverture tests > 80%
-- Zéro variables globales
-- Build dual IIFE + ESM fonctionnel
+- ✅ `utils.js` < 300 LOC (**75 LOC atteint**, objectif dépassé)
+- 🔴 Rebuild < 100ms sur dataset 50 personnes (Phase 2)
+- 🔴 Couverture tests > 80% (Phase 3)
+- 🟡 Zéro variables globales (partiellement: `utils.roots` conservée)
+- 🔴 Build dual IIFE + ESM fonctionnel (Phase 4)
 
 ---
 
@@ -215,6 +225,45 @@ npx madge --circular es/
 - **Tests** : Ajouter sans casser existant
 - **Performance** : Optimiser sans changer comportement
 - **Documentation** : JSDoc uniquement (pas de refonte docs)
+
+---
+
+## 📝 Notes de session
+
+### 2024-11-10 - Phase 1 : Refactoring architectural
+**Durée** : ~1h
+**Objectif** : Scinder utils.js en modules thématiques
+
+**Réalisations** :
+- ✅ Créé `validation.js` (234 LOC) - Fonctions de validation du pedigree
+- ✅ Créé `dom.js` (173 LOC) - Manipulation DOM, dialogs, dimensions SVG
+- ✅ Créé `tree-utils.js` (420 LOC) - Navigation, construction, géométrie d'arbre
+- ✅ Réduit `utils.js` de 775 → 75 LOC (-90%) avec ré-exports pour compatibilité
+- ✅ Build réussi sans erreur ESLint
+- ✅ Tous les tests passent (53 specs, 0 failures)
+- ✅ Aucune dépendance circulaire détectée
+- ✅ 2 commits créés avec messages descriptifs
+
+**Découvertes** :
+- Variables `dragging` et `last_mouseover` déjà encapsulées dans widgets.js (scope module)
+- Pas de dépendance circulaire entre utils.js et pedcache.js (contrairement à l'audit initial)
+- Variable `utils.roots` utilisée dans 5 fichiers (refactoring complexe, reporté)
+
+**Décisions** :
+- Maintenir compatibilité backward via ré-exports dans utils.js
+- Reporter refactoring de `utils.roots` à phase ultérieure
+- Préserver exactement les mêmes exports publics
+
+**Métriques** :
+- utils.js : 775 → 75 LOC (-90%)
+- Total modules : 14 → 17 (+3)
+- Tests : 53 specs passants (0 failures)
+- Commits : 2 (refactor + docs)
+
+### 2024-11-09 - Initialisation
+- Création du plan d'actions basé sur audit de code
+- Définition des 4 phases et critères de validation
+- Estimation durées et identification des risques
 
 ---
 

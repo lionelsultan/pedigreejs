@@ -19,15 +19,20 @@ Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.
 ## 📊 État du projet
 
 ### Architecture
-- **14 modules ES2015** (~4 500 lignes de code)
+- **17 modules ES2015** (~4 900 lignes de code)
+  - 14 modules originaux
+  - 3 nouveaux modules utilitaires (validation, dom, tree-utils)
 - **Stack** : D3.js v7.9.0, jQuery 3.3.1, Rollup, Jasmine
 - **Formats de sortie** : Bundle IIFE + source maps
-- **Tests** : Jasmine (685 LOC, couverture partielle)
+- **Tests** : Jasmine (53 specs passants, couverture partielle)
 
 ### 📋 Statut développement
-- ✅ **Audit de code complet** - Analyse détaillée effectuée
-- 🟡 **Refactoring planifié** - Plan d'actions en 4 phases (6-10h)
-- 🔴 **Améliorations prioritaires** - Architecture, performance, tests
+- ✅ **Audit de code complet** - Analyse détaillée effectuée (9 nov 2024)
+- ✅ **Phase 1 terminée** - Refactoring architectural (10 nov 2024)
+  - utils.js découpé : 775 → 75 LOC (-90%)
+  - 3 nouveaux modules créés : validation.js, dom.js, tree-utils.js
+  - Tous les tests passent (53 specs, 0 failures)
+- 🔴 **Phases 2-4 à venir** - Performance, tests, modernisation
 
 ### 📚 Documentation disponible
 - **[AUDIT_PEDIGREEJS.md](AUDIT_PEDIGREEJS.md)** - Rapport d'audit technique complet
