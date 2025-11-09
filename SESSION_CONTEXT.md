@@ -267,4 +267,48 @@ npx madge --circular es/
 
 ---
 
+## 🔜 Prochaine session (2024-11-11)
+
+### Phase 2 - Performance : Approche conservatrice choisie
+
+**Décision** : Approche **conservatrice** validée pour éviter optimisations prématurées
+
+**Plan d'action pour la prochaine session** :
+
+1. **Mesurer la performance actuelle** (30 min)
+   - Implémenter instrumentation Web Performance API
+   - Tester temps de rebuild sur datasets : 10, 30, 50, 100 personnes
+   - Établir baseline de performance réelle
+
+2. **Résoudre TODO pedcache.js:98** (30 min)
+   - Compléter implémentation array cache fallback
+   - Implémenter LRU eviction simple
+   - Documenter le fallback localStorage → array
+   - Tests de non-régression
+
+3. **Identifier goulots d'étranglement réels** (30 min)
+   - Analyser résultats des mesures
+   - Décider si optimisations supplémentaires nécessaires
+   - Documenter findings
+
+**Objectif conservateur** : Optimiser uniquement si rebuild > 100ms sur dataset moyen (30-50 personnes)
+
+**Risques évités** :
+- ❌ Refactoring système de rebuild (complexe, risqué)
+- ❌ Batching DOM sans mesure préalable
+- ❌ Optimisations prématurées
+
+**Livrables attendus** :
+- ✅ Métriques de performance documentées
+- ✅ TODO pedcache.js:98 résolu
+- ✅ Rapport d'analyse des performances
+- ✅ Décision éclairée pour suite Phase 2
+
+**Fichiers à modifier** :
+- `es/pedcache.js` - Résolution TODO ligne 98
+- `es/pedigree.js` ou nouveau `performance-monitor.js` - Instrumentation
+- `PLAN_ACTIONS.md` - Mise à jour avec résultats mesures
+
+---
+
 *Ce fichier contient tout le contexte nécessaire pour reprendre efficacement le travail d'amélioration du projet PedigreeJS. Mettre à jour à chaque session significative.*

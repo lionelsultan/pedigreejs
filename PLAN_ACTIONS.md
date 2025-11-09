@@ -21,7 +21,7 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 | Phase | Statut | Avancement | Durée estimée | Durée réelle |
 |-------|--------|------------|---------------|--------------|
 | Phase 1 - Architecture critique | 🟢 **Terminé** | 100% | 2-3h | ~1h |
-| Phase 2 - Performance | 🔴 **À faire** | 0% | 2-3h | - |
+| Phase 2 - Performance | 🟡 **Planifié** | 0% | 1.5-2h | - |
 | Phase 3 - Tests et documentation | 🔴 **À faire** | 0% | 1-2h | - |
 | Phase 4 - Modernisation | 🔴 **À faire** | 0% | 1-2h | - |
 
@@ -73,43 +73,80 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ## ⚡ Phase 2 - Performance (Priorité P1-P2)
 
-**Objectif** : Optimiser le rendu et les interactions utilisateur  
-**Durée estimée** : 2-3h  
-**Statut** : 🔴 **À faire**
+**Objectif** : Optimiser le rendu et les interactions utilisateur
+**Durée estimée** : 1.5-2h (approche conservatrice)
+**Statut** : 🟡 **Planifié - Approche conservatrice**
+**Date de reprise prévue** : 2024-11-11
 
-### Actions détaillées
+### ⚠️ Approche conservatrice choisie
 
-#### 2.1 Implémenter rendu incrémental
+**Principe** : "Mesurer d'abord, optimiser ensuite" - Éviter les optimisations prématurées
+
+**Rationale** :
+- 11 appels `$(document).trigger('rebuild')` détectés dans le code
+- Performance réelle **non mesurée** à ce jour
+- Refactoring du système de rebuild = **risque élevé** de régression
+- Objectif : Valider que l'optimisation est **nécessaire** avant de modifier
+
+### Actions détaillées (approche révisée)
+
+#### 2.1 Mesurer la performance actuelle ⭐ PRIORITÉ
 - **Statut** : 🔴 À faire
+- **Fichiers concernés** : Nouveau `es/performance-monitor.js` ou `es/pedigree.js`
+- **Action** :
+  - ✅ Implémenter instrumentation Web Performance API
+  - ✅ Mesurer temps de rebuild sur datasets : 10, 30, 50, 100 personnes
+  - ✅ Établir baseline de performance réelle
+  - ✅ Documenter résultats dans rapport
+- **Livrable** : Rapport de performance avec métriques précises
+- **Durée** : 30 min
+
+#### 2.2 Résoudre TODO pedcache.js:98 ⭐ PRIORITÉ
+- **Statut** : 🔴 À faire
+- **Fichiers concernés** : `es/pedcache.js`
+- **Action** :
+  - ✅ Compléter implémentation array cache fallback
+  - ✅ Implémenter LRU eviction simple
+  - ✅ Documenter le fallback localStorage → array
+  - ✅ Tests de non-régression
+- **Livrable** : TODO résolu, cache array fonctionnel
+- **Durée** : 30 min
+
+#### 2.3 Décision éclairée sur optimisations ⭐ PRIORITÉ
+- **Statut** : 🔴 À faire
+- **Action** :
+  - ✅ Analyser résultats des mesures
+  - ✅ Décider si rebuild incrémental nécessaire (si > 100ms)
+  - ✅ Décider si batching DOM nécessaire
+  - ✅ Documenter décisions et justifications
+- **Livrable** : Rapport d'analyse + décision pour suite Phase 2
+- **Durée** : 30 min
+
+#### 2.4 Implémenter rendu incrémental (SI NÉCESSAIRE)
+- **Statut** : ⏸️ Conditionnel (selon résultats mesures)
 - **Fichiers concernés** : `es/pedigree.js`, `es/widgets.js`
 - **Action** :
   - Remplacer `$(document).trigger('rebuild')` par système de dirty checking
   - Identifier nœuds modifiés uniquement
   - Update partiel SVG au lieu de re-rendu complet
 - **Livrable** : Temps de rebuild réduit de 70%+ sur modifications mineures
+- **⚠️ Risque** : Élevé - Modification architecture centrale
 
-#### 2.2 Batching operations DOM
-- **Statut** : 🔴 À faire
+#### 2.5 Batching operations DOM (SI NÉCESSAIRE)
+- **Statut** : ⏸️ Conditionnel (selon résultats mesures)
 - **Fichiers concernés** : Tous modules avec manipulations D3
 - **Action** :
   - Grouper 258 opérations D3 identifiées avec `requestAnimationFrame`
   - Implémenter queue d'opérations DOM
 - **Livrable** : Fluidité améliorée, pas de janking sur grandes modifications
 
-#### 2.3 Cache intelligent
-- **Statut** : 🔴 À faire
-- **Fichiers concernés** : `es/pedcache.js`
-- **Action** :
-  - Résoudre TODO ligne 98 sur array cache
-  - Implémenter LRU eviction
-  - Optimiser invalidation cache
-- **Livrable** : TODO pedcache.js résolu, cache efficace
-
-### Critères de validation Phase 2
-- [ ] Rebuild <100ms sur dataset 50 personnes (baseline à mesurer)
-- [ ] Aucun setTimeout/setInterval non justifié
-- [ ] Cache LRU fonctionnel avec eviction
-- [ ] Performance mesurée avec Web Performance API
+### Critères de validation Phase 2 (approche conservatrice)
+- [ ] Baseline de performance mesurée et documentée ⭐
+- [ ] TODO pedcache.js:98 résolu ⭐
+- [ ] Décision éclairée documentée sur suite des optimisations ⭐
+- [ ] **SI** rebuild > 100ms : Implémentation rendu incrémental
+- [ ] **SI** janking détecté : Batching DOM implémenté
+- [ ] Tests existants passent (53 specs, 0 failures)
 
 ---
 
@@ -216,6 +253,12 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 ---
 
 ## 📝 Notes de suivi
+
+### 2024-11-10 - Fin de session - Phase 1 terminée
+- Phase 1 complétée avec succès (~1h)
+- Analyse Phase 2 effectuée
+- **Décision** : Approche conservatrice pour Phase 2 (mesurer avant d'optimiser)
+- Session suspendue, reprise prévue 2024-11-11
 
 ### 2024-11-09 - Initialisation
 - Création du plan d'actions basé sur audit de code
