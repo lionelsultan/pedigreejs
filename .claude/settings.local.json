@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run build:*)",
+      "Bash(npm install)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(npx jasmine-browser-runner runSpecs)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(taskkill:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
