@@ -364,8 +364,8 @@ var pedigreejs = (function (exports) {
 	  return text;
 	}
 	function buildTree(opts, person, root, partnerLinks, id) {
-	  if (typeof person.children === "undefined") person.children = getChildren(opts.dataset, person);
-	  if (typeof partnerLinks === "undefined") {
+	  if (typeof person.children === typeof undefined) person.children = getChildren(opts.dataset, person);
+	  if (typeof partnerLinks === typeof undefined) {
 	    partnerLinks = [];
 	    id = 1;
 	  }
@@ -452,7 +452,7 @@ var pedigreejs = (function (exports) {
 	  return id;
 	}
 	function isProband(obj) {
-	  return typeof $(obj).attr('proband') !== "undefined" && $(obj).attr('proband') !== false;
+	  return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
 	}
 	function setProband(dataset, name, is_proband) {
 	  $.each(dataset, function (_i, p) {
@@ -3157,7 +3157,7 @@ var pedigreejs = (function (exports) {
 	// add children to a given node
 	function addchild(dataset, node, sex, nchild, twin_type) {
 	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
-	  if (typeof nchild === "undefined") nchild = 1;
+	  if (typeof nchild === typeof undefined) nchild = 1;
 	  let children = getAllChildren(dataset, node);
 	  let ptr_name, idx;
 	  if (children.length === 0) {
