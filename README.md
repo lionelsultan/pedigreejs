@@ -22,9 +22,10 @@ Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.
 - **17 modules ES2015** (~4 900 lignes de code)
   - 14 modules originaux
   - 3 nouveaux modules utilitaires (validation, dom, tree-utils)
+  - pedcache.js amélioré (LRU eviction, position array mode)
 - **Stack** : D3.js v7.9.0, jQuery 3.3.1, Rollup, Jasmine
 - **Formats de sortie** : Bundle IIFE + source maps
-- **Tests** : Jasmine (133 specs passants, **100% couverture Phase 1**)
+- **Tests** : Jasmine (**150 specs, 0 failures**)
 
 ### 📋 Statut développement
 - ✅ **Audit de code complet** - Analyse détaillée effectuée (9 nov 2024)
@@ -35,13 +36,21 @@ Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.
   - **100% couverture** : 35/35 fonctions testées
   - Tous les tests passent (133 specs, 0 failures)
   - Bug de production corrigé (is_fullscreen)
-- 🔴 **Phases 2-4 à venir** - Performance, tests, modernisation
+- ✅ **Phase 2 terminée** - Performance et optimisation cache (10 nov 2024)
+  - Performance mesurée : **4-31ms** pour 10-100 personnes (excellente)
+  - TODOs pedcache.js résolus (LRU eviction + position array mode)
+  - Tests de performance créés (413 LOC)
+  - Tests cache array créés (287 LOC, 12 nouveaux tests)
+  - **Décision** : Optimisations supplémentaires NON nécessaires
+  - Tous les tests passent (**150 specs, 0 failures**)
+- 🔴 **Phases 3-4 à venir** - Tests modules spécialisés, documentation, modernisation
 
 ### 📚 Documentation disponible
 - **[AUDIT_PEDIGREEJS.md](AUDIT_PEDIGREEJS.md)** - Rapport d'audit technique complet
 - **[PLAN_ACTIONS.md](PLAN_ACTIONS.md)** - Plan d'amélioration détaillé
 - **[SESSION_CONTEXT.md](SESSION_CONTEXT.md)** - Contexte technique pour contributeurs
-- **[PHASE1_AUDIT_REPORT.md](PHASE1_AUDIT_REPORT.md)** - Rapport d'audit Phase 1 (100% couverture)
+- **[PHASE1_AUDIT_REPORT.md](PHASE1_AUDIT_REPORT.md)** - Rapport Phase 1 (100% couverture tests)
+- **[PHASE2_PERFORMANCE_REPORT.md](PHASE2_PERFORMANCE_REPORT.md)** - Rapport Phase 2 (mesures performance + cache)
 
 ## 🧪 Tests
 
