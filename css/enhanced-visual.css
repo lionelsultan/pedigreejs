@@ -1,0 +1,424 @@
+/* Enhanced Visual Styling for PedigreeJS */
+
+:root {
+  /* Enhanced Color Palette */
+  --pedigree-primary: #2563eb;
+  --pedigree-primary-light: #3b82f6;
+  --pedigree-primary-dark: #1d4ed8;
+  --pedigree-secondary: #64748b;
+  --pedigree-accent: #f59e0b;
+  --pedigree-success: #10b981;
+  --pedigree-warning: #f59e0b;
+  --pedigree-danger: #ef4444;
+  
+  /* Modern Gradients */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-canvas: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+  
+  /* Advanced Shadows */
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Animation Variables */
+  --animation-duration: 0.3s;
+  --animation-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Enhanced Body Background */
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.03"><circle cx="30" cy="30" r="4"/></g></svg>');
+  z-index: -1;
+}
+
+/* Enhanced Navbar */
+.navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: none !important;
+  box-shadow: var(--shadow-card);
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+.navbar-brand {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 1.5rem !important;
+}
+
+/* Enhanced Header */
+header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: none !important;
+}
+
+.display-4 {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800 !important;
+}
+
+/* Enhanced Cards */
+.card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: var(--shadow-card) !important;
+  border-radius: 20px !important;
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-float) !important;
+}
+
+/* Enhanced Pedigree Canvas */
+.pedigree-stage {
+  background: var(--gradient-canvas) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.pedigree-stage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23000000" fill-opacity="0.02"><rect x="0" y="0" width="20" height="20"/><rect x="20" y="20" width="20" height="20"/></g></svg>');
+  pointer-events: none;
+  z-index: 1;
+}
+
+#pedigree {
+  position: relative;
+  z-index: 2;
+}
+
+/* Enhanced SVG Styling */
+#pedigree svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+/* Enhanced Person Nodes */
+.person {
+  transition: all var(--animation-duration) var(--animation-ease);
+  cursor: pointer;
+}
+
+.person:hover {
+  filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4));
+  transform: scale(1.05);
+}
+
+.person rect,
+.person circle {
+  stroke-width: 2.5;
+  stroke: var(--pedigree-primary);
+  fill: white;
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+.person:hover rect,
+.person:hover circle {
+  stroke: var(--pedigree-primary-light);
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+}
+
+/* Disease Status Colors with Gradients */
+.person[data-breast-cancer="true"] rect,
+.person[data-breast-cancer="true"] circle {
+  fill: url(#breastCancerGradient);
+}
+
+.person[data-ovarian-cancer="true"] rect,
+.person[data-ovarian-cancer="true"] circle {
+  fill: url(#ovarianCancerGradient);
+}
+
+.person[data-prostate-cancer="true"] rect,
+.person[data-prostate-cancer="true"] circle {
+  fill: url(#prostateCancerGradient);
+}
+
+/* Enhanced Buttons */
+.btn {
+  border-radius: 12px !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem !important;
+  transition: all var(--animation-duration) var(--animation-ease);
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary,
+.btn-outline-primary {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+}
+
+.btn-outline-primary {
+  background: rgba(37, 99, 235, 0.1) !important;
+  border: 2px solid var(--pedigree-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background: var(--gradient-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary,
+.btn-outline-secondary {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  color: white !important;
+}
+
+.btn-info,
+.btn-outline-info {
+  background: var(--gradient-success) !important;
+  color: white !important;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced History Panel */
+#pedigree_history {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-card);
+}
+
+/* Enhanced Toast Notifications */
+.toast {
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-float) !important;
+}
+
+/* Enhanced Performance Badge */
+#performance-info {
+  background: var(--gradient-success) !important;
+  border: none !important;
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced Tooltips */
+.tooltip .tooltip-inner {
+  background: var(--gradient-primary) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-weight: 500;
+  box-shadow: var(--shadow-card);
+}
+
+/* Enhanced Phase Cards */
+.phase-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card);
+  transition: all var(--animation-duration) var(--animation-ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.phase-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-primary);
+  transition: left 0.5s ease;
+}
+
+.phase-card:hover::before {
+  left: 0;
+}
+
+.phase-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-float);
+}
+
+/* Enhanced Accordion */
+.accordion-button {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+.accordion-button:not(.collapsed) {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+  box-shadow: var(--shadow-glow);
+}
+
+/* Enhanced Form Elements */
+input[type="file"] + label {
+  transition: all var(--animation-duration) var(--animation-ease);
+}
+
+input[type="file"] + label:hover {
+  transform: translateY(-1px);
+}
+
+/* Floating Animation for Important Elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Enhanced Loading States */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    margin: 1rem 0.5rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem;
+  }
+  
+  .pedigree-stage {
+    margin: 1rem 0;
+  }
+}
+
+/* Enhanced Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pedigree-primary: #3b82f6;
+    --pedigree-secondary: #94a3b8;
+  }
+  
+  .card {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .navbar {
+    background: rgba(15, 23, 42, 0.95) !important;
+  }
+  
+  header {
+    background: rgba(15, 23, 42, 0.95) !important;
+  }
+}
+
+/* Enhanced Focus States for Accessibility */
+*:focus-visible {
+  outline: 3px solid var(--pedigree-primary) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gradient-secondary);
+}

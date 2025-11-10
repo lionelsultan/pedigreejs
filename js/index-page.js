@@ -289,12 +289,52 @@
 		});
 
 		$('#zoom-in-control').on('click', function() {
+			const loadingEl = document.getElementById('canvas-loading');
+			if (loadingEl) loadingEl.style.display = 'flex';
+			
 			zoomHelper(1.05);
 			showToast('Zoomed in', 'View');
+			
+			setTimeout(() => {
+				if (loadingEl) loadingEl.style.display = 'none';
+			}, 300);
 		});
+		
 		$('#zoom-out-control').on('click', function() {
+			const loadingEl = document.getElementById('canvas-loading');
+			if (loadingEl) loadingEl.style.display = 'flex';
+			
 			zoomHelper(0.95);
 			showToast('Zoomed out', 'View');
+			
+			setTimeout(() => {
+				if (loadingEl) loadingEl.style.display = 'none';
+			}, 300);
+		});
+
+		$('#fullscreen-toggle').on('click', function() {
+			const canvas = document.getElementById('pedigrees');
+			const icon = this.querySelector('i');
+			
+			if (!document.fullscreenElement) {
+				canvas.requestFullscreen().then(() => {
+					icon.className = 'fa fa-compress';
+					this.setAttribute('title', 'Exit fullscreen');
+					canvas.style.background = '#f8f9fa';
+					canvas.style.padding = '2rem';
+					showToast('Entered fullscreen mode', 'View');
+				}).catch(() => {
+					showToast('Fullscreen not supported', 'Error');
+				});
+			} else {
+				document.exitFullscreen().then(() => {
+					icon.className = 'fa fa-expand';
+					this.setAttribute('title', 'Toggle fullscreen');
+					canvas.style.background = '';
+					canvas.style.padding = '';
+					showToast('Exited fullscreen mode', 'View');
+				});
+			}
 		});
 
 		$(document).on('fhChange', function() {
