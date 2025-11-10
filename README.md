@@ -44,6 +44,12 @@ Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.
   - **Décision** : Optimisations supplémentaires NON nécessaires
   - Tous les tests passent (**150 specs, 0 failures**)
 - 🔴 **Phases 3-4 à venir** - Tests modules spécialisés, documentation, modernisation
+- ✅ **Documentation mise à jour** - Site web modernisé avec accessibilité WCAG 2.1 AA (10 nov 2024)
+  - index.html refonte complète (760 → 1131 LOC)
+  - Design moderne avec système de tokens CSS
+  - Accessibilité complète (skip nav, ARIA, contraste couleurs)
+  - SEO optimisé (meta tags, Open Graph)
+  - Documentation markdown à jour (Phases 1 et 2)
 
 ### 📚 Documentation disponible
 - **[AUDIT_PEDIGREEJS.md](AUDIT_PEDIGREEJS.md)** - Rapport d'audit technique complet
