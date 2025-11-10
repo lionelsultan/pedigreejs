@@ -36,11 +36,11 @@
 	
 </head>
 
-<body class="bg-light">
+<body class="bg-body">
 	<!-- Skip Navigation for Accessibility -->
 	<a href="#main-content" class="skip-nav">Skip to main content</a>
 
-	<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm" aria-label="Primary">
+	<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Primary">
 		<div class="container">
 			<a class="navbar-brand fw-semibold" href="#main-content">PedigreeJS</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNav" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,13 +58,14 @@
 	</nav>
 
 	<!-- Header -->
-	<header class="header bg-primary text-white py-5" role="banner">
-		<div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-4">
-			<div>
-				<h1 class="display-5 fw-semibold mb-2">PedigreeJS</h1>
-				<p class="lead mb-0">A modern web tool for building and displaying pedigrees</p>
+	<header class="py-5 bg-white border-bottom" role="banner">
+		<div class="container d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+			<div class="text-start">
+				<p class="text-uppercase small text-secondary mb-2">PedigreeJS</p>
+				<h1 class="display-4 fw-semibold mb-3 text-dark">Design family pedigrees with clarity.</h1>
+				<p class="fs-5 text-muted mb-0">An elegant D3.js toolkit for building, validating, and sharing medical-grade pedigree diagrams.</p>
 			</div>
-			<a class="btn btn-light btn-lg"
+			<a class="btn btn-dark btn-lg px-4"
 			   href="https://github.com/lionelsultan/pedigreejs"
 			   target="_blank"
 			   rel="noopener noreferrer"
@@ -74,28 +75,24 @@
 		</div>
 	</header>
 
-	<!-- Improvements Banner -->
-	<section class="py-5 bg-white">
+		<!-- Improvements Banner -->
+		<section class="py-5 bg-body">
 		<div class="container">
 			<div class="text-center mb-4">
-				<span class="badge text-bg-primary px-3 py-2 fs-6 d-inline-flex align-items-center gap-2">
-					<span class="icon-badge" role="img" aria-label="Rocket icon">🚀</span>
-					Recent Improvements (v4.0.0-rc1)
-				</span>
-				<p class="text-muted mb-0 mt-3">Audit-driven roadmap with measurable outcomes</p>
+				<p class="text-uppercase text-secondary small mb-2">Release v4.0.0-rc1</p>
+				<h2 class="h3 fw-semibold text-dark mb-2">Focused on clarity, performance, and trust.</h2>
+				<p class="text-muted mb-0">Each phase delivers measurable improvements backed by audits.</p>
 			</div>
 			<div class="row g-4">
 				<div class="col-md-6">
-					<article class="phase-card card h-100 shadow-sm border-0">
+					<article class="card h-100 border-0 shadow-sm">
 						<div class="card-body">
-							<div class="d-flex align-items-center justify-content-between">
-								<span class="phase-badge badge bg-primary">Phase 1</span>
-								<small class="text-muted">(Completed Nov 2024)</small>
+							<div class="d-flex align-items-center justify-content-between text-secondary small text-uppercase">
+								<span>Phase 1</span>
+								<span>Completed Nov 2024</span>
 							</div>
-							<button class="btn btn-link p-0 mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#phase1" aria-expanded="false" aria-controls="phase1">
-								<span class="h5">Architecture Refactoring ✅</span>
-							</button>
-							<ul id="phase1" class="collapse mt-3" role="list">
+							<h3 class="h5 mt-3 mb-3 text-dark">Architecture Refactoring</h3>
+							<ul id="phase1" class="mt-3 list-unstyled" role="list">
 								<li>Modular architecture: utils.js refactored from <strong>775 → 75 LOC (-90%)</strong></li>
 								<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
 								<li>100% test coverage for new modules (133 specs, 0 failures)</li>
@@ -105,16 +102,14 @@
 					</article>
 				</div>
 				<div class="col-md-6">
-					<article class="phase-card card h-100 shadow-sm border-0">
+					<article class="card h-100 border-0 shadow-sm">
 						<div class="card-body">
-							<div class="d-flex align-items-center justify-content-between">
-								<span class="phase-badge badge bg-info text-dark">Phase 2</span>
-								<small class="text-muted">(Completed Nov 2024)</small>
+							<div class="d-flex align-items-center justify-content-between text-secondary small text-uppercase">
+								<span>Phase 2</span>
+								<span>Completed Nov 2024</span>
 							</div>
-							<button class="btn btn-link p-0 mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#phase2" aria-expanded="false" aria-controls="phase2">
-								<span class="h5">Performance & Cache Optimization ✅</span>
-							</button>
-							<ul id="phase2" class="collapse mt-3" role="list">
+							<h3 class="h5 mt-3 mb-3 text-dark">Performance & Cache Optimization</h3>
+							<ul id="phase2" class="mt-3 list-unstyled" role="list">
 								<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees <span class="tag-excellent" role="img" aria-label="Excellent performance">excellent</span></li>
 								<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
 								<li>+17 new tests (150 specs total, 0 failures)</li>
