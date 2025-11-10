@@ -28,6 +28,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" defer integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer integrity="sha256-8glLv2FBs1lyLE/kVOtsSw8OQswQzHr5IfwVj864ZTk=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" defer integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
  	<script src="build/pedigreejs.v4.0.0-rc1.min.js" defer></script>
 	<script src="js/index-page.js" defer></script>
 
@@ -38,6 +39,23 @@
 <body class="bg-light">
 	<!-- Skip Navigation for Accessibility -->
 	<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm" aria-label="Primary">
+		<div class="container">
+			<a class="navbar-brand fw-semibold" href="#main-content">PedigreeJS</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNav" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="primaryNav">
+				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+					<li class="nav-item"><a class="nav-link" href="#main-content">Demo</a></li>
+					<li class="nav-item"><a class="nav-link" href="#overview-heading">Overview</a></li>
+					<li class="nav-item"><a class="nav-link" href="#options-heading">Options</a></li>
+					<li class="nav-item"><a class="nav-link" href="#publication-heading">Publication</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 
 	<!-- Header -->
 	<header class="header bg-primary text-white py-5" role="banner">
@@ -60,7 +78,7 @@
 	<section class="py-5 bg-white">
 		<div class="container">
 			<div class="text-center mb-4">
-				<span class="badge text-bg-light px-3 py-2 fs-6 d-inline-flex align-items-center justify-content-center gap-2">
+				<span class="badge text-bg-primary px-3 py-2 fs-6 d-inline-flex align-items-center gap-2">
 					<span class="icon-badge" role="img" aria-label="Rocket icon">🚀</span>
 					Recent Improvements (v4.0.0-rc1)
 				</span>
@@ -74,8 +92,10 @@
 								<span class="phase-badge badge bg-primary">Phase 1</span>
 								<small class="text-muted">(Completed Nov 2024)</small>
 							</div>
-							<h4 class="mt-3">Architecture Refactoring ✅</h4>
-							<ul class="mt-3" role="list">
+							<button class="btn btn-link p-0 mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#phase1" aria-expanded="false" aria-controls="phase1">
+								<span class="h5">Architecture Refactoring ✅</span>
+							</button>
+							<ul id="phase1" class="collapse mt-3" role="list">
 								<li>Modular architecture: utils.js refactored from <strong>775 → 75 LOC (-90%)</strong></li>
 								<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
 								<li>100% test coverage for new modules (133 specs, 0 failures)</li>
@@ -91,8 +111,10 @@
 								<span class="phase-badge badge bg-info text-dark">Phase 2</span>
 								<small class="text-muted">(Completed Nov 2024)</small>
 							</div>
-							<h4 class="mt-3">Performance & Cache Optimization ✅</h4>
-							<ul class="mt-3" role="list">
+							<button class="btn btn-link p-0 mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#phase2" aria-expanded="false" aria-controls="phase2">
+								<span class="h5">Performance & Cache Optimization ✅</span>
+							</button>
+							<ul id="phase2" class="collapse mt-3" role="list">
 								<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees <span class="tag-excellent" role="img" aria-label="Excellent performance">excellent</span></li>
 								<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
 								<li>+17 new tests (150 specs total, 0 failures)</li>
@@ -102,7 +124,7 @@
 					</article>
 				</div>
 			</div>
-			<div class="alert alert-info mt-4" role="alert">
+			<div class="alert alert-primary mt-4" role="alert">
 				📚 <strong>For technical details, see:</strong>
 				<a class="alert-link" href="PHASE1_AUDIT_REPORT.md">Phase 1 Report</a>,
 				<a class="alert-link" href="PHASE2_PERFORMANCE_REPORT.md">Phase 2 Report</a>,
@@ -117,31 +139,46 @@
 			<div class="row g-4 align-items-start">
 				<div class="col-lg-4">
 					<div class="card shadow-sm h-100">
-						<div class="card-body d-flex flex-column gap-3">
-							<h2 class="h4">Interactive controls</h2>
-							<p class="text-muted mb-0">Load demo data, export results or print the SVG canvas directly.</p>
-						<div class="d-grid gap-2">
-							<input id="load" type="file" class="visually-hidden" aria-label="Load pedigree file"/>
-							<label for="load" class="btn btn-outline-primary w-100">Load</label>
-							<button id="save" type="button" class="btn btn-outline-primary w-100">Save</button>
-							<button id="print" type="button" class="btn btn-outline-primary w-100">Print</button>
-							<button id="svg_download" type="button" class="btn btn-outline-secondary w-100">Download SVG</button>
-							<button id="png_download" type="button" class="btn btn-outline-secondary w-100">Download PNG</button>
-						</div>
-						<div class="d-grid gap-2">
-							<button id="save-boadicea" type="button" class="btn btn-outline-info w-100">
-								Save (BOADICEA v4 format)
-							</button>
-							<button id="save-canrisk" type="button" class="btn btn-outline-info w-100">
-								Save (CanRisk format)
-							</button>
-						</div>
+						<div class="card-body d-flex flex-column gap-4">
+							<div>
+								<h2 class="h5">Interactive controls</h2>
+								<p class="text-muted small mb-0">Load demo data, export results or print the SVG canvas directly.</p>
+							</div>
+							<div class="btn-toolbar" role="toolbar" aria-label="Primary actions">
+								<div class="btn-group flex-wrap w-100" role="group">
+									<input id="load" type="file" class="visually-hidden" aria-label="Load pedigree file" />
+									<label for="load" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Load a JSON pedigree file"><i class="fa fa-upload me-1" aria-hidden="true"></i> Load</label>
+									<button id="save" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Download the current dataset as JSON"><i class="fa fa-save me-1" aria-hidden="true"></i> Save</button>
+									<button id="print" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Open the browser print dialog"><i class="fa fa-print me-1" aria-hidden="true"></i> Print</button>
+									<button id="svg_download" type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Export the SVG drawing"><i class="fa fa-file-code me-1" aria-hidden="true"></i> SVG</button>
+									<button id="png_download" type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a raster image"><i class="fa fa-file-image me-1" aria-hidden="true"></i> PNG</button>
+								</div>
+							</div>
+							<div class="btn-group d-flex" role="group" aria-label="Export formats">
+								<button id="save-boadicea" type="button" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a BOADICEA v4 compatible file">
+									<i class="fa fa-dna me-1" aria-hidden="true"></i> BOADICEA v4
+								</button>
+								<button id="save-canrisk" type="button" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a CanRisk pedigree file (non anonymised)">
+									<i class="fa fa-vial me-1" aria-hidden="true"></i> CanRisk
+								</button>
+							</div>
+							<div class="alert alert-secondary small mb-0" role="status" aria-live="polite">
+								<span class="fw-semibold">Status:</span> <span id="dataset-status" class="ms-1">Loading…</span>
+							</div>
+							<p class="text-muted small mb-0">Need help configuring PedigreeJS? See the <a href="AGENTS.md" class="link-secondary text-decoration-none">contributor guide (AGENTS.md)</a>.</p>
 						</div>
 					</div>
 				</div>
 				<div class="col-lg-8">
 					<div class="card shadow-sm">
 						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<h2 class="h5 mb-0">Pedigree canvas</h2>
+								<div class="btn-group" role="group" aria-label="View controls">
+									<button type="button" class="btn btn-sm btn-outline-secondary" id="zoom-in-control" data-bs-toggle="tooltip" data-bs-placement="top" title="Zoom in"><i class="fa fa-search-plus" aria-hidden="true"></i><span class="visually-hidden">Zoom in</span></button>
+									<button type="button" class="btn btn-sm btn-outline-secondary" id="zoom-out-control" data-bs-toggle="tooltip" data-bs-placement="top" title="Zoom out"><i class="fa fa-search-minus" aria-hidden="true"></i><span class="visually-hidden">Zoom out</span></button>
+								</div>
+							</div>
 							<div id="pedigrees" class="pedigree-stage border rounded-3 bg-white p-3" role="application" aria-label="Pedigree editor"></div>
 							<div id="node_properties" class="mt-3"></div>
 						</div>
@@ -186,7 +223,6 @@
 						<li>Example 8: <a href="docs/example8.html">search pedigree data</a></li>
 						<li>Example 9: <a href="docs/example9.html">consanguineous partners at different levels</a></li>
 						</ul>
-						</section>
 						</section>
 						
 						<!-- Building Pedigrees Section -->
@@ -275,30 +311,97 @@
 						</section>
 						
 						<!-- Options Reference -->
-				<!-- Options Reference -->
 				<section aria-labelledby="options-heading">
 					<h2 id="options-heading">Options Reference</h2>
-					<dl class="row g-3">
-						<div class="col-12">
-							<dt class="col-sm-3 fw-semibold" id="targetDiv">targetDiv</dt>
-							<dd class="col-sm-9">This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd>
-						</div>
-						<div class="col-12">
-							<dt class="col-sm-3 fw-semibold" id="btn_target">btn_target</dt>
-							<dd class="col-sm-9">This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd>
-						</div>
-						<div class="col-12">
-							<dt class="col-sm-3 fw-semibold" id="dataset">dataset</dt>
-							<dd class="col-sm-9">
-								The pedigree data to be displayed, <em>e.g.</em>
-								<pre class="options" role="region" aria-label="Dataset example"><code>[
+					<div class="accordion" id="optionsAccordion">
+						<div class="accordion-item">
+							<h3 class="accordion-header" id="headingCore">
+								<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCore" aria-expanded="true" aria-controls="collapseCore">
+									Core
+								</button>
+							</h3>
+							<div id="collapseCore" class="accordion-collapse collapse show" aria-labelledby="headingCore" data-bs-parent="#optionsAccordion">
+								<div class="accordion-body">
+									<dl class="row row-cols-1 gy-3">
+										<div class="col"><dt id="targetDiv" class="fw-semibold">targetDiv</dt><dd>This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd></div>
+										<div class="col"><dt id="btn_target" class="fw-semibold">btn_target</dt><dd>This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd></div>
+										<div class="col"><dt id="dataset" class="fw-semibold">dataset</dt><dd>The pedigree data to be displayed, <em>e.g.</em><pre class="options" role="region" aria-label="Dataset example"><code>[
 	{"name": "m21", "sex": "M", "top_level": true},
 	{"name": "f21", "sex": "F", "top_level": true},
 	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
-]</code></pre>
-							</dd>
+]</code></pre></dd></div>
+									</dl>
+								</div>
+							</div>
 						</div>
-					</dl>
+						<div class="accordion-item">
+							<h3 class="accordion-header" id="headingLayout">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLayout" aria-expanded="false" aria-controls="collapseLayout">
+									Layout & Labels
+								</button>
+							</h3>
+							<div id="collapseLayout" class="accordion-collapse collapse" aria-labelledby="headingLayout" data-bs-parent="#optionsAccordion">
+								<div class="accordion-body">
+									<dl class="row row-cols-1 gy-3">
+										<div class="col"><dt id="labels" class="fw-semibold">labels</dt><dd>Array of attributes to display under the individual's symbol, <em>e.g.</em> ['age', 'yob', 'alleles'].</dd></div>
+										<div class="col"><dt id="font_size" class="fw-semibold">font_size</dt><dd>Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</dd></div>
+										<div class="col"><dt id="font_family" class="fw-semibold">font_family</dt><dd>Define the font-family of the labels, <em>e.g.</em> 'times'.</dd></div>
+										<div class="col"><dt id="font_weight" class="fw-semibold">font_weight</dt><dd>Define the font-weight of the labels, <em>e.g.</em> 400, 700.</dd></div>
+										<div class="col"><dt id="width" class="fw-semibold">width</dt><dd>Width of the SVG element, <em>e.g.</em> 600.</dd></div>
+										<div class="col"><dt id="height" class="fw-semibold">height</dt><dd>Height of the SVG element, <em>e.g.</em> 400.</dd></div>
+										<div class="col"><dt id="symbol_size" class="fw-semibold">symbol_size</dt><dd>Size of the nodes, <em>e.g.</em> 35.</dd></div>
+									</dl>
+								</div>
+							</div>
+						</div>
+						<div class="accordion-item">
+							<h3 class="accordion-header" id="headingStorage">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStorage" aria-expanded="false" aria-controls="collapseStorage">
+									Storage & History
+								</button>
+							</h3>
+							<div id="collapseStorage" class="accordion-collapse collapse" aria-labelledby="headingStorage" data-bs-parent="#optionsAccordion">
+								<div class="accordion-body">
+									<dl class="row row-cols-1 gy-3">
+										<div class="col"><dt id="store_type" class="fw-semibold">store_type</dt><dd>Pedigree storage (for undo, redo) set to 'session', 'local' or 'array'. Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>'. <strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.</dd></div>
+									</dl>
+								</div>
+							</div>
+						</div>
+						<div class="accordion-item">
+							<h3 class="accordion-header" id="headingZoom">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseZoom" aria-expanded="false" aria-controls="collapseZoom">
+									Zoom & Interaction
+								</button>
+							</h3>
+							<div id="collapseZoom" class="accordion-collapse collapse" aria-labelledby="headingZoom" data-bs-parent="#optionsAccordion">
+								<div class="accordion-body">
+									<dl class="row row-cols-1 gy-3">
+										<div class="col"><dt id="zoomIn" class="fw-semibold">zoomIn</dt><dd>The factor by which the svg size can be scaled down, default 1 (no zoom in).</dd></div>
+										<div class="col"><dt id="zoomOut" class="fw-semibold">zoomOut</dt><dd>The factor by which the svg size can be scaled up, default 1 (no zoom out).</dd></div>
+										<div class="col"><dt id="zoomSrc" class="fw-semibold">zoomSrc</dt><dd>The source of zoom events, default ['wheel', 'button'].</dd></div>
+									</dl>
+								</div>
+							</div>
+						</div>
+						<div class="accordion-item">
+							<h3 class="accordion-header" id="headingBehavior">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBehavior" aria-expanded="false" aria-controls="collapseBehavior">
+									Behavior
+								</button>
+							</h3>
+							<div id="collapseBehavior" class="accordion-collapse collapse" aria-labelledby="headingBehavior" data-bs-parent="#optionsAccordion">
+								<div class="accordion-body">
+									<dl class="row row-cols-1 gy-3">
+										<div class="col"><dt id="edit" class="fw-semibold">edit</dt><dd>Set to true to use the default dialog editor, or supply a function to provide a custom editor.</dd></div>
+										<div class="col"><dt id="dragNode" class="fw-semibold">dragNode</dt><dd>Allow nodes to be dragged (default true).</dd></div>
+										<div class="col"><dt id="showWidgets" class="fw-semibold">showWidgets</dt><dd>Show the contextual widgets on hover (default true).</dd></div>
+										<div class="col"><dt id="DEBUG" class="fw-semibold">DEBUG</dt><dd>When true, more console output is provided and `noparents` nodes remain visible.</dd></div>
+									</dl>
+								</div>
+							</div>
+						</div>
+					</div>
 				</section>
 						
 						<!-- Publication Section -->
@@ -320,6 +423,40 @@
 			</section>
 		</div>
 	</main>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+	<div class="toast-container position-fixed bottom-0 end-0 p-3">
+		<div id="actionToast" class="toast text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+			<div class="toast-header text-bg-dark border-0">
+				<strong class="me-auto" id="actionToastTitle">PedigreeJS</strong>
+				<small id="actionToastTime">now</small>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+			</div>
+			<div class="toast-body" id="actionToastBody">
+				Ready.
+			</div>
+		</div>
+	</div>
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		if (typeof bootstrap !== 'undefined') {
+			document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (triggerEl) {
+				new bootstrap.Tooltip(triggerEl);
+			});
+		}
+
+		const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+		const sections = Array.from(navLinks, link => document.querySelector(link.getAttribute('href')));
+		const observer = new IntersectionObserver(entries => {
+			entries.forEach(entry => {
+				const id = entry.target.getAttribute('id');
+				if (!id) return;
+				const link = document.querySelector(`.navbar-nav .nav-link[href="#${id}"]`);
+				if (link) {
+					link.classList.toggle('active', entry.isIntersecting);
+				}
+			});
+		}, {rootMargin: '-60% 0px -35% 0px'});
+		sections.forEach(section => section && observer.observe(section));
+	});
+	</script>
 </body>
 </html>

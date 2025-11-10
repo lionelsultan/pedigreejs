@@ -46,6 +46,34 @@
 		opts.dataset = (localDataset !== undefined && localDataset !== null) ? localDataset : dataset;
 		opts = pedigreejs.pedigreejs.build(opts);
 
+		const datasetStatusEl = document.getElementById('dataset-status');
+		const updateDatasetStatus = message => {
+			if (datasetStatusEl) {
+				datasetStatusEl.textContent = message;
+			}
+		};
+		updateDatasetStatus(localDataset ? 'Restored cached session' : 'Demo dataset loaded');
+
+		const toastEl = document.getElementById('actionToast');
+		const toastBody = document.getElementById('actionToastBody');
+		const toastTitle = document.getElementById('actionToastTitle');
+		const toastTime = document.getElementById('actionToastTime');
+		const showToast = (message, title = 'PedigreeJS') => {
+			if (!toastEl || typeof bootstrap === 'undefined') return;
+			toastBody.textContent = message;
+			toastTitle.textContent = title;
+			if (toastTime) {
+				toastTime.textContent = new Date().toLocaleTimeString();
+			}
+			bootstrap.Toast.getOrCreateInstance(toastEl).show();
+		};
+
+		const zoomHelper = factor => {
+			if (pedigreejs.pedigreejs_zooming && typeof pedigreejs.pedigreejs_zooming.btn_zoom === 'function') {
+				pedigreejs.pedigreejs_zooming.btn_zoom(opts, factor);
+			}
+		};
+
 		function get_pedigree_bwa4(data) {
 			let msg = 'BOADICEA import pedigree file format 4.0 ';
 			const famid = opts.dataset[0].famid;
@@ -131,6 +159,45 @@
 
 		$('#save-boadicea').on('click', function() { save(false); });
 		$('#save-canrisk').on('click', function() { save(true); });
+
+		$('#load').on('change', function(e) {
+			const file = e.target.files && e.target.files[0];
+			if (file) {
+				updateDatasetStatus(`Loaded file: ${file.name}`);
+				showToast(`Loaded ${file.name}`, 'Load complete');
+			}
+		});
+
+		const actionToasts = [
+			{selector: '#save', message: 'JSON pedigree file generated.', title: 'Save complete'},
+			{selector: '#print', message: 'Browser print dialog opened.', title: 'Print dialog'},
+			{selector: '#svg_download', message: 'SVG export ready.', title: 'Export ready'},
+			{selector: '#png_download', message: 'PNG export ready.', title: 'Export ready'},
+			{selector: '#save-boadicea', message: 'BOADICEA v4 file generated (non anonymised).', title: 'BOADICEA export'},
+			{selector: '#save-canrisk', message: 'CanRisk file generated (non anonymised).', title: 'CanRisk export'}
+		];
+		actionToasts.forEach(action => {
+			$(action.selector).on('click', function() {
+				showToast(action.message, action.title);
+			});
+		});
+
+		$('#zoom-in-control').on('click', function() {
+			zoomHelper(1.05);
+			showToast('Zoomed in', 'View');
+		});
+		$('#zoom-out-control').on('click', function() {
+			zoomHelper(0.95);
+			showToast('Zoomed out', 'View');
+		});
+
+		$(document).on('fhChange', function() {
+			updateDatasetStatus(`History updated ${new Date().toLocaleTimeString()}`);
+			showToast('History updated', 'Undo / Redo');
+		});
+		$(document).on('rebuild', function() {
+			updateDatasetStatus(`Canvas rebuilt ${new Date().toLocaleTimeString()}`);
+		});
 	}
 
 	if (document.readyState === 'loading') {
