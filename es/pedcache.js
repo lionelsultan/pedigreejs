@@ -9,6 +9,33 @@
 let max_limit = 25;
 let dict_cache = {};
 
+// Helper function to serialize dataset avoiding circular references
+// D3 adds circular references (parent/children) that can't be stringified directly
+function serialize_dataset(dataset) {
+	try {
+		// Try direct stringification first (for performance)
+		return JSON.stringify(dataset);
+	} catch (e) {
+		// If circular reference error, create a clean copy
+		// Copy only the original data properties, excluding D3-added references
+		let cleanData = dataset.map(function(person) {
+			let clean = {};
+			for (let key in person) {
+				// Skip D3-added properties and circular references
+				if (key !== 'parent' && key !== 'children' && key !== 'data' &&
+					typeof person[key] !== 'function' && typeof person[key] !== 'object') {
+					clean[key] = person[key];
+				} else if (key === 'children' && Array.isArray(person[key])) {
+					// For children array, only store names not full objects
+					clean[key] = person[key].map(c => c.name || c);
+				}
+			}
+			return clean;
+		});
+		return JSON.stringify(cleanData);
+	}
+}
+
 // test if browser storage is supported
 function has_browser_storage(opts) {
 	try {
@@ -94,13 +121,22 @@ export function init_cache(opts) {
 		return;
 	let count = get_count(opts);
 	if (has_browser_storage(opts)) {   // local storage
-		set_browser_store(opts, get_prefix(opts)+count, JSON.stringify(opts.dataset));
-	} else {   // TODO :: array cache
+		set_browser_store(opts, get_prefix(opts)+count, serialize_dataset(opts.dataset));
+	} else {   // array cache with LRU eviction
 		console.warn('Local storage not found/supported for this browser!', opts.store_type);
 		max_limit = 500;
 		if(get_arr(opts) === undefined)
 			dict_cache[get_prefix(opts)] = [];
-		get_arr(opts).push(JSON.stringify(opts.dataset));
+
+		let arr = get_arr(opts);
+		// LRU eviction: if array is at max capacity, remove oldest (first) element
+		if(arr.length >= max_limit) {
+			arr.shift(); // Remove oldest entry (FIFO = simple LRU)
+			// Adjust count since we removed an element
+			if(count > 0)
+				count--;
+		}
+		arr.push(serialize_dataset(opts.dataset));
 	}
 	if(count < max_limit)
 		count++;
@@ -203,18 +239,43 @@ export function setposition(opts, x, y, zoom) {
 		else
 			store.removeItem(zoomName);
 	} else {
-		//TODO
+		// Array cache fallback for position storage
+		if(x) {
+			dict_cache[get_prefix(opts)+'_X'] = x;
+			dict_cache[get_prefix(opts)+'_Y'] = y;
+		} else {
+			delete dict_cache[get_prefix(opts)+'_X'];
+			delete dict_cache[get_prefix(opts)+'_Y'];
+		}
+
+		let zoomName = get_prefix(opts)+'_ZOOM';
+		if(zoom)
+			dict_cache[zoomName] = zoom;
+		else
+			delete dict_cache[zoomName];
 	}
 }
 
 export function getposition(opts) {
-	if(!has_browser_storage(opts) ||
-		(localStorage.getItem(get_prefix(opts)+'_X') === null &&
-		 sessionStorage.getItem(get_prefix(opts)+'_X') === null))
-		return [null, null];
-	let pos = [ parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
-				parseInt(get_browser_store(opts, get_prefix(opts)+'_Y')) ];
-	if(get_browser_store(opts, get_prefix(opts)+'_ZOOM') !== null)
-		pos.push(parseFloat(get_browser_store(opts, get_prefix(opts)+'_ZOOM')));
-	return pos;
+	if(has_browser_storage(opts)) {
+		if(localStorage.getItem(get_prefix(opts)+'_X') === null &&
+		   sessionStorage.getItem(get_prefix(opts)+'_X') === null)
+			return [null, null];
+		let pos = [ parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
+					parseInt(get_browser_store(opts, get_prefix(opts)+'_Y')) ];
+		if(get_browser_store(opts, get_prefix(opts)+'_ZOOM') !== null)
+			pos.push(parseFloat(get_browser_store(opts, get_prefix(opts)+'_ZOOM')));
+		return pos;
+	} else {
+		// Array cache fallback for position retrieval
+		if(dict_cache[get_prefix(opts)+'_X'] === null ||
+		   dict_cache[get_prefix(opts)+'_X'] === undefined)
+			return [null, null];
+		let pos = [ parseInt(dict_cache[get_prefix(opts)+'_X']),
+					parseInt(dict_cache[get_prefix(opts)+'_Y']) ];
+		if(dict_cache[get_prefix(opts)+'_ZOOM'] !== null &&
+		   dict_cache[get_prefix(opts)+'_ZOOM'] !== undefined)
+			pos.push(parseFloat(dict_cache[get_prefix(opts)+'_ZOOM']));
+		return pos;
+	}
 }
