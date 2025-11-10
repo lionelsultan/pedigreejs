@@ -46,8 +46,8 @@ Pour plus de détails, visitez la [page du projet](https://lionelsultan.github.i
 - ✅ **Bug critique corrigé** - Relation parent-enfant lors de l'ajout de conjoint (10 nov 2024)
   - Bug : Le conjoint héritait des parents de l'enfant
   - Fix : Paramètre `skip_parent_copy` ajouté à `addsibling()`
-  - Impact : Corrigé dans `addpartner()` et `addchild()`
-  - Tests : 3 nouveaux tests de non-régression ajoutés
+  - Impact : Corrigé uniquement dans `addpartner()` (addchild() fonctionne correctement)
+  - Tests : 3 nouveaux tests de non-régression ajoutés (153 specs, 0 failures)
   - Build : Réussi sans erreur
 - 🔴 **Phases 3-4 à venir** - Tests modules spécialisés, documentation, modernisation
 - ✅ **Documentation mise à jour** - Site web modernisé avec accessibilité WCAG 2.1 AA (10 nov 2024)

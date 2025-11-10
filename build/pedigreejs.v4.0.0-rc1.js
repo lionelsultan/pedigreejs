@@ -3364,7 +3364,7 @@ var pedigreejs = (function (exports) {
 	  let children = getAllChildren(dataset, node);
 	  let ptr_name, idx;
 	  if (children.length === 0) {
-	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F', undefined, true);
+	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F');
 	    partner.noparents = true;
 	    ptr_name = partner.name;
 	    idx = getIdxByName(dataset, node.name) + 1;
