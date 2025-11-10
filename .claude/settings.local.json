@@ -13,7 +13,9 @@
       "Bash(git log:*)",
       "Bash(tee:*)",
       "WebFetch(domain:lionelsultan.github.io)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
