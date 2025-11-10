@@ -12,7 +12,8 @@
       "Bash(node:*)",
       "Bash(git log:*)",
       "Bash(tee:*)",
-      "WebFetch(domain:lionelsultan.github.io)"
+      "WebFetch(domain:lionelsultan.github.io)",
+      "Bash(timeout 5 bash:*)"
     ],
     "deny": [],
     "ask": []
