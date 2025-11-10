@@ -44,15 +44,27 @@
 
 		const localDataset = pedigreejs.pedigreejs_pedcache.current(opts);
 		opts.dataset = (localDataset !== undefined && localDataset !== null) ? localDataset : dataset;
+		const startTime = performance.now();
 		opts = pedigreejs.pedigreejs.build(opts);
+		const buildTime = performance.now() - startTime;
 
 		const datasetStatusEl = document.getElementById('dataset-status');
+		const performanceInfoEl = document.getElementById('performance-info');
+		
 		const updateDatasetStatus = message => {
 			if (datasetStatusEl) {
 				datasetStatusEl.textContent = message;
 			}
 		};
+		
+		const updatePerformanceInfo = (time, personCount) => {
+			if (performanceInfoEl) {
+				performanceInfoEl.textContent = `${Math.round(time)}ms (${personCount} persons)`;
+			}
+		};
+		
 		updateDatasetStatus(localDataset ? 'Restored cached session' : 'Demo dataset loaded');
+		updatePerformanceInfo(buildTime, opts.dataset.length);
 
 		const toastEl = document.getElementById('actionToast');
 		const toastBody = document.getElementById('actionToastBody');
@@ -157,29 +169,123 @@
 			}, 0);
 		}
 
-		$('#save-boadicea').on('click', function() { save(false); });
-		$('#save-canrisk').on('click', function() { save(true); });
+		$('#save-boadicea').on('click', function() { 
+			save(false); 
+			showToast('BOADICEA v4 file generated (non anonymised).', 'BOADICEA export');
+		});
+		$('#save-canrisk').on('click', function() { 
+			save(true); 
+			showToast('CanRisk file generated (non anonymised).', 'CanRisk export');
+		});
 
 		$('#load').on('change', function(e) {
 			const file = e.target.files && e.target.files[0];
 			if (file) {
-				updateDatasetStatus(`Loaded file: ${file.name}`);
-				showToast(`Loaded ${file.name}`, 'Load complete');
+				const reader = new FileReader();
+				reader.onload = function(event) {
+					try {
+						const data = JSON.parse(event.target.result);
+						const rebuildStart = performance.now();
+						opts.dataset = data;
+						pedigreejs.pedigreejs.rebuild(opts);
+						const rebuildTime = performance.now() - rebuildStart;
+						updateDatasetStatus(`Loaded file: ${file.name}`);
+						updatePerformanceInfo(rebuildTime, data.length);
+						showToast(`Loaded ${file.name}`, 'Load complete');
+					} catch (error) {
+						showToast('Error loading file. Please ensure it is a valid JSON pedigree.', 'Load error');
+					}
+				};
+				reader.readAsText(file);
 			}
 		});
 
-		const actionToasts = [
-			{selector: '#save', message: 'JSON pedigree file generated.', title: 'Save complete'},
-			{selector: '#print', message: 'Browser print dialog opened.', title: 'Print dialog'},
-			{selector: '#svg_download', message: 'SVG export ready.', title: 'Export ready'},
-			{selector: '#png_download', message: 'PNG export ready.', title: 'Export ready'},
-			{selector: '#save-boadicea', message: 'BOADICEA v4 file generated (non anonymised).', title: 'BOADICEA export'},
-			{selector: '#save-canrisk', message: 'CanRisk file generated (non anonymised).', title: 'CanRisk export'}
-		];
-		actionToasts.forEach(action => {
-			$(action.selector).on('click', function() {
-				showToast(action.message, action.title);
-			});
+		// Save JSON functionality
+		$('#save').on('click', function() {
+			const content = JSON.stringify(opts.dataset, null, 2);
+			const file = new Blob([content], {type: 'application/json'});
+			const link = document.createElement('a');
+			const url = URL.createObjectURL(file);
+			link.href = url;
+			link.download = 'pedigree.json';
+			document.body.appendChild(link);
+			link.click();
+			setTimeout(function() {
+				document.body.removeChild(link);
+				window.URL.revokeObjectURL(url);
+			}, 0);
+			showToast('JSON pedigree file generated.', 'Save complete');
+		});
+
+		// Print functionality
+		$('#print').on('click', function() {
+			window.print();
+			showToast('Browser print dialog opened.', 'Print dialog');
+		});
+
+		// SVG export functionality
+		$('#svg_download').on('click', function() {
+			const svgElement = document.querySelector('#pedigree svg');
+			if (svgElement) {
+				const svgData = new XMLSerializer().serializeToString(svgElement);
+				const file = new Blob([svgData], {type: 'image/svg+xml'});
+				const link = document.createElement('a');
+				const url = URL.createObjectURL(file);
+				link.href = url;
+				link.download = 'pedigree.svg';
+				document.body.appendChild(link);
+				link.click();
+				setTimeout(function() {
+					document.body.removeChild(link);
+					window.URL.revokeObjectURL(url);
+				}, 0);
+				showToast('SVG export ready.', 'Export ready');
+			} else {
+				showToast('No pedigree SVG found for export.', 'Export error');
+			}
+		});
+
+		// PNG export functionality
+		$('#png_download').on('click', function() {
+			const svgElement = document.querySelector('#pedigree svg');
+			if (svgElement) {
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
+				const svgData = new XMLSerializer().serializeToString(svgElement);
+				const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+				const img = new Image();
+				const url = URL.createObjectURL(svgBlob);
+				
+				img.onload = function() {
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img, 0, 0);
+					
+					canvas.toBlob(function(blob) {
+						const link = document.createElement('a');
+						const pngUrl = URL.createObjectURL(blob);
+						link.href = pngUrl;
+						link.download = 'pedigree.png';
+						document.body.appendChild(link);
+						link.click();
+						setTimeout(function() {
+							document.body.removeChild(link);
+							window.URL.revokeObjectURL(pngUrl);
+							window.URL.revokeObjectURL(url);
+						}, 0);
+					}, 'image/png');
+					showToast('PNG export ready.', 'Export ready');
+				};
+				
+				img.onerror = function() {
+					window.URL.revokeObjectURL(url);
+					showToast('Error generating PNG export.', 'Export error');
+				};
+				
+				img.src = url;
+			} else {
+				showToast('No pedigree SVG found for export.', 'Export error');
+			}
 		});
 
 		$('#zoom-in-control').on('click', function() {
@@ -197,6 +303,12 @@
 		});
 		$(document).on('rebuild', function() {
 			updateDatasetStatus(`Canvas rebuilt ${new Date().toLocaleTimeString()}`);
+			// Update performance info on rebuild
+			const rebuildStart = performance.now();
+			setTimeout(() => {
+				const rebuildTime = performance.now() - rebuildStart;
+				updatePerformanceInfo(rebuildTime, opts.dataset.length);
+			}, 50);
 		});
 	}
 
