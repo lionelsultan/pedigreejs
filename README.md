@@ -43,6 +43,13 @@ Pour plus de détails, visitez la [page du projet](https://lionelsultan.github.i
   - Tests cache array créés (287 LOC, 12 nouveaux tests)
   - **Décision** : Optimisations supplémentaires NON nécessaires
   - Tous les tests passent (**150 specs, 0 failures**)
+- ✅ **Bug visuel critique corrigé** - Ligne de connexion parent-partner (10 nov 2024)
+  - Bug : Une ligne apparaissait du parent vers le partner au lieu du fils
+  - Cause : `getChildren()` ignorait le flag `noparents` lors du rendu
+  - Fix : Ajout de vérification `!p.noparents` dans `getChildren()`
+  - Impact : Corrigé dans `tree-utils.js:81` - 1 ligne modifiée
+  - Tests : 1 nouveau test de non-régression ajouté (151 specs attendus)
+  - Build : Réussi sans erreur
 - 🔴 **Phases 3-4 à venir** - Tests modules spécialisés, documentation, modernisation
 - ✅ **Documentation mise à jour** - Site web modernisé avec accessibilité WCAG 2.1 AA (10 nov 2024)
   - index.html refonte complète (760 → 1131 LOC)

@@ -78,7 +78,7 @@ export function getChildren(dataset, mother, father) {
 		$.each(dataset, function(_i, p) {
 			if(mother.name === p.mother)
 				if(!father || father.name === p.father) {
-					if($.inArray(p.name, names) === -1){
+					if($.inArray(p.name, names) === -1 && !p.noparents){
 						children.push(p);
 						names.push(p.name);
 					}

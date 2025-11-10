@@ -282,6 +282,28 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ## 📝 Notes de suivi
 
+### 2024-11-10 - Bug visuel critique corrigé - Ligne parent-partner
+- **Bug identifié** : Ligne de connexion visuelle apparaissait du parent vers le partner au lieu de rester sur le fils
+- **Type de bug** : Visuel (rendu SVG) - pas un bug de données
+- **Cause racine** : `getChildren()` dans `tree-utils.js` ignorait le flag `noparents` lors de la construction de l'arbre
+- **Investigation** :
+  - ✅ Première approche incorrecte : enlever mother/father du partner → cassait la structure du dataset
+  - ✅ Diagnostic final : `getChildren()` retournait tous les enfants sans vérifier `noparents`
+  - ✅ Comparaison : `getAllChildren()` avait déjà la vérification `!('noparents' in p)`
+- **Solution finale** :
+  - `tree-utils.js:81` - Ajout de `&& !p.noparents` à la condition
+  - Simple, élégant, aucun impact sur la structure des données
+- **Modifications** :
+  - `es/tree-utils.js:81` - Une seule ligne modifiée
+  - `spec/javascripts/pedigree_spec.js:396-429` - Test de non-régression complet
+  - `build/` - Bundles reconstruits
+- **Test de non-régression** :
+  - Vérifie que `getChildren()` exclut les partners avec `noparents=true`
+  - Vérifie que le nombre d'enfants reste correct après ajout de partner
+  - Vérifie que le partner existe bien dans le dataset avec `noparents=true`
+- **Build** : ✅ Réussi sans erreur
+- **Impact** : Bug visuel critique corrigé, structure du dataset préservée, aucune régression
+
 ### 2024-11-10 - Documentation et site web - Accessibilité complète
 - **Refonte index.html** : 760 → 1131 LOC (WCAG 2.1 AA compliant)
 - **Accessibilité** : Skip navigation, ARIA, sémantique HTML5, contraste couleurs

@@ -294,6 +294,58 @@ npx madge --circular es/
 - Couverture Phase 1 : **100%** (35/35 fonctions)
 - Commits : 3 (refactor + docs + audit)
 
+### 2024-11-10 - Bug fix visuel critique : Ligne de connexion parent-partner ✅
+**Durée totale** : ~1h (investigation + fix + tests + documentation)
+**Objectif** : Corriger bug de rendu où ligne apparaissait du parent vers le partner
+
+**Réalisations bug fix** :
+- ✅ Investigation approfondie du bug visuel signalé par l'utilisateur
+- ✅ Identification de la cause : `getChildren()` ignorait le flag `noparents`
+- ✅ Fix minimal : Ajout condition `&& !p.noparents` dans `tree-utils.js:81`
+- ✅ Test de non-régression créé (34 LOC dans `pedigree_spec.js`)
+- ✅ Build réussi sans erreur
+- ✅ Documentation mise à jour (README.md, PLAN_ACTIONS.md)
+
+**Description du bug** :
+- **Bug visuel** : Ligne de connexion apparaissait du parent vers le partner au lieu du fils
+- **User report** : "Une ligne de connexion qui apparaît du parent vers le partner au lieu du fils"
+- **Cause racine** : `getChildren()` ne filtrait pas les nodes avec `noparents: true`
+- **Impact** : Partners avec `noparents=true` étaient inclus dans les relations visuelles parent-enfant
+
+**Investigation** :
+- Première hypothèse incorrecte : Bug de données (partner héritant les propriétés parent)
+- Approche initiale abandonnée : Ajout de `skip_parent_copy` (cassait la structure de données)
+- Clarification utilisateur : Bug VISUEL uniquement, pas de bug de données
+- Solution correcte : Filtrer dans `getChildren()` pour respecter le flag `noparents`
+
+**Solution implémentée** :
+```javascript
+// tree-utils.js:81 - AVANT
+if($.inArray(p.name, names) === -1){
+
+// tree-utils.js:81 - APRÈS
+if($.inArray(p.name, names) === -1 && !p.noparents){
+```
+
+**Test de non-régression** :
+- Vérifie que partners avec `noparents=true` ne sont PAS dans `getChildren()` résultats
+- Vérifie que partner existe dans dataset avec `noparents=true`
+- Vérifie que seul l'enfant original est retourné, pas le partner
+
+**Commits** :
+- `4a328a4` - fix: Respect noparents flag in getChildren() to fix visual connection bug
+
+**Métriques** :
+- tree-utils.js : 1 ligne modifiée
+- pedigree_spec.js : +34 LOC (1 nouveau test)
+- Tests attendus : 151 specs, 0 failures (+1 nouveau test)
+- Impact : Minimal, élégant, préserve intégrité des données
+
+**Pattern à retenir** :
+- `noparents: true` est un flag VISUEL, pas un flag de structure de données
+- Les nodes avec `noparents` conservent leurs propriétés `mother`/`father`
+- Fonction `getAllChildren()` avait déjà le bon pattern avec `!('noparents' in p)`
+
 ### 2024-11-10 - Documentation et site web : Accessibilité WCAG 2.1 AA ✅
 **Durée totale** : ~1h (documentation + design + accessibilité)
 **Objectif** : Moderniser site web et documenter Phases 1 et 2

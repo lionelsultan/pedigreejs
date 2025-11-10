@@ -392,6 +392,41 @@ describe('Test pedigree SVG ', function() {
 			check_unconnected(newopts)
 			expect(newopts.dataset.length).toBe(ncount+2);
 		});
+
+		it('should NOT include partner with noparents in getChildren results', function() {
+			// BUG FIX TEST: Partner with noparents=true should be excluded from visual parent-child relationships
+			// ds1 structure: m21 + f21 -> ch1
+			var f21 = newopts.dataset.find(function(p) { return p.name === 'f21'; });
+			var m21 = newopts.dataset.find(function(p) { return p.name === 'm21'; });
+
+			// Get children before adding partner
+			var children_before = pedigree_util.getChildren(newopts.dataset, f21, m21);
+			expect(children_before.length).toBe(1);
+			expect(children_before[0].name).toBe('ch1');
+
+			// Add partner to ch1
+			widgets.addpartner(newopts, newopts.dataset, 'ch1');
+
+			// Get children after adding partner
+			var children_after = pedigree_util.getChildren(newopts.dataset, f21, m21);
+
+			// Partner should NOT be included in children (has noparents=true)
+			expect(children_after.length).toBe(1);
+			expect(children_after[0].name).toBe('ch1');
+
+			// Verify the partner exists in dataset with noparents
+			var partner = null;
+			for(var i = 0; i < newopts.dataset.length; i++) {
+				var person = newopts.dataset[i];
+				if(person.name !== 'ch1' && person.name !== 'm21' && person.name !== 'f21' &&
+				   person.noparents === true) {
+					partner = person;
+					break;
+				}
+			}
+			expect(partner).not.toBeNull();
+			expect(partner.noparents).toBe(true);
+		});
 	});
 
 
