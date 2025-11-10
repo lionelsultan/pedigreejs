@@ -13,7 +13,8 @@
       "Bash(git log:*)",
       "Bash(tee:*)",
       "WebFetch(domain:lionelsultan.github.io)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
