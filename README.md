@@ -24,20 +24,24 @@ Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.
   - 3 nouveaux modules utilitaires (validation, dom, tree-utils)
 - **Stack** : D3.js v7.9.0, jQuery 3.3.1, Rollup, Jasmine
 - **Formats de sortie** : Bundle IIFE + source maps
-- **Tests** : Jasmine (53 specs passants, couverture partielle)
+- **Tests** : Jasmine (133 specs passants, **100% couverture Phase 1**)
 
 ### 📋 Statut développement
 - ✅ **Audit de code complet** - Analyse détaillée effectuée (9 nov 2024)
-- ✅ **Phase 1 terminée** - Refactoring architectural (10 nov 2024)
+- ✅ **Phase 1 terminée et auditée** - Refactoring architectural + tests (10 nov 2024)
   - utils.js découpé : 775 → 75 LOC (-90%)
   - 3 nouveaux modules créés : validation.js, dom.js, tree-utils.js
-  - Tous les tests passent (53 specs, 0 failures)
+  - 897 LOC de nouveaux tests créés (validation_spec, dom_spec, tree-utils_spec)
+  - **100% couverture** : 35/35 fonctions testées
+  - Tous les tests passent (133 specs, 0 failures)
+  - Bug de production corrigé (is_fullscreen)
 - 🔴 **Phases 2-4 à venir** - Performance, tests, modernisation
 
 ### 📚 Documentation disponible
 - **[AUDIT_PEDIGREEJS.md](AUDIT_PEDIGREEJS.md)** - Rapport d'audit technique complet
 - **[PLAN_ACTIONS.md](PLAN_ACTIONS.md)** - Plan d'amélioration détaillé
 - **[SESSION_CONTEXT.md](SESSION_CONTEXT.md)** - Contexte technique pour contributeurs
+- **[PHASE1_AUDIT_REPORT.md](PHASE1_AUDIT_REPORT.md)** - Rapport d'audit Phase 1 (100% couverture)
 
 ## 🧪 Tests
 

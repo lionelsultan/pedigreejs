@@ -230,11 +230,11 @@ npx madge --circular es/
 
 ## 📝 Notes de session
 
-### 2024-11-10 - Phase 1 : Refactoring architectural
-**Durée** : ~1h
-**Objectif** : Scinder utils.js en modules thématiques
+### 2024-11-10 - Phase 1 : Refactoring architectural + Audit complet
+**Durée totale** : ~2h (refactoring 1h + audit 1h)
+**Objectif** : Scinder utils.js en modules thématiques + Couverture tests 100%
 
-**Réalisations** :
+**Réalisations refactoring** :
 - ✅ Créé `validation.js` (234 LOC) - Fonctions de validation du pedigree
 - ✅ Créé `dom.js` (173 LOC) - Manipulation DOM, dialogs, dimensions SVG
 - ✅ Créé `tree-utils.js` (420 LOC) - Navigation, construction, géométrie d'arbre
@@ -244,21 +244,37 @@ npx madge --circular es/
 - ✅ Aucune dépendance circulaire détectée
 - ✅ 2 commits créés avec messages descriptifs
 
+**Réalisations audit (100% couverture)** :
+- ✅ Créé `validation_spec.js` (246 LOC, ~25 specs) - Tests validation
+- ✅ Créé `dom_spec.js` (227 LOC, ~22 specs) - Tests manipulation DOM
+- ✅ Créé `tree_utils_spec.js` (424 LOC, ~33 specs) - Tests navigation arbre
+- ✅ Total nouveaux tests : 897 LOC, ~80 specs
+- ✅ **Bug de production corrigé** : `is_fullscreen()` retournait undefined → boolean
+- ✅ Exports ajoutés dans `index.js` pour accès aux nouveaux modules
+- ✅ Tous les tests passent : **133 specs, 0 failures** (100% succès)
+- ✅ **Couverture 100%** : 35/35 fonctions testées (Phase 1)
+- ✅ Créé `PHASE1_AUDIT_REPORT.md` - Rapport complet d'audit
+- ✅ 1 commit audit (test files + bug fix)
+
 **Découvertes** :
 - Variables `dragging` et `last_mouseover` déjà encapsulées dans widgets.js (scope module)
 - Pas de dépendance circulaire entre utils.js et pedcache.js (contrairement à l'audit initial)
 - Variable `utils.roots` utilisée dans 5 fichiers (refactoring complexe, reporté)
+- Bug `is_fullscreen()` détecté lors des tests : retournait `undefined` au lieu de `boolean`
 
 **Décisions** :
 - Maintenir compatibilité backward via ré-exports dans utils.js
 - Reporter refactoring de `utils.roots` à phase ultérieure
 - Préserver exactement les mêmes exports publics
+- Exporter nouveaux modules dans index.js pour testing
 
 **Métriques** :
 - utils.js : 775 → 75 LOC (-90%)
 - Total modules : 14 → 17 (+3)
-- Tests : 53 specs passants (0 failures)
-- Commits : 2 (refactor + docs)
+- Tests : 53 → 133 specs passants (+80, 0 failures)
+- Tests LOC : 685 → 1582 LOC (+897)
+- Couverture Phase 1 : **100%** (35/35 fonctions)
+- Commits : 3 (refactor + docs + audit)
 
 ### 2024-11-09 - Initialisation
 - Création du plan d'actions basé sur audit de code

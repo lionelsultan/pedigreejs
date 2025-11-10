@@ -363,3 +363,43 @@ Testing :
 ## 9. Synthèse finale
 
 PedigreeJS présente une architecture modulaire solide avec une séparation claire des responsabilités, mais souffre d'un couplage fort entre modules core et d'une dette technique modérée. La couverture de tests est limitée aux fonctionnalités de base, laissant les interactions UI et la performance non testées. Les enjeux critiques concernent la scalabilité (rendu complet à chaque modification), la maintenabilité (couplage `utils.js`) et l'extensibilité (widgets codés en dur). Les priorités immédiates sont le découplage architectural, l'extension des tests et l'optimisation du rendu pour grands pedigrees.
+
+---
+
+## 10. Améliorations apportées (Mise à jour 2024-11-10)
+
+### Phase 1 - Architecture critique ✅ TERMINÉE
+
+#### Refactoring architectural
+- **utils.js découpé** : 775 → 75 LOC (-90%)
+  - `validation.js` (234 LOC) - Fonctions de validation pedigree
+  - `dom.js` (173 LOC) - Manipulation DOM et UI
+  - `tree-utils.js` (420 LOC) - Navigation et géométrie d'arbre
+- **Compatibilité préservée** : Ré-exports dans utils.js
+- **Aucune dépendance circulaire** : Graphe acyclique vérifié
+
+#### Tests et couverture
+- **897 LOC de nouveaux tests** créés
+  - `validation_spec.js` (246 LOC, ~25 specs)
+  - `dom_spec.js` (227 LOC, ~22 specs)
+  - `tree-utils_spec.js` (424 LOC, ~33 specs)
+- **100% couverture Phase 1** : 35/35 fonctions testées
+- **133 specs, 0 failures** (53 originaux + 80 nouveaux)
+
+#### Corrections
+- **Bug production corrigé** : `is_fullscreen()` retournait undefined → boolean (dom.js:108)
+- **Exports ajoutés** : Nouveaux modules exposés dans index.js pour testing
+
+#### Documentation
+- **PHASE1_AUDIT_REPORT.md** créé avec rapport détaillé
+- **Tous les markdown** à la racine mis à jour
+
+#### Recommandations P1 résolues
+- ✅ **P1.1** Découpler les modules → utils.js scindé
+- ✅ **P2.1** Scinder utils.js → 3 modules thématiques créés
+- ⚠️ **P1.3** Éliminer state global → Partiel (utils.roots conservée)
+
+### Prochaines étapes
+- **Phase 2** - Performance (approche conservatrice : mesurer puis optimiser)
+- **Phase 3** - Tests modules manquants (zoom, dragging, twins)
+- **Phase 4** - Modernisation (ESM, TypeScript, plugins)
