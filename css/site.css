@@ -239,99 +239,6 @@
 			margin: var(--spacing-sm) 0 0 0;
 		}
 
-		/* ===================================
-		   Buttons
-		   =================================== */
-
-		.btn {
-			display: inline-block;
-			padding: 12px 24px;
-			font-size: 16px;
-			font-weight: 600;
-			line-height: 1.5;
-			text-align: center;
-			text-decoration: none;
-			cursor: pointer;
-			border: 2px solid;
-			border-radius: var(--radius-md);
-			transition: all var(--transition-base);
-			font-family: inherit;
-		}
-
-		.btn-primary {
-			color: var(--text-on-primary);
-			background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-blue) 100%);
-			border-color: rgba(255, 255, 255, 0.3);
-			box-shadow: var(--shadow-sm);
-		}
-
-		.btn-primary:hover,
-		.btn-primary:focus {
-			transform: translateY(-2px);
-			box-shadow: var(--shadow-md);
-			background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
-		}
-
-		.btn-secondary {
-			color: var(--text-primary);
-			background: white;
-			border-color: var(--border-blue);
-			box-shadow: var(--shadow-sm);
-		}
-
-		.btn-secondary:hover,
-		.btn-secondary:focus {
-			background: var(--light-blue);
-			border-color: var(--primary-blue);
-			transform: translateY(-1px);
-		}
-
-		/* ===================================
-		   Container & Layout
-		   =================================== */
-
-		.container {
-			width: 90%;
-			max-width: 1140px;
-			margin: calc(var(--spacing-lg) * -1) auto var(--spacing-lg);
-			background: white;
-			padding: var(--spacing-xl);
-			border-radius: var(--radius-lg);
-			box-shadow: var(--shadow-md);
-			position: relative;
-			z-index: 2;
-		}
-
-		@media (max-width: 768px) {
-			.container {
-				width: 95%;
-				padding: var(--spacing-md);
-			}
-		}
-
-		/* ===================================
-		   Improvements Banner
-		   =================================== */
-
-		.improvements-banner {
-			background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-			border-left: 6px solid var(--primary-blue);
-			padding: var(--spacing-lg);
-			margin: var(--spacing-lg) auto;
-			max-width: 1140px;
-			border-radius: var(--radius-lg);
-			box-shadow: var(--shadow-md);
-		}
-
-		.improvements-banner h3 {
-			margin-top: 0;
-			color: var(--primary-dark);
-			font-size: clamp(1.5rem, 4vw, 1.75rem);
-			display: flex;
-			align-items: center;
-			gap: var(--spacing-sm);
-		}
-
 		.icon-badge {
 			background: var(--primary-blue);
 			color: var(--text-on-primary);
@@ -473,13 +380,8 @@
 			margin-bottom: var(--spacing-sm);
 		}
 
-		#ped {
-			text-align: center;
-		}
-
-		.text-center {
-			text-align: center;
-			padding: 0 var(--spacing-md);
+		.pedigree-stage {
+			min-height: 360px;
 		}
 
 		/* ===================================

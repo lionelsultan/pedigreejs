@@ -18,6 +18,7 @@
 	<meta property="og:url" content="https://lionelsultan.github.io/pedigreejs/">
 
 	<!-- Stylesheets -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW7CM1Ll" crossorigin="anonymous" />
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="build/pedigreejs.v4.0.0-rc1.css" />
@@ -34,18 +35,18 @@
 	
 </head>
 
-<body>
+<body class="bg-light">
 	<!-- Skip Navigation for Accessibility -->
 	<a href="#main-content" class="skip-nav">Skip to main content</a>
 
 	<!-- Header -->
-	<header class="header" role="banner">
-		<div class="header-content">
+	<header class="header bg-primary text-white py-5" role="banner">
+		<div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-4">
 			<div>
-				<h1>PedigreeJS</h1>
-				<p>A modern web tool for building and displaying pedigrees</p>
+				<h1 class="display-5 fw-semibold mb-2">PedigreeJS</h1>
+				<p class="lead mb-0">A modern web tool for building and displaying pedigrees</p>
 			</div>
-			<a class="btn btn-primary"
+			<a class="btn btn-light btn-lg"
 			   href="https://github.com/lionelsultan/pedigreejs"
 			   target="_blank"
 			   rel="noopener noreferrer"
@@ -56,99 +57,120 @@
 	</header>
 
 	<!-- Improvements Banner -->
-	<aside class="improvements-banner" aria-label="Recent improvements announcement">
-		<h3>
-			<span class="icon-badge" role="img" aria-label="Rocket icon">🚀</span>
-			Recent Improvements (v4.0.0-rc1)
-		</h3>
-
-		<article class="phase-card">
-			<h4>
-				<span class="phase-badge">Phase 1</span>
-				Architecture Refactoring ✅
-				<span style="color: var(--text-light); font-size: 0.875rem; font-weight: normal;">(Completed Nov 2024)</span>
-			</h4>
-			<ul role="list">
-				<li>Modular architecture: utils.js refactored from <strong>775 → 75 LOC (-90%)</strong></li>
-				<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
-				<li>100% test coverage for new modules (133 specs, 0 failures)</li>
-				<li>Bug fixes: is_fullscreen() now returns boolean correctly</li>
-			</ul>
-		</article>
-
-		<article class="phase-card">
-			<h4>
-				<span class="phase-badge" style="background: var(--accent-blue);">Phase 2</span>
-				Performance & Cache Optimization ✅
-				<span style="color: var(--text-light); font-size: 0.875rem; font-weight: normal;">(Completed Nov 2024)</span>
-			</h4>
-			<ul role="list">
-				<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees
-					<span class="tag-excellent" role="img" aria-label="Excellent performance">excellent</span>
-				</li>
-				<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
-				<li>+17 new tests (150 specs total, 0 failures)</li>
-				<li>Decision: No additional optimizations needed - performance exceeds targets</li>
-			</ul>
-		</article>
-
-		<p style="margin: var(--spacing-md) 0 0 0; padding-top: var(--spacing-md); border-top: 2px solid rgba(21, 101, 192, 0.2); font-size: 0.875rem; color: var(--text-light);">
-			📚 <strong>For technical details, see:</strong>
-			<a href="PHASE1_AUDIT_REPORT.md">Phase 1 Report</a> |
-			<a href="PHASE2_PERFORMANCE_REPORT.md">Phase 2 Report</a> |
-			<a href="PLAN_ACTIONS.md">Action Plan</a>
-		</p>
-	</aside>
+	<section class="py-5 bg-white">
+		<div class="container">
+			<div class="text-center mb-4">
+				<span class="badge text-bg-light px-3 py-2 fs-6 d-inline-flex align-items-center justify-content-center gap-2">
+					<span class="icon-badge" role="img" aria-label="Rocket icon">🚀</span>
+					Recent Improvements (v4.0.0-rc1)
+				</span>
+				<p class="text-muted mb-0 mt-3">Audit-driven roadmap with measurable outcomes</p>
+			</div>
+			<div class="row g-4">
+				<div class="col-md-6">
+					<article class="phase-card card h-100 shadow-sm border-0">
+						<div class="card-body">
+							<div class="d-flex align-items-center justify-content-between">
+								<span class="phase-badge badge bg-primary">Phase 1</span>
+								<small class="text-muted">(Completed Nov 2024)</small>
+							</div>
+							<h4 class="mt-3">Architecture Refactoring ✅</h4>
+							<ul class="mt-3" role="list">
+								<li>Modular architecture: utils.js refactored from <strong>775 → 75 LOC (-90%)</strong></li>
+								<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
+								<li>100% test coverage for new modules (133 specs, 0 failures)</li>
+								<li>Bug fixes: is_fullscreen() now returns boolean correctly</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+				<div class="col-md-6">
+					<article class="phase-card card h-100 shadow-sm border-0">
+						<div class="card-body">
+							<div class="d-flex align-items-center justify-content-between">
+								<span class="phase-badge badge bg-info text-dark">Phase 2</span>
+								<small class="text-muted">(Completed Nov 2024)</small>
+							</div>
+							<h4 class="mt-3">Performance & Cache Optimization ✅</h4>
+							<ul class="mt-3" role="list">
+								<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees <span class="tag-excellent" role="img" aria-label="Excellent performance">excellent</span></li>
+								<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
+								<li>+17 new tests (150 specs total, 0 failures)</li>
+								<li>Decision: No additional optimizations needed - performance exceeds targets</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+			</div>
+			<div class="alert alert-info mt-4" role="alert">
+				📚 <strong>For technical details, see:</strong>
+				<a class="alert-link" href="PHASE1_AUDIT_REPORT.md">Phase 1 Report</a>,
+				<a class="alert-link" href="PHASE2_PERFORMANCE_REPORT.md">Phase 2 Report</a>,
+				<a class="alert-link" href="PLAN_ACTIONS.md">Action Plan</a>
+			</div>
+		</div>
+	</section>
 
 	<!-- Main Content -->
-	<main id="main-content" class="container" role="main">
-		<div>
-			<!-- Interactive Example Section -->
-			<section aria-labelledby="example-heading">
-				<h2 id="example-heading" class="sr-only">Interactive Pedigree Example</h2>
-
-				<div style="margin-left:20px;" class="pull-right">
-					<div class="text-center">
-						<label class="btn btn-secondary">
-							<input id="load" type="file" style="display: none;" aria-label="Load pedigree file"/>
-							Load
-						</label>
-						<label class="btn btn-secondary">
-							<input id="save" type="button" style="display: none;" aria-label="Save pedigree"/>
-							Save
-						</label>
-						<label class="btn btn-secondary">
-							<input id="print" type="button" style="display: none;" aria-label="Print pedigree"/>
-							Print
-						</label>
-						<label class="btn btn-secondary">
-							<input id="svg_download" type="button" style="display: none;" aria-label="Download pedigree as SVG"/>
-							SVG
-						</label>
-						<label class="btn btn-secondary">
-							<input id="png_download" type="button" style="display: none;" aria-label="Download pedigree as PNG"/>
-							PNG
-						</label>
-
-						<div id="pedigrees" role="application" aria-label="Pedigree editor"></div>
-						<div id="node_properties"></div>
-
-						<br/>
-						<label class="btn btn-secondary">
-							<input id="save-boadicea" type="button" style="display: none;" aria-label="Save in BOADICEA version 4 format"/>
-							Save (BOADICEA v4 format)
-						</label>
-						<label class="btn btn-secondary">
-							<input id="save-canrisk" type="button" style="display: none;" aria-label="Save in CanRisk format"/>
-							Save (CanRisk format)
-						</label>
+	<main id="main-content" class="py-5" role="main">
+		<div class="container">
+			<div class="row g-4 align-items-start">
+				<div class="col-lg-4">
+					<div class="card shadow-sm h-100">
+						<div class="card-body d-flex flex-column gap-3">
+							<h2 class="h4">Interactive controls</h2>
+							<p class="text-muted mb-0">Load demo data, export results or print the SVG canvas directly.</p>
+							<div class="d-grid gap-2">
+								<label class="btn btn-outline-primary w-100">
+									<input id="load" type="file" class="visually-hidden" aria-label="Load pedigree file"/>
+									Load
+								</label>
+								<label class="btn btn-outline-primary w-100">
+									<input id="save" type="button" class="visually-hidden" aria-label="Save pedigree"/>
+									Save
+								</label>
+								<label class="btn btn-outline-primary w-100">
+									<input id="print" type="button" class="visually-hidden" aria-label="Print pedigree"/>
+									Print
+								</label>
+								<label class="btn btn-outline-secondary w-100">
+									<input id="svg_download" type="button" class="visually-hidden" aria-label="Download pedigree as SVG"/>
+									Download SVG
+								</label>
+								<label class="btn btn-outline-secondary w-100">
+									<input id="png_download" type="button" class="visually-hidden" aria-label="Download pedigree as PNG"/>
+									Download PNG
+								</label>
+							</div>
+							<div class="d-grid gap-2">
+								<label class="btn btn-outline-info w-100">
+									<input id="save-boadicea" type="button" class="visually-hidden" aria-label="Save in BOADICEA version 4 format"/>
+									Save (BOADICEA v4 format)
+								</label>
+								<label class="btn btn-outline-info w-100">
+									<input id="save-canrisk" type="button" class="visually-hidden" aria-label="Save in CanRisk format"/>
+									Save (CanRisk format)
+								</label>
+							</div>
+						</div>
 					</div>
 				</div>
-
-				<!-- Overview Section -->
-				<section aria-labelledby="overview-heading">
-					<h2 id="overview-heading">Overview</h2>
-					<p>
+				<div class="col-lg-8">
+					<div class="card shadow-sm">
+						<div class="card-body">
+							<div id="pedigrees" class="pedigree-stage border rounded-3 bg-white p-3" role="application" aria-label="Pedigree editor"></div>
+							<div id="node_properties" class="mt-3"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<section class="mt-5">
+				<div class="card shadow-sm border-0">
+					<div class="card-body p-4 p-lg-5">
+						<!-- Overview Section -->
+						<section aria-labelledby="overview-heading">
+						<h2 id="overview-heading">Overview</h2>
+						<p>
 						<strong>PedigreeJS</strong> is a JavaScript library used to draw family trees using
 						<a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank" rel="noopener noreferrer">standard pedigree nomenclature</a>.
 						It uses the JavaScript <a href="https://d3js.org/" target="_blank" rel="noopener noreferrer">D3.js library</a>
@@ -156,20 +178,20 @@
 						The size of the SVG can be configured as well as the colour codes used to denote disease.
 						It can be used to build the pedigree structure or load in an existing data set.
 						To assist visualisation and building of larger pedigrees a full screen mode is provided.
-					</p>
-					<p>
+						</p>
+						<p>
 						Browser local storage is used to maintain a history of the steps in building a pedigree
 						structure. So that at each step of the pedigree building process it can be undone to return
 						to previous versions.
-					</p>
-					<p>
+						</p>
+						<p>
 						See the <a href="docs/developer.html">developer documentation</a> for more details about setting up pedigreejs.
-					</p>
-					<p>
+						</p>
+						<p>
 						A demonstration page is available <a href="docs/demo.html">here</a>.
 						Other example pages and configurations are given below:
-					</p>
-					<ul role="list">
+						</p>
+						<ul role="list">
 						<li>Example 1: <a href="docs/example1.html">diabetes example</a></li>
 						<li>Example 2: <a href="docs/example2.html">change background, node colours and using local storage</a></li>
 						<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
@@ -179,258 +201,264 @@
 						<li>Example 7: <a href="docs/example7.html">twins, divorced, miscarriage, termination, stillbirth and adoption</a></li>
 						<li>Example 8: <a href="docs/example8.html">search pedigree data</a></li>
 						<li>Example 9: <a href="docs/example9.html">consanguineous partners at different levels</a></li>
-					</ul>
-				</section>
-			</section>
-
-			<!-- Building Pedigrees Section -->
-			<section aria-labelledby="building-heading">
-				<h2 id="building-heading">Building Pedigrees</h2>
-				<p>
-					Individuals can be added to the pedigree by placing the mouse over an individual to reveal
-					the widgets used for editing and adding a
-					partner <i class="fa fa-link" aria-hidden="true"></i><span class="sr-only">(link icon)</span> (two people with at least one child),
-					parents <i class="fa fa-arrow-up" aria-hidden="true"></i><span class="sr-only">(up arrow icon)</span>,
-					a sibling <i class="fa fa-user-plus" aria-hidden="true"></i><span class="sr-only">(add user icon)</span>,
-					or a child <i class="fa fa-arrow-down" aria-hidden="true"></i><span class="sr-only">(down arrow icon)</span>.
-					Options are given to add
-					male <i class="fa fa-square-o" aria-hidden="true"></i><span class="sr-only">(square icon)</span>,
-					female <i class="fa fa-circle-o" aria-hidden="true"></i><span class="sr-only">(circle icon)</span>,
-					unknown <i class="fa fa-square-o fa-rotate-45" aria-hidden="true"></i><span class="sr-only">(rotated square icon)</span>,
-					dizygotic (fraternal) twin <i class="fa fa-angle-up" style="font-size:1.5em" aria-hidden="true"></i><span class="sr-only">(dizygotic twin icon)</span>
-					or monozygotic (identical) twin <i class="fa fa-caret-up" style="font-size:1.5em" aria-hidden="true"></i><span class="sr-only">(monozygotic twin icon)</span>.
-				</p>
-				<p>
-					If the 'edit' parameter is set in the configuration of pedigreejs then the <i class="fa fa-cog" aria-hidden="true"></i><span class="sr-only">(settings icon)</span> widget
-					is also displayed. When this widget is clicked it opens an editor dialog of the attributes associated for the individual. A default
-					editor is provided that can be overridden and customised.
-				</p>
-				<p>
-					Half siblings can be added by creating a new partner (with <i class="fa fa-link" aria-hidden="true"></i><span class="sr-only">(link icon)</span>)
-					for the parent in common to the siblings.
-					Consanguineous partners can be created between individual's at the same or different levels in the pedigree
-					tree, <em>e.g.</em> cousins.
-					This is done by placing the mouse over one of the partners and clicking and dragging the
-					triple dashed line widget <img alt="handle widget" src="docs/img/handle.png"> in the direction of their new partner.
-				</p>
-				<p>
-					There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i><span class="sr-only">(undo icon)</span>,
-					'redo' <i class="fa fa-repeat" aria-hidden="true"></i><span class="sr-only">(redo icon)</span> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i><span class="sr-only">(reset icon)</span>
-					buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i><span class="sr-only">(fullscreen icon)</span>.
-				</p>
-			</section>
-
-			<!-- Loading and Saving Section -->
-			<section aria-labelledby="loading-heading">
-				<h2 id="loading-heading">Loading and Saving Pedigree Data</h2>
-				<p>
-					The pedigree can be saved out and loaded back in. Support is given to loading
-					<a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank" rel="noopener noreferrer">CanRisk files</a>,
-					and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped" target="_blank" rel="noopener noreferrer">PED files</a> (see <a href="docs/example4.html">example 4</a>).
-				</p>
-			</section>
-
-			<!-- Configuration Section -->
-			<section aria-labelledby="config-heading">
-				<h2 id="config-heading">Configuration and Integration Notes</h2>
-				<p>
-					The following parameters can be used to configure pedigreejs.
-					Please also see the <a href="docs/developer.html">developer notes</a> for more details about
-					programmatically interacting with pedigreejs.
-					The important parameter to configure is 'targetDiv' which defines the HTML div used for
-					drawing the pedigree. Default parameters are provided which are documented below.
-					There is a configuration parameter 'edit' which can take a function, so that a
-					customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
-					Alternatively if 'edit' is set to true a default dialog will be displayed showing the
-					individual's attributes.
-				</p>
-
-				<pre class="options" role="region" aria-label="Configuration example code"><code>var opts = {
-	'targetDiv': 'pedigree',
-	'btn_target': 'pedigree_history',
-	'width': 450,
-	'height': 320,
-	'symbol_size': 35,
-	'diseases': [
-		{'type': 'breast_cancer', 'colour': '#F68F35'},
-		{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-		{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-		{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-	'labels': ['age', 'yob'],
-	'font_size': '.75em',
-	'font_family': 'Helvetica',
-	'font_weight': 700,
-	'edit': true,
-	'DEBUG': pedigreejs.pedigreejs_utils.urlParam('debug') !== null
-};
-var cachedDataset = pedigreejs.pedigreejs_pedcache.current(opts);
-opts.dataset = cachedDataset || dataset;
-opts = pedigreejs.pedigreejs.build(opts);</code></pre>
-			</section>
-
-			<!-- Options Reference -->
-			<section aria-labelledby="options-heading">
-				<h2 id="options-heading">Options Reference</h2>
-
-				<div class="row" id="targetDiv">
-					<div class="left">targetDiv</div>
-					<div>This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</div>
-				</div>
-
-				<div class="row" id="btn_target">
-					<div class="left">btn_target</div>
-					<div>This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</div>
-				</div>
-
-				<div class="row" id="dataset">
-					<div class="left">dataset</div>
-					<div>
+						</ul>
+						</section>
+						</section>
+						
+						<!-- Building Pedigrees Section -->
+						<section aria-labelledby="building-heading">
+						<h2 id="building-heading">Building Pedigrees</h2>
+						<p>
+						Individuals can be added to the pedigree by placing the mouse over an individual to reveal
+						the widgets used for editing and adding a
+						partner <i class="fa fa-link" aria-hidden="true"></i><span class="sr-only">(link icon)</span> (two people with at least one child),
+						parents <i class="fa fa-arrow-up" aria-hidden="true"></i><span class="sr-only">(up arrow icon)</span>,
+						a sibling <i class="fa fa-user-plus" aria-hidden="true"></i><span class="sr-only">(add user icon)</span>,
+						or a child <i class="fa fa-arrow-down" aria-hidden="true"></i><span class="sr-only">(down arrow icon)</span>.
+						Options are given to add
+						male <i class="fa fa-square-o" aria-hidden="true"></i><span class="sr-only">(square icon)</span>,
+						female <i class="fa fa-circle-o" aria-hidden="true"></i><span class="sr-only">(circle icon)</span>,
+						unknown <i class="fa fa-square-o fa-rotate-45" aria-hidden="true"></i><span class="sr-only">(rotated square icon)</span>,
+						dizygotic (fraternal) twin <i class="fa fa-angle-up" style="font-size:1.5em" aria-hidden="true"></i><span class="sr-only">(dizygotic twin icon)</span>
+						or monozygotic (identical) twin <i class="fa fa-caret-up" style="font-size:1.5em" aria-hidden="true"></i><span class="sr-only">(monozygotic twin icon)</span>.
+						</p>
+						<p>
+						If the 'edit' parameter is set in the configuration of pedigreejs then the <i class="fa fa-cog" aria-hidden="true"></i><span class="sr-only">(settings icon)</span> widget
+						is also displayed. When this widget is clicked it opens an editor dialog of the attributes associated for the individual. A default
+						editor is provided that can be overridden and customised.
+						</p>
+						<p>
+						Half siblings can be added by creating a new partner (with <i class="fa fa-link" aria-hidden="true"></i><span class="sr-only">(link icon)</span>)
+						for the parent in common to the siblings.
+						Consanguineous partners can be created between individual's at the same or different levels in the pedigree
+						tree, <em>e.g.</em> cousins.
+						This is done by placing the mouse over one of the partners and clicking and dragging the
+						triple dashed line widget <img alt="handle widget" src="docs/img/handle.png"> in the direction of their new partner.
+						</p>
+						<p>
+						There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i><span class="sr-only">(undo icon)</span>,
+						'redo' <i class="fa fa-repeat" aria-hidden="true"></i><span class="sr-only">(redo icon)</span> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i><span class="sr-only">(reset icon)</span>
+						buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i><span class="sr-only">(fullscreen icon)</span>.
+						</p>
+						</section>
+						
+						<!-- Loading and Saving Section -->
+						<section aria-labelledby="loading-heading">
+						<h2 id="loading-heading">Loading and Saving Pedigree Data</h2>
+						<p>
+						The pedigree can be saved out and loaded back in. Support is given to loading
+						<a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank" rel="noopener noreferrer">CanRisk files</a>,
+						and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped" target="_blank" rel="noopener noreferrer">PED files</a> (see <a href="docs/example4.html">example 4</a>).
+						</p>
+						</section>
+						
+						<!-- Configuration Section -->
+						<section aria-labelledby="config-heading">
+						<h2 id="config-heading">Configuration and Integration Notes</h2>
+						<p>
+						The following parameters can be used to configure pedigreejs.
+						Please also see the <a href="docs/developer.html">developer notes</a> for more details about
+						programmatically interacting with pedigreejs.
+						The important parameter to configure is 'targetDiv' which defines the HTML div used for
+						drawing the pedigree. Default parameters are provided which are documented below.
+						There is a configuration parameter 'edit' which can take a function, so that a
+						customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
+						Alternatively if 'edit' is set to true a default dialog will be displayed showing the
+						individual's attributes.
+						</p>
+						
+						<pre class="options" role="region" aria-label="Configuration example code"><code>var opts = {
+						'targetDiv': 'pedigree',
+						'btn_target': 'pedigree_history',
+						'width': 450,
+						'height': 320,
+						'symbol_size': 35,
+						'diseases': [
+						{'type': 'breast_cancer', 'colour': '#F68F35'},
+						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+						'labels': ['age', 'yob'],
+						'font_size': '.75em',
+						'font_family': 'Helvetica',
+						'font_weight': 700,
+						'edit': true,
+						'DEBUG': pedigreejs.pedigreejs_utils.urlParam('debug') !== null
+						};
+						var cachedDataset = pedigreejs.pedigreejs_pedcache.current(opts);
+						opts.dataset = cachedDataset || dataset;
+						opts = pedigreejs.pedigreejs.build(opts);</code></pre>
+						</section>
+						
+						<!-- Options Reference -->
+						<section aria-labelledby="options-heading">
+						<h2 id="options-heading">Options Reference</h2>
+						
+						<div class="row" id="targetDiv">
+						<div class="left">targetDiv</div>
+						<div>This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</div>
+						</div>
+						
+						<div class="row" id="btn_target">
+						<div class="left">btn_target</div>
+						<div>This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</div>
+						</div>
+						
+						<div class="row" id="dataset">
+						<div class="left">dataset</div>
+						<div>
 						The pedigree data to be displayed, <em>e.g.</em>
 						<pre class="options" role="region" aria-label="Dataset example"><code>[
-	{"name": "m21", "sex": "M", "top_level": true},
-	{"name": "f21", "sex": "F", "top_level": true},
-	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
-]</code></pre>
-					</div>
-				</div>
-
-				<div class="row" id="labels">
-					<div class="left">labels</div>
-					<div>Array of attributes to display under the individual's symbol, <em>e.g.</em> labels: ['age', 'yob', 'alleles'].</div>
-				</div>
-
-				<div class="row" id="font_size">
-					<div class="left">font_size</div>
-					<div>Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</div>
-				</div>
-
-				<div class="row" id="font_family">
-					<div class="left">font_family</div>
-					<div>Define the font-family of the labels, <em>e.g.</em> 'times'.</div>
-				</div>
-
-				<div class="row" id="font_weight">
-					<div class="left">font_weight</div>
-					<div>Define the font-weight of the labels, <em>e.g.</em> 400, 700.</div>
-				</div>
-
-				<div class="row" id="width">
-					<div class="left">width</div>
-					<div>Width of the SVG element, <em>e.g.</em> 600.</div>
-				</div>
-
-				<div class="row" id="height">
-					<div class="left">height</div>
-					<div>Height of the SVG element, <em>e.g.</em> 400.</div>
-				</div>
-
-				<div class="row" id="symbol_size">
-					<div class="left">symbol_size</div>
-					<div>Size of the nodes, <em>e.g.</em> 35.</div>
-				</div>
-
-				<div class="row" id="store_type">
-					<div class="left">store_type</div>
-					<div>
+						{"name": "m21", "sex": "M", "top_level": true},
+						{"name": "f21", "sex": "F", "top_level": true},
+						{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
+						]</code></pre>
+						</div>
+						</div>
+						
+						<div class="row" id="labels">
+						<div class="left">labels</div>
+						<div>Array of attributes to display under the individual's symbol, <em>e.g.</em> labels: ['age', 'yob', 'alleles'].</div>
+						</div>
+						
+						<div class="row" id="font_size">
+						<div class="left">font_size</div>
+						<div>Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</div>
+						</div>
+						
+						<div class="row" id="font_family">
+						<div class="left">font_family</div>
+						<div>Define the font-family of the labels, <em>e.g.</em> 'times'.</div>
+						</div>
+						
+						<div class="row" id="font_weight">
+						<div class="left">font_weight</div>
+						<div>Define the font-weight of the labels, <em>e.g.</em> 400, 700.</div>
+						</div>
+						
+						<div class="row" id="width">
+						<div class="left">width</div>
+						<div>Width of the SVG element, <em>e.g.</em> 600.</div>
+						</div>
+						
+						<div class="row" id="height">
+						<div class="left">height</div>
+						<div>Height of the SVG element, <em>e.g.</em> 400.</div>
+						</div>
+						
+						<div class="row" id="symbol_size">
+						<div class="left">symbol_size</div>
+						<div>Size of the nodes, <em>e.g.</em> 35.</div>
+						</div>
+						
+						<div class="row" id="store_type">
+						<div class="left">store_type</div>
+						<div>
 						Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
 						Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>' browser storage.
 						Using 'session' will store the data for one session (data is lost when the browser tab is closed).
 						Using 'local' will store the data with no expiration date.
 						If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).
 						<br/><strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.
-					</div>
-				</div>
-
-				<div class="row" id="zoomIn">
-					<div class="left">zoomIn</div>
-					<div>The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
-				</div>
-
-				<div class="row" id="zoomOut">
-					<div class="left">zoomOut</div>
-					<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
-				</div>
-
-				<div class="row" id="zoomSrc">
-					<div class="left">zoomSrc</div>
-					<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
-				</div>
-
-				<div class="row" id="dragNode">
-					<div class="left">dragNode</div>
-					<div>Enable dragging nodes, default true.</div>
-				</div>
-
-				<div class="row" id="showWidgets">
-					<div class="left">showWidgets</div>
-					<div>Show the widgets, default true.</div>
-				</div>
-
-				<div class="row" id="edit">
-					<div class="left">edit</div>
-					<div>Set to true for a button to display an individual's details (<em>e.g.</em> age, sex) in a dialog or provide a funtion to handle editing.</div>
-				</div>
-
-				<div class="row" id="diseases">
-					<div class="left">diseases</div>
-					<div>
+						</div>
+						</div>
+						
+						<div class="row" id="zoomIn">
+						<div class="left">zoomIn</div>
+						<div>The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
+						</div>
+						
+						<div class="row" id="zoomOut">
+						<div class="left">zoomOut</div>
+						<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
+						</div>
+						
+						<div class="row" id="zoomSrc">
+						<div class="left">zoomSrc</div>
+						<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
+						</div>
+						
+						<div class="row" id="dragNode">
+						<div class="left">dragNode</div>
+						<div>Enable dragging nodes, default true.</div>
+						</div>
+						
+						<div class="row" id="showWidgets">
+						<div class="left">showWidgets</div>
+						<div>Show the widgets, default true.</div>
+						</div>
+						
+						<div class="row" id="edit">
+						<div class="left">edit</div>
+						<div>Set to true for a button to display an individual's details (<em>e.g.</em> age, sex) in a dialog or provide a funtion to handle editing.</div>
+						</div>
+						
+						<div class="row" id="diseases">
+						<div class="left">diseases</div>
+						<div>
 						Diseases and their colour representation, <em>e.g.</em>
 						<pre class="options" role="region" aria-label="Diseases configuration example"><code>[
-	{'type': 'breast_cancer', 'colour': '#F68F35'},
-	{'type': 'breast_cancer2', 'colour': 'pink'},
-	{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-	{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-	{'type': 'prostate_cancer', 'colour': '#D5494A'}
-]</code></pre>
-					</div>
-				</div>
-
-				<div class="row" id="background">
-					<div class="left">background</div>
-					<div>SVG background colour, <em>e.g.</em> #d3d3d3.</div>
-				</div>
-
-				<div class="row" id="node_background">
-					<div class="left">node_background</div>
-					<div>Individual's background colour, <em>e.g.</em> #fff.</div>
-				</div>
-
-				<div class="row" id="validate">
-					<div class="left">validate</div>
-					<div>
+						{'type': 'breast_cancer', 'colour': '#F68F35'},
+						{'type': 'breast_cancer2', 'colour': 'pink'},
+						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+						{'type': 'prostate_cancer', 'colour': '#D5494A'}
+						]</code></pre>
+						</div>
+						</div>
+						
+						<div class="row" id="background">
+						<div class="left">background</div>
+						<div>SVG background colour, <em>e.g.</em> #d3d3d3.</div>
+						</div>
+						
+						<div class="row" id="node_background">
+						<div class="left">node_background</div>
+						<div>Individual's background colour, <em>e.g.</em> #fff.</div>
+						</div>
+						
+						<div class="row" id="validate">
+						<div class="left">validate</div>
+						<div>
 						Pedigree data validation (default true). This can also take a validation
 						function to override the in-built validation. The in-built validation throws an error if any
 						of the following are not true:
 						<ul role="list">
-							<li>parents, when defined, exist in the pedigree</li>
-							<li>mother is female</li>
-							<li>father is male</li>
+						<li>parents, when defined, exist in the pedigree</li>
+						<li>mother is female</li>
+						<li>father is male</li>
 						</ul>
 						A warning message it sent to the console if there are any individuals that are not connected
 						(i.e. a break in the pedigree). See the <a href="docs/developer.html">developer notes</a> for
 						more details.
+						</div>
+						</div>
+						
+						<div class="row" id="DEBUG">
+						<div class="left">DEBUG</div>
+						<div>Debug mode, <em>e.g.</em> false.</div>
+						</div>
+						</section>
+						
+						<!-- Publication Section -->
+						<section aria-labelledby="publication-heading">
+						<h2 id="publication-heading">Publication</h2>
+						<p>
+						<strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
+						Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
+						<em>Bioinformatics</em>
+						<a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank" rel="noopener noreferrer">
+						doi:10.1093/bioinformatics/btx705
+						</a>
+						</p>
+						</section>
+						</div>
+						
 					</div>
 				</div>
-
-				<div class="row" id="DEBUG">
-					<div class="left">DEBUG</div>
-					<div>Debug mode, <em>e.g.</em> false.</div>
-				</div>
-			</section>
-
-			<!-- Publication Section -->
-			<section aria-labelledby="publication-heading">
-				<h2 id="publication-heading">Publication</h2>
-				<p>
-					<strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
-					Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
-					<em>Bioinformatics</em>
-					<a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank" rel="noopener noreferrer">
-						doi:10.1093/bioinformatics/btx705
-					</a>
-				</p>
 			</section>
 		</div>
 	</main>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
