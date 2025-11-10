@@ -282,6 +282,22 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ## 📝 Notes de suivi
 
+### 2024-11-10 - Bug critique corrigé - Relation parent-enfant
+- **Bug identifié** : Lors de l'ajout d'un conjoint à un enfant, le parent se retrouvait lié au conjoint au lieu de l'enfant
+- **Cause racine** : `addsibling()` copiait les propriétés `mother` et `father` du nœud source
+- **Solution** : Ajout d'un paramètre optionnel `skip_parent_copy` à `addsibling()`
+- **Modifications** :
+  - `es/widgets.js:538` - addsibling() avec nouveau paramètre (default: false)
+  - `es/widgets.js:674` - addpartner() utilise skip_parent_copy=true
+  - `es/widgets.js:510` - addchild() utilise skip_parent_copy=true
+  - `spec/javascripts/pedigree_spec.js:396-440` - 3 tests de non-régression
+- **Tests** :
+  - Test 1 : Le conjoint NE copie PAS les parents
+  - Test 2 : La relation parent-enfant reste intacte
+  - Test 3 : addsibling() normal copie toujours les parents (comportement par défaut)
+- **Build** : ✅ Réussi sans erreur
+- **Impact** : Bug critique corrigé, pas de régression sur le comportement existant
+
 ### 2024-11-10 - Documentation et site web - Accessibilité complète
 - **Refonte index.html** : 760 → 1131 LOC (WCAG 2.1 AA compliant)
 - **Accessibilité** : Skip navigation, ARIA, sémantique HTML5, contraste couleurs

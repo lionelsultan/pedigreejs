@@ -392,6 +392,52 @@ describe('Test pedigree SVG ', function() {
 			check_unconnected(newopts)
 			expect(newopts.dataset.length).toBe(ncount+2);
 		});
+
+		it('should NOT copy parent relationships when adding a partner', function() {
+			// BUG FIX TEST: Partner should not inherit child's parents
+			// ds1 structure: m21 + f21 -> ch1
+			widgets.addpartner(newopts, newopts.dataset, 'ch1');
+
+			// Find the newly created partner (should be male since ch1 is female)
+			var partner = null;
+			for(var i = 0; i < newopts.dataset.length; i++) {
+				var person = newopts.dataset[i];
+				// Partner is the new person with no parents and opposite sex to ch1
+				if(person.name !== 'ch1' && person.name !== 'm21' && person.name !== 'f21' &&
+				   person.sex === 'M' && person.noparents === true) {
+					partner = person;
+					break;
+				}
+			}
+
+			expect(partner).not.toBeNull();
+			expect(partner.mother).toBeUndefined();
+			expect(partner.father).toBeUndefined();
+		});
+
+		it('should preserve original parent-child relationship after adding partner', function() {
+			// Verify parent-child relationship before adding partner
+			var ch1_before = newopts.dataset.find(function(p) { return p.name === 'ch1'; });
+			expect(ch1_before.mother).toBe('f21');
+			expect(ch1_before.father).toBe('m21');
+
+			// Add partner
+			widgets.addpartner(newopts, newopts.dataset, 'ch1');
+
+			// Verify parent-child relationship is still intact after adding partner
+			var ch1_after = newopts.dataset.find(function(p) { return p.name === 'ch1'; });
+			expect(ch1_after.mother).toBe('f21');
+			expect(ch1_after.father).toBe('m21');
+		});
+
+		it('should still copy parents when using addsibling normally (default behavior)', function() {
+			// Verify that addsibling() with skip_parent_copy=false (default) still copies parents
+			var ch1 = newopts.dataset.find(function(p) { return p.name === 'ch1'; });
+			var sibling = widgets.addsibling(newopts.dataset, ch1, 'M', false);
+
+			expect(sibling.mother).toBe('f21');
+			expect(sibling.father).toBe('m21');
+		});
 	});
 
 

@@ -3364,7 +3364,7 @@ var pedigreejs = (function (exports) {
 	  let children = getAllChildren(dataset, node);
 	  let ptr_name, idx;
 	  if (children.length === 0) {
-	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F');
+	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F', undefined, true);
 	    partner.noparents = true;
 	    ptr_name = partner.name;
 	    idx = getIdxByName(dataset, node.name) + 1;
@@ -3391,7 +3391,7 @@ var pedigreejs = (function (exports) {
 	}
 
 	//
-	function addsibling(dataset, node, sex, add_lhs, twin_type) {
+	function addsibling(dataset, node, sex, add_lhs, twin_type, skip_parent_copy = false) {
 	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
 	  let newbie = {
 	    "name": makeid(4),
@@ -3399,7 +3399,7 @@ var pedigreejs = (function (exports) {
 	  };
 	  if (node.top_level) {
 	    newbie.top_level = true;
-	  } else {
+	  } else if (!skip_parent_copy) {
 	    newbie.mother = node.mother;
 	    newbie.father = node.father;
 	  }
@@ -3518,7 +3518,7 @@ var pedigreejs = (function (exports) {
 	  let root = roots[opts.targetDiv];
 	  let flat_tree = flatten(root);
 	  let tree_node = getNodeByName(flat_tree, name);
-	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F', undefined, true);
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),
