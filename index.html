@@ -275,154 +275,31 @@
 						</section>
 						
 						<!-- Options Reference -->
-						<section aria-labelledby="options-heading">
-						<h2 id="options-heading">Options Reference</h2>
-						
-						<div class="row" id="targetDiv">
-						<div class="left">targetDiv</div>
-						<div>This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</div>
+				<!-- Options Reference -->
+				<section aria-labelledby="options-heading">
+					<h2 id="options-heading">Options Reference</h2>
+					<dl class="row g-3">
+						<div class="col-12">
+							<dt class="col-sm-3 fw-semibold" id="targetDiv">targetDiv</dt>
+							<dd class="col-sm-9">This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd>
 						</div>
-						
-						<div class="row" id="btn_target">
-						<div class="left">btn_target</div>
-						<div>This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</div>
+						<div class="col-12">
+							<dt class="col-sm-3 fw-semibold" id="btn_target">btn_target</dt>
+							<dd class="col-sm-9">This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd>
 						</div>
-						
-						<div class="row" id="dataset">
-						<div class="left">dataset</div>
-						<div>
-						The pedigree data to be displayed, <em>e.g.</em>
-						<pre class="options" role="region" aria-label="Dataset example"><code>[
-						{"name": "m21", "sex": "M", "top_level": true},
-						{"name": "f21", "sex": "F", "top_level": true},
-						{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
-						]</code></pre>
+						<div class="col-12">
+							<dt class="col-sm-3 fw-semibold" id="dataset">dataset</dt>
+							<dd class="col-sm-9">
+								The pedigree data to be displayed, <em>e.g.</em>
+								<pre class="options" role="region" aria-label="Dataset example"><code>[
+	{"name": "m21", "sex": "M", "top_level": true},
+	{"name": "f21", "sex": "F", "top_level": true},
+	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
+]</code></pre>
+							</dd>
 						</div>
-						</div>
-						
-						<div class="row" id="labels">
-						<div class="left">labels</div>
-						<div>Array of attributes to display under the individual's symbol, <em>e.g.</em> labels: ['age', 'yob', 'alleles'].</div>
-						</div>
-						
-						<div class="row" id="font_size">
-						<div class="left">font_size</div>
-						<div>Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</div>
-						</div>
-						
-						<div class="row" id="font_family">
-						<div class="left">font_family</div>
-						<div>Define the font-family of the labels, <em>e.g.</em> 'times'.</div>
-						</div>
-						
-						<div class="row" id="font_weight">
-						<div class="left">font_weight</div>
-						<div>Define the font-weight of the labels, <em>e.g.</em> 400, 700.</div>
-						</div>
-						
-						<div class="row" id="width">
-						<div class="left">width</div>
-						<div>Width of the SVG element, <em>e.g.</em> 600.</div>
-						</div>
-						
-						<div class="row" id="height">
-						<div class="left">height</div>
-						<div>Height of the SVG element, <em>e.g.</em> 400.</div>
-						</div>
-						
-						<div class="row" id="symbol_size">
-						<div class="left">symbol_size</div>
-						<div>Size of the nodes, <em>e.g.</em> 35.</div>
-						</div>
-						
-						<div class="row" id="store_type">
-						<div class="left">store_type</div>
-						<div>
-						Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
-						Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>' browser storage.
-						Using 'session' will store the data for one session (data is lost when the browser tab is closed).
-						Using 'local' will store the data with no expiration date.
-						If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).
-						<br/><strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.
-						</div>
-						</div>
-						
-						<div class="row" id="zoomIn">
-						<div class="left">zoomIn</div>
-						<div>The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
-						</div>
-						
-						<div class="row" id="zoomOut">
-						<div class="left">zoomOut</div>
-						<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
-						</div>
-						
-						<div class="row" id="zoomSrc">
-						<div class="left">zoomSrc</div>
-						<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
-						</div>
-						
-						<div class="row" id="dragNode">
-						<div class="left">dragNode</div>
-						<div>Enable dragging nodes, default true.</div>
-						</div>
-						
-						<div class="row" id="showWidgets">
-						<div class="left">showWidgets</div>
-						<div>Show the widgets, default true.</div>
-						</div>
-						
-						<div class="row" id="edit">
-						<div class="left">edit</div>
-						<div>Set to true for a button to display an individual's details (<em>e.g.</em> age, sex) in a dialog or provide a funtion to handle editing.</div>
-						</div>
-						
-						<div class="row" id="diseases">
-						<div class="left">diseases</div>
-						<div>
-						Diseases and their colour representation, <em>e.g.</em>
-						<pre class="options" role="region" aria-label="Diseases configuration example"><code>[
-						{'type': 'breast_cancer', 'colour': '#F68F35'},
-						{'type': 'breast_cancer2', 'colour': 'pink'},
-						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-						{'type': 'prostate_cancer', 'colour': '#D5494A'}
-						]</code></pre>
-						</div>
-						</div>
-						
-						<div class="row" id="background">
-						<div class="left">background</div>
-						<div>SVG background colour, <em>e.g.</em> #d3d3d3.</div>
-						</div>
-						
-						<div class="row" id="node_background">
-						<div class="left">node_background</div>
-						<div>Individual's background colour, <em>e.g.</em> #fff.</div>
-						</div>
-						
-						<div class="row" id="validate">
-						<div class="left">validate</div>
-						<div>
-						Pedigree data validation (default true). This can also take a validation
-						function to override the in-built validation. The in-built validation throws an error if any
-						of the following are not true:
-						<ul role="list">
-						<li>parents, when defined, exist in the pedigree</li>
-						<li>mother is female</li>
-						<li>father is male</li>
-						</ul>
-						A warning message it sent to the console if there are any individuals that are not connected
-						(i.e. a break in the pedigree). See the <a href="docs/developer.html">developer notes</a> for
-						more details.
-						</div>
-						</div>
-						
-						<div class="row" id="DEBUG">
-						<div class="left">DEBUG</div>
-						<div>Debug mode, <em>e.g.</em> false.</div>
-						</div>
-						</section>
+					</dl>
+				</section>
 						
 						<!-- Publication Section -->
 						<section aria-labelledby="publication-heading">
