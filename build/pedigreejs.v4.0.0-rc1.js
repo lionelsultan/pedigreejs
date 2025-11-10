@@ -195,6 +195,14 @@ var pedigreejs = (function (exports) {
 	  });
 	}
 
+	var validation = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		create_err: create_err,
+		unconnected: unconnected,
+		validate_age_yob: validate_age_yob,
+		validate_pedigree: validate_pedigree
+	});
+
 	/**
 	/* © 2023 University of Cambridge
 	/* SPDX-FileCopyrightText: 2023 University of Cambridge
@@ -295,7 +303,7 @@ var pedigreejs = (function (exports) {
 	  }
 	}
 	function is_fullscreen() {
-	  return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+	  return !!(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
 	}
 	function get_svg_dimensions(opts) {
 	  return {
@@ -351,6 +359,17 @@ var pedigreejs = (function (exports) {
 	    'height': tree_height
 	  };
 	}
+
+	var dom = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		get_svg_dimensions: get_svg_dimensions,
+		get_tree_dimensions: get_tree_dimensions,
+		isEdge: isEdge,
+		isIE: isIE,
+		is_fullscreen: is_fullscreen,
+		messages: messages,
+		print_opts: print_opts
+	});
 
 	/**
 	/* © 2023 University of Cambridge
@@ -893,6 +912,33 @@ var pedigreejs = (function (exports) {
 	  });
 	  return [partnerLinks, id];
 	}
+
+	var treeUtils = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		adjust_coords: adjust_coords,
+		ancestors: ancestors,
+		buildTree: buildTree,
+		consanguity: consanguity,
+		exists: exists,
+		flatten: flatten,
+		getAdoptedSiblings: getAdoptedSiblings,
+		getAllChildren: getAllChildren,
+		getAllSiblings: getAllSiblings,
+		getChildren: getChildren,
+		getDepth: getDepth,
+		getIdxByName: getIdxByName,
+		getNodeByName: getNodeByName,
+		getNodesAtDepth: getNodesAtDepth,
+		getProbandIndex: getProbandIndex,
+		getSiblings: getSiblings,
+		getTwins: getTwins,
+		get_partners: get_partners,
+		isProband: isProband,
+		linkNodes: linkNodes,
+		makeid: makeid,
+		overlap: overlap,
+		setProband: setProband
+	});
 
 	/**
 	/* © 2023 University of Cambridge
@@ -4332,10 +4378,13 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs = pedigree;
 	exports.pedigreejs__extras = extras;
 	exports.pedigreejs_canrisk_file = canrisk_file;
+	exports.pedigreejs_dom = dom;
 	exports.pedigreejs_form = popup_form;
 	exports.pedigreejs_io = io;
 	exports.pedigreejs_pedcache = pedcache;
+	exports.pedigreejs_tree_utils = treeUtils;
 	exports.pedigreejs_utils = utils;
+	exports.pedigreejs_validation = validation;
 	exports.pedigreejs_widgets = widgets;
 	exports.pedigreejs_zooming = zoom;
 

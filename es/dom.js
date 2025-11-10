@@ -105,7 +105,7 @@ export function print_opts(opts){
 }
 
 export function is_fullscreen(){
-	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+	return !!(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
 }
 
 export function get_svg_dimensions(opts) {
