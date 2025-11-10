@@ -64,6 +64,7 @@ Pour plus de détails, visitez la [page du projet](https://lionelsultan.github.i
 - **[SESSION_CONTEXT.md](SESSION_CONTEXT.md)** - Contexte technique pour contributeurs
 - **[PHASE1_AUDIT_REPORT.md](PHASE1_AUDIT_REPORT.md)** - Rapport Phase 1 (100% couverture tests)
 - **[PHASE2_PERFORMANCE_REPORT.md](PHASE2_PERFORMANCE_REPORT.md)** - Rapport Phase 2 (mesures performance + cache)
+- **[AGENTS.md](AGENTS.md)** - Guide contributeur pour configurer l'environnement, coder et tester
 
 ## 🧪 Tests
 

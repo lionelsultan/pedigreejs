@@ -23,6 +23,7 @@
 - `SESSION_CONTEXT.md` - Ce fichier de contexte
 - `PHASE1_AUDIT_REPORT.md` - Rapport Phase 1 (100% couverture tests)
 - `PHASE2_PERFORMANCE_REPORT.md` - Rapport Phase 2 (performance + cache)
+- `AGENTS.md` - Guide contributeur (structure, commandes, conventions)
 
 ---
 
@@ -43,7 +44,7 @@ pedigreejs/
 ├── SESSION_CONTEXT.md            # ✅ Créé + Mis à jour - Ce fichier
 ├── PHASE1_AUDIT_REPORT.md        # ✅ Créé - Rapport Phase 1
 ├── PHASE2_PERFORMANCE_REPORT.md  # ✅ Créé - Rapport Phase 2
-├── README.md                     # ✅ Mis à jour - État du projet
+├── README.md                     # ✅ Mis à jour - État du projet + lien AGENTS
 ├── index.html                    # ✅ Refonte complète - WCAG 2.1 AA (760 → 1131 LOC)
 ├── es/
 │   ├── validation.js             # ✅ Créé - Fonctions de validation (234 LOC)
@@ -57,6 +58,7 @@ pedigreejs/
 │   ├── validation_spec.js        # ✅ Créé - Tests validation (246 LOC)
 │   ├── dom_spec.js               # ✅ Créé - Tests DOM (227 LOC)
 │   └── tree_utils_spec.js        # ✅ Créé - Tests tree-utils (424 LOC)
+├── AGENTS.md                     # ✅ Créé - Guide contributeur (structure, commandes)
 └── build/                        # ✅ Rebuilt - Bundles IIFE mis à jour
     ├── pedigreejs.v4.0.0-rc1.js
     ├── pedigreejs.v4.0.0-rc1.min.js
@@ -142,6 +144,7 @@ pedigreejs/
 ### 1. Vérification environnement
 ```bash
 cd /Users/lionelsultan/GitHub/pedigreejs
+sed -n '1,120p' AGENTS.md     # Relire le guide contributeur
 git status                    # Vérifier état repo
 npm test                      # Baseline tests qui passent
 npm run build                 # Vérifier build fonctionne
