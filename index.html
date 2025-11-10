@@ -303,6 +303,31 @@
 	</div>
 </div>
 
+<!-- IMPROVEMENTS BANNER -->
+<div style="background-color:#e7f3ff;border-left:4px solid #2196F3;padding:15px;margin:20px auto;max-width:1140px;">
+	<h3 style="margin-top:0;color:#0066cc;">🚀 Recent Improvements (v4.0.0-rc1)</h3>
+	<p style="margin-bottom:10px;"><strong>Phase 1 - Architecture Refactoring</strong> ✅ (Completed Nov 2024)</p>
+	<ul style="margin:5px 0 10px 20px;">
+		<li>Modular architecture: utils.js refactored from 775 → 75 LOC (-90%)</li>
+		<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
+		<li>100% test coverage for new modules (133 specs, 0 failures)</li>
+		<li>Bug fixes: is_fullscreen() now returns boolean correctly</li>
+	</ul>
+	<p style="margin-bottom:10px;"><strong>Phase 2 - Performance & Cache Optimization</strong> ✅ (Completed Nov 2024)</p>
+	<ul style="margin:5px 0 10px 20px;">
+		<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees (excellent)</li>
+		<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
+		<li>+17 new tests (150 specs total, 0 failures)</li>
+		<li>Decision: No additional optimizations needed - performance exceeds targets</li>
+	</ul>
+	<p style="margin:5px 0 0 0;font-size:12px;color:#666;">
+		📚 For technical details, see:
+		<a href="PHASE1_AUDIT_REPORT.md" style="color:#0066cc;">Phase 1 Report</a> |
+		<a href="PHASE2_PERFORMANCE_REPORT.md" style="color:#0066cc;">Phase 2 Report</a> |
+		<a href="PLAN_ACTIONS.md" style="color:#0066cc;">Action Plan</a>
+	</p>
+</div>
+
 <div class="container">
 	<div>
 <!-- EXAMPLE -->
@@ -503,7 +528,8 @@
 		Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp">session</a>' browser storage.
 		Using 'session' will store the data for one session (data is lost when the browser tab is closed).
 		Using 'local' will store the data with no expiration date.
-		If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).</div>
+		If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).
+		<br/><strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.</div>
     </div>
 	<div class="row" id="zoomIn">
 		<div class="left">zoomIn</div>
