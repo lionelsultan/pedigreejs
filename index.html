@@ -17,17 +17,31 @@
  	<script src="build/pedigreejs.v4.0.0-rc1.min.js"></script>
 
 	<style>
+		/* Modern Design System - Blue Theme */
+		:root {
+			--primary-blue: #1e88e5;
+			--primary-dark: #1565c0;
+			--primary-light: #42a5f5;
+			--accent-blue: #0288d1;
+			--light-blue: #e3f2fd;
+			--border-blue: #90caf9;
+			--text-dark: #1a237e;
+			--text-light: #546e7a;
+			--gradient-start: #1e88e5;
+			--gradient-end: #1565c0;
+		}
+
 		a[href^="http://"][target=_blank]:after,
 		a[href^="https://"][target=_blank]:after,
 		a[href^="ftp://"][target=_blank]:after {
-		  content: "\f08e";
-		  font-family: FontAwesome;
-		  font-weight: normal;
-		  font-style: normal;
-		  display: inline-block;
-		  text-decoration: none;
-		  padding: 0px 2px;
-		  display:inline;
+			content: "\f08e";
+			font-family: FontAwesome;
+			font-weight: normal;
+			font-style: normal;
+			display: inline-block;
+			text-decoration: none;
+			padding: 0px 2px;
+			display:inline;
 		}
 
 		.fa-rotate-45 {
@@ -39,21 +53,54 @@
 		}
 
 		.header {
-			background-color:#DDD1C1;
+			background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
 			margin-right: auto;
-    		margin-left: auto;
-    		margin-bottom: 20px;
+			margin-left: auto;
+			margin-bottom: 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.header::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,122.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+			opacity: 0.3;
+		}
+
+		.header h1,
+		.header h2 {
+			color: white;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+			position: relative;
+			z-index: 1;
 		}
 
 		.btn.btn-primary {
 			color: #fff;
-		    background-color: #337ab7;
-		    border-color: #2e6da4;
-		    padding: 10px 16px;
-		    font-size: 18px;
-		    line-height: 1.3333333;
-		    border-radius: 6px;
-		    text-decoration: none;
+			background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-blue) 100%);
+			border: 2px solid rgba(255, 255, 255, 0.3);
+			padding: 12px 24px;
+			font-size: 16px;
+			font-weight: 600;
+			line-height: 1.5;
+			border-radius: 8px;
+			text-decoration: none;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			transition: all 0.3s ease;
+			position: relative;
+			z-index: 1;
+		}
+
+		.btn.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(30, 136, 229, 0.3);
+			background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
 		}
 
 		.row {
@@ -99,45 +146,135 @@
 
 		body {
 			margin: 0;
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			font-size: 16px;
+			line-height: 1.6;
+			color: #2c3e50;
+			background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+			min-height: 100vh;
 		}
 
-		#ped {text-align:center;}
+		.container {
+			width: 90%;
+			max-width: 1140px;
+			margin-right: auto;
+			margin-left: auto;
+			background: white;
+			padding: 40px;
+			border-radius: 12px;
+			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+			margin-top: -30px;
+			position: relative;
+			z-index: 2;
+		}
+
+		#ped {
+			text-align: center;
+		}
+
 		.btn {
-			color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
+			color: var(--text-dark);
+			background: white;
+			border: 2px solid var(--border-blue);
+			display: inline-block;
+			padding: 10px 20px;
+			cursor: pointer;
+			margin-left: 5px;
+			border-radius: 8px;
+			font-weight: 500;
+			transition: all 0.3s ease;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.btn:hover {
+			background: var(--light-blue);
+			border-color: var(--primary-blue);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 8px rgba(30, 136, 229, 0.15);
 		}
 		.options {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+			padding: 20px;
+			border: 2px solid var(--border-blue);
+			font-size: 14px;
+			line-height: 1.6;
+			overflow: auto;
+			word-wrap: normal;
+			border-radius: 12px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+			font-family: 'Courier New', monospace;
 		}
+
 		#pedigree_history {
-			padding: 10px;
+			padding: 15px;
+			background: var(--light-blue);
+			border-radius: 8px;
+			margin-bottom: 15px;
 		}
+
 		.text-center {
 			text-align: center;
 			padding: 0 20px;
+		}
+
+		h2 {
+			color: var(--primary-dark);
+			border-bottom: 3px solid var(--primary-blue);
+			padding-bottom: 10px;
+			margin-top: 40px;
+			font-weight: 600;
+			position: relative;
+		}
+
+		h2::after {
+			content: '';
+			position: absolute;
+			bottom: -3px;
+			left: 0;
+			width: 60px;
+			height: 3px;
+			background: var(--primary-light);
+		}
+
+		.row {
+			padding: 15px 0;
+			border-bottom: 1px solid #e9ecef;
+			transition: background 0.2s ease;
+		}
+
+		.row:hover {
+			background: var(--light-blue);
+			border-radius: 8px;
+			padding-left: 10px;
+		}
+
+		a {
+			color: var(--primary-blue);
+			text-decoration: none;
+			transition: color 0.2s ease;
+		}
+
+		a:hover {
+			color: var(--primary-dark);
+			text-decoration: underline;
+		}
+
+		ul {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		ul li {
+			padding: 8px 0 8px 30px;
+			position: relative;
+		}
+
+		ul li::before {
+			content: '▸';
+			position: absolute;
+			left: 10px;
+			color: var(--primary-blue);
+			font-weight: bold;
 		}
 	</style>
 
@@ -304,27 +441,43 @@
 </div>
 
 <!-- IMPROVEMENTS BANNER -->
-<div style="background-color:#e7f3ff;border-left:4px solid #2196F3;padding:15px;margin:20px auto;max-width:1140px;">
-	<h3 style="margin-top:0;color:#0066cc;">🚀 Recent Improvements (v4.0.0-rc1)</h3>
-	<p style="margin-bottom:10px;"><strong>Phase 1 - Architecture Refactoring</strong> ✅ (Completed Nov 2024)</p>
-	<ul style="margin:5px 0 10px 20px;">
-		<li>Modular architecture: utils.js refactored from 775 → 75 LOC (-90%)</li>
-		<li>3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
-		<li>100% test coverage for new modules (133 specs, 0 failures)</li>
-		<li>Bug fixes: is_fullscreen() now returns boolean correctly</li>
-	</ul>
-	<p style="margin-bottom:10px;"><strong>Phase 2 - Performance & Cache Optimization</strong> ✅ (Completed Nov 2024)</p>
-	<ul style="margin:5px 0 10px 20px;">
-		<li>Performance measured: <strong>4-31ms</strong> rebuild time for 10-100 person pedigrees (excellent)</li>
-		<li>Cache improvements: LRU eviction strategy, position storage in array mode</li>
-		<li>+17 new tests (150 specs total, 0 failures)</li>
-		<li>Decision: No additional optimizations needed - performance exceeds targets</li>
-	</ul>
-	<p style="margin:5px 0 0 0;font-size:12px;color:#666;">
-		📚 For technical details, see:
-		<a href="PHASE1_AUDIT_REPORT.md" style="color:#0066cc;">Phase 1 Report</a> |
-		<a href="PHASE2_PERFORMANCE_REPORT.md" style="color:#0066cc;">Phase 2 Report</a> |
-		<a href="PLAN_ACTIONS.md" style="color:#0066cc;">Action Plan</a>
+<div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);border-left:6px solid var(--primary-blue);padding:30px;margin:30px auto;max-width:1140px;border-radius:12px;box-shadow: 0 4px 12px rgba(30, 136, 229, 0.15);">
+	<h3 style="margin-top:0;color:var(--primary-dark);font-size:28px;font-weight:700;display:flex;align-items:center;">
+		<span style="background:var(--primary-blue);color:white;border-radius:50%;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;margin-right:15px;box-shadow:0 2px 8px rgba(30, 136, 229, 0.3);">🚀</span>
+		Recent Improvements (v4.0.0-rc1)
+	</h3>
+
+	<div style="background:white;padding:20px;border-radius:8px;margin:20px 0;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+		<p style="margin:0 0 15px 0;font-size:18px;font-weight:600;color:var(--primary-dark);">
+			<span style="background:var(--primary-blue);color:white;padding:4px 12px;border-radius:20px;font-size:14px;margin-right:10px;">Phase 1</span>
+			Architecture Refactoring ✅ <span style="color:var(--text-light);font-size:14px;font-weight:normal;">(Completed Nov 2024)</span>
+		</p>
+		<ul style="margin:0;padding-left:20px;color:var(--text-light);">
+			<li style="padding:5px 0;">Modular architecture: utils.js refactored from <strong style="color:var(--primary-dark);">775 → 75 LOC (-90%)</strong></li>
+			<li style="padding:5px 0;">3 new specialized modules: validation.js, dom.js, tree-utils.js</li>
+			<li style="padding:5px 0;">100% test coverage for new modules (133 specs, 0 failures)</li>
+			<li style="padding:5px 0;">Bug fixes: is_fullscreen() now returns boolean correctly</li>
+		</ul>
+	</div>
+
+	<div style="background:white;padding:20px;border-radius:8px;margin:20px 0;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+		<p style="margin:0 0 15px 0;font-size:18px;font-weight:600;color:var(--primary-dark);">
+			<span style="background:var(--accent-blue);color:white;padding:4px 12px;border-radius:20px;font-size:14px;margin-right:10px;">Phase 2</span>
+			Performance & Cache Optimization ✅ <span style="color:var(--text-light);font-size:14px;font-weight:normal;">(Completed Nov 2024)</span>
+		</p>
+		<ul style="margin:0;padding-left:20px;color:var(--text-light);">
+			<li style="padding:5px 0;">Performance measured: <strong style="color:var(--primary-dark);">4-31ms</strong> rebuild time for 10-100 person pedigrees <span style="background:#4caf50;color:white;padding:2px 8px;border-radius:12px;font-size:12px;margin-left:5px;">excellent</span></li>
+			<li style="padding:5px 0;">Cache improvements: LRU eviction strategy, position storage in array mode</li>
+			<li style="padding:5px 0;">+17 new tests (150 specs total, 0 failures)</li>
+			<li style="padding:5px 0;">Decision: No additional optimizations needed - performance exceeds targets</li>
+		</ul>
+	</div>
+
+	<p style="margin:15px 0 0 0;padding-top:15px;border-top:2px solid rgba(30, 136, 229, 0.2);font-size:14px;color:var(--text-light);">
+		📚 <strong>For technical details, see:</strong>
+		<a href="PHASE1_AUDIT_REPORT.md" style="color:var(--primary-blue);font-weight:600;margin:0 8px;">Phase 1 Report</a> |
+		<a href="PHASE2_PERFORMANCE_REPORT.md" style="color:var(--primary-blue);font-weight:600;margin:0 8px;">Phase 2 Report</a> |
+		<a href="PLAN_ACTIONS.md" style="color:var(--primary-blue);font-weight:600;margin:0 8px;">Action Plan</a>
 	</p>
 </div>
 
