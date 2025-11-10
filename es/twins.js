@@ -66,7 +66,7 @@ export function checkTwins(dataset) {
 						count++;
 				}
 				if(count < 2)
-					delete dataset[i][[twin_type]];
+					delete dataset[i][twin_type];
 			}
 		}
 	}

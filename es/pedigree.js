@@ -94,6 +94,7 @@ export function build(options) {
 
 	let partners = utils.buildTree(opts, hidden_root, hidden_root)[0];
 	let root = d3.hierarchy(hidden_root);
+	root._dataset = opts.dataset;
 	utils.roots[opts.targetDiv] = root;
 
 	// / get score at each depth used to adjust node separation
@@ -402,16 +403,20 @@ export function build(options) {
 					}
 				}
 
-				if(d.source.data.mother) {   // check parents depth to see if they are at the same level in the tree
-					let ma = utils.getNodeByName(flattenNodes, d.source.data.mother.name);
-					let pa = utils.getNodeByName(flattenNodes, d.source.data.father.name);
+			if(d.source.data.mother && d.source.data.father) {   // check parents depth to see if they are at the same level in the tree
+				let motherName = typeof d.source.data.mother === 'string' ? d.source.data.mother : d.source.data.mother.name;
+				let fatherName = typeof d.source.data.father === 'string' ? d.source.data.father : d.source.data.father.name;
+				if(motherName && fatherName) {
+					let ma = utils.getNodeByName(flattenNodes, motherName);
+					let pa = utils.getNodeByName(flattenNodes, fatherName);
 
-					if(ma.depth !== pa.depth) {
+					if(ma && pa && ma.depth !== pa.depth) {
 						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
-							   "H" + (d.target.x) +
-							   "V" + (d.target.y);
+						   "H" + (d.target.x) +
+						   "V" + (d.target.y);
 					}
 				}
+			}
 
 				return "M" + (d.source.x) + "," + (d.source.y ) +
 					   "V" + ((d.source.y + d.target.y) / 2) +
@@ -480,14 +485,26 @@ export function check_ptr_link_clashes(opts, anode) {
 	let mother, father;
 	if('name' in anode) {
 		anode = utils.getNodeByName(flattenNodes, anode.name);
-		if(!('mother' in anode.data))
+		if(!anode || !('mother' in anode.data))
 			return null;
-		mother = utils.getNodeByName(flattenNodes, anode.data.mother);
-		father = utils.getNodeByName(flattenNodes, anode.data.father);
+		let motherName = (typeof anode.data.mother === 'string' ? anode.data.mother : anode.data.mother?.name);
+		let fatherName = (typeof anode.data.father === 'string' ? anode.data.father : anode.data.father?.name);
+		if(!motherName || !fatherName)
+			return null;
+		mother = utils.getNodeByName(flattenNodes, motherName);
+		father = utils.getNodeByName(flattenNodes, fatherName);
 	} else {
 		mother = anode.mother;
 		father = anode.father;
 	}
+	if(!mother || !father)
+		return null;
+	if(mother.data === undefined || father.data === undefined) {
+		mother = utils.getNodeByName(flattenNodes, mother.name || mother.data?.name);
+		father = utils.getNodeByName(flattenNodes, father.name || father.data?.name);
+	}
+	if(!mother || !father || mother.x === undefined || father.x === undefined)
+		return null;
 
 	let x1 = (mother.x < father.x ? mother.x : father.x);
 	let x2 = (mother.x < father.x ? father.x : mother.x);

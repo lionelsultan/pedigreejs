@@ -509,7 +509,7 @@ var pedigreejs = (function (exports) {
 	    }
 	  } else {
 	    let arr = get_arr(opts);
-	    if (arr) return JSON.parse(arr(arr.length - 1));
+	    if (arr) return JSON.parse(arr[arr.length - 1]);
 	  }
 	  return undefined;
 	}
@@ -612,6 +612,13 @@ var pedigreejs = (function (exports) {
 	function getNodeByName(nodes, name) {
 	  for (let i = 0; i < nodes.length; i++) {
 	    if (nodes[i].data && name === nodes[i].data.name) return nodes[i];else if (name === nodes[i].name) return nodes[i];
+	  }
+	  if (nodes && nodes.dataset) {
+	    for (let j = 0; j < nodes.dataset.length; j++) {
+	      if (name === nodes.dataset[j].name) return {
+	        data: nodes.dataset[j]
+	      };
+	    }
 	  }
 	}
 	function isProband(obj) {
@@ -722,10 +729,17 @@ var pedigreejs = (function (exports) {
 	// convert the partner names into corresponding tree nodes
 	function linkNodes(flattenNodes, partners) {
 	  let links = [];
-	  for (let i = 0; i < partners.length; i++) links.push({
-	    'mother': getNodeByName(flattenNodes, partners[i].mother.name),
-	    'father': getNodeByName(flattenNodes, partners[i].father.name)
-	  });
+	  for (let i = 0; i < partners.length; i++) {
+	    let motherName = partners[i].mother?.data?.name || partners[i].mother?.name;
+	    let fatherName = partners[i].father?.data?.name || partners[i].father?.name;
+	    if (!motherName || !fatherName) continue;
+	    let motherNode = getNodeByName(flattenNodes, motherName);
+	    let fatherNode = getNodeByName(flattenNodes, fatherName);
+	    if (motherNode && fatherNode) links.push({
+	      'mother': motherNode,
+	      'father': fatherNode
+	    });
+	  }
 	  return links;
 	}
 
@@ -775,6 +789,7 @@ var pedigreejs = (function (exports) {
 	    flat.push(node);
 	  }
 	  recurse(root);
+	  if (root && root._dataset) flat.dataset = root._dataset;
 	  return flat;
 	}
 
@@ -812,10 +827,14 @@ var pedigreejs = (function (exports) {
 	  function recurse(node) {
 	    if (node.children) {
 	      node.children.forEach(recurse);
-	      if (node.data.father !== undefined) {
+	      if (node.data.father !== undefined && node.data.mother !== undefined) {
 	        // hidden nodes
-	        let father = getNodeByName(flattenNodes, node.data.father.name);
-	        let mother = getNodeByName(flattenNodes, node.data.mother.name);
+	        let fatherName = typeof node.data.father === 'string' ? node.data.father : node.data.father.name;
+	        let motherName = typeof node.data.mother === 'string' ? node.data.mother : node.data.mother.name;
+	        if (!fatherName || !motherName) return;
+	        let father = getNodeByName(flattenNodes, fatherName);
+	        let mother = getNodeByName(flattenNodes, motherName);
+	        if (!father || !mother) return;
 	        let xmid = (father.x + mother.x) / 2;
 	        if (!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
 	          node.x = xmid; // centralise parent nodes
@@ -2703,7 +2722,7 @@ var pedigreejs = (function (exports) {
 	        for (let j = 0; j < dataset.length; j++) {
 	          if (dataset[j][twin_type] === dataset[i][twin_type]) count++;
 	        }
-	        if (count < 2) delete dataset[i][[twin_type]];
+	        if (count < 2) delete dataset[i][twin_type];
 	      }
 	    }
 	  }
@@ -3003,6 +3022,18 @@ var pedigreejs = (function (exports) {
 
 	let dragging;
 	let last_mouseover;
+	function getTreeNode(flat_tree, dataset, name) {
+	  if (!name) return undefined;
+	  let node = flat_tree && flat_tree.length ? getNodeByName(flat_tree, name) : undefined;
+	  if (node) return node;
+	  let dataNode = getNodeByName(dataset, name);
+	  if (!dataNode) return undefined;
+	  if (dataNode.id === undefined) dataNode.id = getIdxByName(dataset, name);
+	  return {
+	    data: dataNode,
+	    depth: getDepth(dataset, name)
+	  };
+	}
 	//
 	// Add widgets to nodes and bind events
 	function addWidgets(opts, node) {
@@ -3419,17 +3450,19 @@ var pedigreejs = (function (exports) {
 	function addparents(opts, dataset, name) {
 	  let mother, father;
 	  let root = roots[opts.targetDiv];
-	  let flat_tree = flatten(root);
-	  let tree_node = getNodeByName(flat_tree, name);
+	  let flat_tree = root ? flatten(root) : [];
+	  let tree_node = getTreeNode(flat_tree, dataset, name);
+	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding parents');
 	  let node = tree_node.data;
-	  let depth = tree_node.depth; // depth of the node in relation to the root (depth = 1 is a top_level node)
+	  let depth = tree_node.depth || getDepth(dataset, node.name); // depth of the node in relation to the root (depth = 1 is a top_level node)
 
 	  let pid = -101;
 	  let ptr_name;
 	  let children = getAllChildren(dataset, node);
 	  if (children.length > 0) {
 	    ptr_name = children[0].mother === node.name ? children[0].father : children[0].mother;
-	    pid = getNodeByName(flat_tree, ptr_name).data.id;
+	    let ptr_node_meta = getTreeNode(flat_tree, dataset, ptr_name);
+	    pid = ptr_node_meta && ptr_node_meta.data.id !== undefined ? ptr_node_meta.data.id : getIdxByName(dataset, ptr_name);
 	  }
 	  let i;
 	  if (depth === 1) {
@@ -3454,15 +3487,20 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 	  } else {
-	    let node_mother = getNodeByName(flat_tree, tree_node.data.mother);
-	    let node_father = getNodeByName(flat_tree, tree_node.data.father);
+	    let motherName = typeof tree_node.data.mother === 'string' ? tree_node.data.mother : tree_node.data.mother;
+	    motherName = motherName && motherName.name ? motherName.name : motherName;
+	    let fatherName = typeof tree_node.data.father === 'string' ? tree_node.data.father : tree_node.data.father;
+	    fatherName = fatherName && fatherName.name ? fatherName.name : fatherName;
+	    let node_mother = getTreeNode(flat_tree, dataset, motherName);
+	    let node_father = getTreeNode(flat_tree, dataset, fatherName);
 	    let node_sibs = getAllSiblings(dataset, node);
 
 	    // lhs & rhs id's for siblings of this node
 	    let rid = 10000;
 	    let lid = tree_node.data.id;
 	    for (i = 0; i < node_sibs.length; i++) {
-	      let sid = getNodeByName(flat_tree, node_sibs[i].name).data.id;
+	      let sibNode = getTreeNode(flat_tree, dataset, node_sibs[i].name);
+	      let sid = sibNode && sibNode.data.id !== undefined ? sibNode.data.id : getIdxByName(dataset, node_sibs[i].name);
 	      if (sid < rid && sid > tree_node.data.id) rid = sid;
 	      if (sid < lid) lid = sid;
 	    }
@@ -3484,7 +3522,8 @@ var pedigreejs = (function (exports) {
 	    let orphans = getAdoptedSiblings(dataset, node);
 	    let nid = tree_node.data.id;
 	    for (i = 0; i < orphans.length; i++) {
-	      let oid = getNodeByName(flat_tree, orphans[i].name).data.id;
+	      let orphan_meta = getTreeNode(flat_tree, dataset, orphans[i].name);
+	      let oid = orphan_meta && orphan_meta.data.id !== undefined ? orphan_meta.data.id : getIdxByName(dataset, orphans[i].name);
 	      if (opts.DEBUG) console.log('ORPHAN=' + i + ' ' + orphans[i].name + ' ' + (nid < oid && oid < rid) + ' nid=' + nid + ' oid=' + oid + ' rid=' + rid);
 	      if ((add_lhs || nid < oid) && oid < rid) {
 	        let oidx = getIdxByName(dataset, orphans[i].name);
@@ -3496,9 +3535,6 @@ var pedigreejs = (function (exports) {
 	  if (depth === 2) {
 	    mother.top_level = true;
 	    father.top_level = true;
-	  } else if (depth > 2) {
-	    mother.noparents = true;
-	    father.noparents = true;
 	  }
 	  let idx = getIdxByName(dataset, node.name);
 	  dataset[idx].mother = mother.name;
@@ -3516,8 +3552,9 @@ var pedigreejs = (function (exports) {
 	// add partner
 	function addpartner(opts, dataset, name) {
 	  let root = roots[opts.targetDiv];
-	  let flat_tree = flatten(root);
-	  let tree_node = getNodeByName(flat_tree, name);
+	  let flat_tree = root ? flatten(root) : [];
+	  let tree_node = getTreeNode(flat_tree, dataset, name);
+	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding partner');
 	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F', undefined, true);
 	  partner.noparents = true;
 	  let child = {
@@ -3590,7 +3627,8 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 	  } else {
-	    dataset.splice(getIdxByName(dataset, node.name), 1);
+	    let idxToRemove = getIdxByName(dataset, node.name);
+	    if (idxToRemove >= 0) dataset.splice(idxToRemove, 1);
 	  }
 
 	  // delete ancestors
@@ -3602,13 +3640,20 @@ var pedigreejs = (function (exports) {
 	    if (sibs.length < 1) {
 	      console.log('del sibs', del.name, sibs);
 	      let data_node = getNodeByName(fnodes, del.name);
-	      let ancestors = data_node.ancestors();
-	      for (j = 0; j < ancestors.length; j++) {
-	        console.log(ancestors[i]);
-	        if (ancestors[j].data.mother) {
-	          console.log('DELETE ', ancestors[j].data.mother, ancestors[j].data.father);
-	          dataset.splice(getIdxByName(dataset, ancestors[j].data.mother.name), 1);
-	          dataset.splice(getIdxByName(dataset, ancestors[j].data.father.name), 1);
+	      let ancestors$1 = [];
+	      if (data_node && typeof data_node.ancestors === 'function') ancestors$1 = data_node.ancestors();else ancestors$1 = ancestors(dataset, del);
+	      for (j = 0; j < ancestors$1.length; j++) {
+	        let ancestor = ancestors$1[j];
+	        let ancestorData = ancestor && ancestor.data ? ancestor.data : ancestor;
+	        if (opts.DEBUG) console.log(ancestorData);
+	        let motherName = ancestorData && ancestorData.mother ? ancestorData.mother.name ? ancestorData.mother.name : ancestorData.mother : null;
+	        let fatherName = ancestorData && ancestorData.father ? ancestorData.father.name ? ancestorData.father.name : ancestorData.father : null;
+	        if (motherName && fatherName) {
+	          if (opts.DEBUG) console.log('DELETE ', motherName, fatherName);
+	          let mIdx = getIdxByName(dataset, motherName);
+	          let fIdx = getIdxByName(dataset, fatherName);
+	          if (mIdx >= 0) dataset.splice(mIdx, 1);
+	          if (fIdx >= 0) dataset.splice(fIdx, 1);
 	        }
 	      }
 	    }
@@ -3942,6 +3987,7 @@ var pedigreejs = (function (exports) {
 	  };
 	  let partners = buildTree(opts, hidden_root, hidden_root)[0];
 	  let root = d3.hierarchy(hidden_root);
+	  root._dataset = opts.dataset;
 	  roots[opts.targetDiv] = root;
 
 	  // / get score at each depth used to adjust node separation
@@ -4200,12 +4246,16 @@ var pedigreejs = (function (exports) {
 	        return "M" + d.source.x + "," + d.source.y + "V" + ymid + "H" + xmid + "L" + d.target.x + " " + (d.target.y - opts.symbol_size / 2) + xhbar;
 	      }
 	    }
-	    if (d.source.data.mother) {
+	    if (d.source.data.mother && d.source.data.father) {
 	      // check parents depth to see if they are at the same level in the tree
-	      let ma = getNodeByName(flattenNodes, d.source.data.mother.name);
-	      let pa = getNodeByName(flattenNodes, d.source.data.father.name);
-	      if (ma.depth !== pa.depth) {
-	        return "M" + d.source.x + "," + (ma.y + pa.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	      let motherName = typeof d.source.data.mother === 'string' ? d.source.data.mother : d.source.data.mother.name;
+	      let fatherName = typeof d.source.data.father === 'string' ? d.source.data.father : d.source.data.father.name;
+	      if (motherName && fatherName) {
+	        let ma = getNodeByName(flattenNodes, motherName);
+	        let pa = getNodeByName(flattenNodes, fatherName);
+	        if (ma && pa && ma.depth !== pa.depth) {
+	          return "M" + d.source.x + "," + (ma.y + pa.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	        }
 	      }
 	    }
 	    return "M" + d.source.x + "," + d.source.y + "V" + (d.source.y + d.target.y) / 2 + "H" + d.target.x + "V" + d.target.y;
@@ -4249,13 +4299,22 @@ var pedigreejs = (function (exports) {
 	  let mother, father;
 	  if ('name' in anode) {
 	    anode = getNodeByName(flattenNodes, anode.name);
-	    if (!('mother' in anode.data)) return null;
-	    mother = getNodeByName(flattenNodes, anode.data.mother);
-	    father = getNodeByName(flattenNodes, anode.data.father);
+	    if (!anode || !('mother' in anode.data)) return null;
+	    let motherName = typeof anode.data.mother === 'string' ? anode.data.mother : anode.data.mother?.name;
+	    let fatherName = typeof anode.data.father === 'string' ? anode.data.father : anode.data.father?.name;
+	    if (!motherName || !fatherName) return null;
+	    mother = getNodeByName(flattenNodes, motherName);
+	    father = getNodeByName(flattenNodes, fatherName);
 	  } else {
 	    mother = anode.mother;
 	    father = anode.father;
 	  }
+	  if (!mother || !father) return null;
+	  if (mother.data === undefined || father.data === undefined) {
+	    mother = getNodeByName(flattenNodes, mother.name || mother.data?.name);
+	    father = getNodeByName(flattenNodes, father.name || father.data?.name);
+	  }
+	  if (!mother || !father || mother.x === undefined || father.x === undefined) return null;
 	  let x1 = mother.x < father.x ? mother.x : father.x;
 	  let x2 = mother.x < father.x ? father.x : mother.x;
 	  let dy = mother.y;

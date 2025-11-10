@@ -179,7 +179,7 @@ export function last(opts) {
 	} else {
 		let arr = get_arr(opts);
 		if(arr)
-			return JSON.parse(arr(arr.length-1));
+			return JSON.parse(arr[arr.length-1]);
 	}
 	return undefined;
 }

@@ -27,6 +27,12 @@ export function getNodeByName(nodes, name) {
 		else if (name === nodes[i].name)
 			return nodes[i];
 	}
+	if(nodes && nodes.dataset) {
+		for(let j=0; j<nodes.dataset.length; j++) {
+			if(name === nodes.dataset[j].name)
+				return {data: nodes.dataset[j]};
+		}
+	}
 }
 
 export function isProband(obj) {
@@ -157,9 +163,16 @@ export function getNodesAtDepth(fnodes, depth, exclude_names) {
 // convert the partner names into corresponding tree nodes
 export function linkNodes(flattenNodes, partners) {
 	let links = [];
-	for(let i=0; i< partners.length; i++)
-		links.push({'mother': getNodeByName(flattenNodes, partners[i].mother.name),
-					'father': getNodeByName(flattenNodes, partners[i].father.name)});
+	for(let i=0; i< partners.length; i++) {
+		let motherName = partners[i].mother?.data?.name || partners[i].mother?.name;
+		let fatherName = partners[i].father?.data?.name || partners[i].father?.name;
+		if(!motherName || !fatherName)
+			continue;
+		let motherNode = getNodeByName(flattenNodes, motherName);
+		let fatherNode = getNodeByName(flattenNodes, fatherName);
+		if(motherNode && fatherNode)
+			links.push({'mother': motherNode, 'father': fatherNode});
+	}
 	return links;
 }
 
@@ -205,6 +218,8 @@ export function flatten(root) {
 		flat.push(node);
 	}
 	recurse(root);
+	if(root && root._dataset)
+		flat.dataset = root._dataset;
 	return flat;
 }
 
@@ -243,9 +258,15 @@ export function adjust_coords(opts, root, flattenNodes) {
 		if (node.children) {
 			node.children.forEach(recurse);
 
-			if(node.data.father !== undefined) { 	// hidden nodes
-				let father = getNodeByName(flattenNodes, node.data.father.name);
-				let mother = getNodeByName(flattenNodes, node.data.mother.name);
+			if(node.data.father !== undefined && node.data.mother !== undefined) { 	// hidden nodes
+				let fatherName = (typeof node.data.father === 'string' ? node.data.father : node.data.father.name);
+				let motherName = (typeof node.data.mother === 'string' ? node.data.mother : node.data.mother.name);
+				if(!fatherName || !motherName)
+					return;
+				let father = getNodeByName(flattenNodes, fatherName);
+				let mother = getNodeByName(flattenNodes, motherName);
+				if(!father || !mother)
+					return;
 				let xmid = (father.x + mother.x) /2;
 				if(!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
 					node.x = xmid;   // centralise parent nodes
