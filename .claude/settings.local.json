@@ -8,7 +8,9 @@
       "Bash(npx jasmine-browser-runner runSpecs)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(node:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
