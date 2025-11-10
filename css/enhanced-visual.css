@@ -27,11 +27,12 @@
   --animation-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Enhanced Body Background */
+/* Enhanced Body Background - Much Lighter */
 body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
   background-attachment: fixed;
   position: relative;
+  min-height: 100vh;
 }
 
 body::before {
@@ -41,56 +42,52 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.03"><circle cx="30" cy="30" r="4"/></g></svg>');
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23000000" fill-opacity="0.01"><circle cx="30" cy="30" r="4"/></g></svg>');
   z-index: -1;
 }
 
 /* Enhanced Navbar */
 .navbar {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(10px);
   border: none !important;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
   transition: all var(--animation-duration) var(--animation-ease);
+  z-index: 1030;
 }
 
 .navbar-brand {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--pedigree-primary) !important;
   font-weight: 700;
   font-size: 1.5rem !important;
 }
 
 /* Enhanced Header */
 header {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(10px);
   border: none !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
 }
 
 .display-4 {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--pedigree-primary-dark) !important;
   font-weight: 800 !important;
 }
 
 /* Enhanced Cards */
 .card {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: var(--shadow-card) !important;
-  border-radius: 20px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 16px !important;
   transition: all var(--animation-duration) var(--animation-ease);
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-float) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
 /* Enhanced Pedigree Canvas */
@@ -275,10 +272,10 @@ header {
 
 /* Enhanced Phase Cards */
 .phase-card {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px !important;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all var(--animation-duration) var(--animation-ease);
   position: relative;
   overflow: hidden;
@@ -290,8 +287,8 @@ header {
   top: 0;
   left: -100%;
   width: 100%;
-  height: 4px;
-  background: var(--gradient-primary);
+  height: 3px;
+  background: var(--pedigree-primary);
   transition: left 0.5s ease;
 }
 
@@ -300,23 +297,24 @@ header {
 }
 
 .phase-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-float);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* Enhanced Accordion */
 .accordion-button {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   border-radius: 12px !important;
   font-weight: 600;
   transition: all var(--animation-duration) var(--animation-ease);
+  color: var(--pedigree-primary-dark) !important;
 }
 
 .accordion-button:not(.collapsed) {
-  background: var(--gradient-primary) !important;
+  background: var(--pedigree-primary) !important;
   color: white !important;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
 }
 
 /* Enhanced Form Elements */
@@ -410,15 +408,58 @@ input[type="file"] + label:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gradient-primary);
+  background: var(--pedigree-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-secondary);
+  background: var(--pedigree-primary-dark);
+}
+
+/* Critical Fixes for Layout Issues */
+
+/* Ensure sections are properly visible */
+section {
+  position: relative;
+  z-index: 2;
+}
+
+/* Fix text readability */
+.container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure phase cards content is visible */
+.phase-card .card-body {
+  color: #1f2937 !important;
+}
+
+/* Make sure text is readable everywhere */
+p, li, span, div:not(.btn):not(.badge) {
+  color: #374151 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--pedigree-primary-dark) !important;
+}
+
+/* Ensure navigation links are visible */
+.nav-link {
+  color: var(--pedigree-primary) !important;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--pedigree-primary-dark) !important;
+}
+
+/* Fix any bootstrap conflicts */
+.bg-body {
+  background: transparent !important;
 }
