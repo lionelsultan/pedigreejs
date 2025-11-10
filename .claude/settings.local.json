@@ -10,7 +10,8 @@
       "Bash(git commit:*)",
       "Bash(taskkill:*)",
       "Bash(node:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []
