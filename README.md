@@ -14,7 +14,7 @@ npm run build
 npm test
 ```
 
-Pour plus de détails, visitez la [page du projet](https://ccge-boadicea.github.io/pedigreejs/).
+Pour plus de détails, visitez la [page du projet](https://lionelsultan.github.io/pedigreejs/).
 
 ## 📊 État du projet
 
