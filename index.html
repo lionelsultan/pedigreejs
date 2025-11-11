@@ -11,29 +11,27 @@
 	<meta name="color-scheme" content="light">
 	<meta name="theme-color" content="#0d6efd">
 
-	<!-- SEO & Metadata -->
-	<title>PedigreeJS - Modern Web Tool for Building Interactive Family Pedigrees</title>
-	<meta name="description" content="PedigreeJS is a JavaScript library for building and displaying interactive family pedigrees using D3.js. Features include real-time editing, validation, and export capabilities.">
-	<meta name="keywords" content="pedigree, family tree, genealogy, javascript, d3js, genetics, visualization">
-	<meta name="author" content="CCGE-BOADICEA">
+	<title>PedigreeJS · Outil de création de Pedigree</title>
+	<meta name="description" content="PedigreeJS propose un studio interactif élégant pour concevoir, valider et exporter des pedigrees cliniques." />
+	<meta name="keywords" content="pedigree, ingénieur, d3.js, clinique, audit, javascript" />
+	<meta name="author" content="CCGE-BOADICEA" />
 
-	<!-- Open Graph -->
-	<meta property="og:title" content="PedigreeJS - Interactive Pedigree Builder">
-	<meta property="og:description" content="Build and visualize family pedigrees with this modern JavaScript library">
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://lionelsultan.github.io/pedigreejs/">
-	<meta property="og:image" content="https://lionelsultan.github.io/pedigreejs/docs/img/cover.png">
-	<meta property="og:site_name" content="PedigreeJS">
-	<meta property="og:locale" content="en_GB">
-	<meta name="twitter:card" content="summary_large_image">
-	<meta name="twitter:title" content="PedigreeJS - Interactive Pedigree Builder">
-	<meta name="twitter:description" content="Design, validate, and export ISO-ready pedigree diagrams with PedigreeJS.">
+	<meta property="og:title" content="PedigreeJS · Outil de création de Pedigree" />
+	<meta property="og:description" content="Un atelier web inspiré des normes d’écoles d’ingénieurs pour bâtir des pedigrees interactifs." />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://lionelsultan.github.io/pedigreejs/" />
+	<meta property="og:image" content="https://lionelsultan.github.io/pedigreejs/docs/img/cover.png" />
+	<meta property="og:site_name" content="PedigreeJS" />
+	<meta property="og:locale" content="fr_FR" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="PedigreeJS · Outil de création de Pedigree" />
 
-	<!-- Resource Hints -->
 	<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 	<link rel="preconnect" href="https://code.jquery.com" crossorigin>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-	<!-- Stylesheets -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW7CM1Ll" crossorigin="anonymous" />
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
@@ -42,7 +40,100 @@
 	<link rel="stylesheet" href="css/enhanced-visual.css" />
 	<link rel="stylesheet" href="css/critical-fixes.css" />
 
-	<!-- Scripts -->
+	<style>
+		:root {
+			--background: #f8fafc;
+			--card: #ffffff;
+			--border: #e5e7eb;
+			--muted: #6b7280;
+			--heading: #0f172a;
+			--radius-xl: 28px;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			background: var(--background);
+			color: var(--heading);
+			margin: 0;
+		}
+
+		.shell {
+			max-width: 820px;
+			margin: 0 auto;
+			padding: 0 1.5rem;
+		}
+
+		nav {
+			backdrop-filter: blur(12px);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.nav-link { color: var(--muted); font-weight: 500; }
+		.nav-link.active { color: var(--heading); }
+
+		.section {
+			padding: 64px 0;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.card-shad {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-xl);
+			padding: 32px;
+			margin-bottom: 32px;
+			box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+		}
+
+		.card-shad:last-child { margin-bottom: 0; }
+
+		.btn-shad {
+			border-radius: 999px;
+			font-weight: 500;
+			padding: 0.75rem 1.5rem;
+			border: 1px solid transparent;
+		}
+
+		.btn-solid { background: #0f172a; color: #fff; }
+		.btn-ghost { background: transparent; border-color: var(--border); color: var(--heading); }
+		.btn-link { color: #0f172a; text-decoration: none; font-weight: 600; }
+
+		.badge {
+			font-size: 0.75rem;
+			color: var(--muted);
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+		}
+
+		dl.inline {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			row-gap: 0.75rem;
+			column-gap: 1rem;
+		}
+
+		dl.inline dt { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); }
+		dl.inline dd { margin: 0; font-weight: 600; }
+
+		.list-muted { color: var(--muted); }
+
+		#pedigrees {
+			border-radius: var(--radius-xl);
+			border: 1px solid var(--border);
+			background: var(--card);
+			min-height: 400px;
+		}
+
+		.toolbar { display: flex; gap: 0.5rem; justify-content: flex-end; }
+		.toolbar button { border-radius: 999px; }
+
+		.accordion-button { font-weight: 500; }
+
+		footer { border-top: 1px solid var(--border); }
+	</style>
+
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" defer integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer integrity="sha256-8glLv2FBs1lyLE/kVOtsSw8OQswQzHr5IfwVj864ZTk=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" defer integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
@@ -50,639 +141,252 @@
  	<script src="build/pedigreejs.v4.0.0-rc1.min.js" defer></script>
 	<script src="js/index-page.js" defer></script>
 	<script src="js/visual-enhancements.js" defer></script>
-
-	<script type="application/ld+json">
-	{
-		"@context": "https://schema.org",
-		"@type": "SoftwareApplication",
-		"name": "PedigreeJS",
-		"url": "https://lionelsultan.github.io/pedigreejs/",
-		"applicationCategory": "DeveloperApplication",
-		"operatingSystem": "Cross-platform",
-		"softwareVersion": "4.0.0-rc1",
-		"author": {
-			"@type": "Organization",
-			"name": "CCGE-BOADICEA"
-		},
-		"description": "D3.js toolkit used to design and validate clinical pedigree diagrams with ISO-ready exports.",
-		"license": "https://github.com/lionelsultan/pedigreejs/blob/main/LICENSE"
-	}
-	</script>
 </head>
-
-<body class="bg-body">
-	<!-- Skip Navigation for Accessibility -->
-	<a href="#main-content" class="skip-nav">Skip to main content / Accéder au contenu principal</a>
+<body>
+	<a href="#atelier" class="skip-nav btn btn-link">Aller au contenu principal</a>
 	<noscript>
-		<div class="alert alert-warning text-center rounded-0 mb-0" role="alert">
-			PedigreeJS requires JavaScript. Veuillez activer JavaScript pour charger l'éditeur interactif.
+		<div class="alert alert-warning rounded-0 mb-0 text-center" role="alert">
+			PedigreeJS requiert JavaScript pour charger l'atelier interactif.
 		</div>
 	</noscript>
 
-	<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Primary navigation">
-		<div class="container">
-			<a class="navbar-brand fw-semibold" href="#main-content" aria-label="PedigreeJS home anchor">PedigreeJS</a>
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNav" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="primaryNav">
-				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-					<li class="nav-item"><a class="nav-link" href="#summary">At a glance</a></li>
-					<li class="nav-item"><a class="nav-link" href="#main-content">Demo</a></li>
-					<li class="nav-item"><a class="nav-link" href="#overview-heading">Overview</a></li>
-					<li class="nav-item"><a class="nav-link" href="#options-heading">Options</a></li>
-					<li class="nav-item"><a class="nav-link" href="#standards">Standards</a></li>
-					<li class="nav-item"><a class="nav-link" href="#faq-support">FAQ</a></li>
-					<li class="nav-item"><a class="nav-link" href="#publication-heading">Publication</a></li>
-				</ul>
-			</div>
+	<nav class="py-3">
+		<div class="shell d-flex flex-wrap justify-content-between align-items-center gap-3">
+			<a class="text-decoration-none fw-semibold text-dark" href="#hero">PedigreeJS</a>
+			<ul class="nav small text-uppercase gap-3">
+				<li class="nav-item"><a class="nav-link px-0" href="#hero">Préambule</a></li>
+				<li class="nav-item"><a class="nav-link px-0" href="#atelier">Atelier</a></li>
+				<li class="nav-item"><a class="nav-link px-0" href="#parcours">Parcours</a></li>
+				<li class="nav-item"><a class="nav-link px-0" href="#normes">Normes</a></li>
+				<li class="nav-item"><a class="nav-link px-0" href="#ressources">Ressources</a></li>
+				<li class="nav-item"><a class="nav-link px-0" href="#faq-support">Support</a></li>
+			</ul>
 		</div>
 	</nav>
 
-	<!-- Header -->
-	<header class="py-5 bg-white border-bottom floating" role="banner">
-		<div class="container">
-			<div class="row gy-5 align-items-center">
-				<div class="col-lg-7">
-					<p class="text-uppercase small text-secondary mb-2">Clinical pedigree design system</p>
-					<h1 class="display-5 fw-semibold mb-3 text-dark">PedigreeJS — precise, auditable, ISO-ready pedigrees.</h1>
-					<p class="fs-5 text-muted">A modern D3.js toolkit to capture hereditary data, validate constraints, and export diagrams that meet hospital governance, ISO 9241 ergonomics, and ISO 8601 documentation standards.</p>
-					<ul class="list-unstyled text-muted mb-4">
-						<li class="d-flex align-items-start gap-2">
-							<i class="fa fa-check text-primary mt-1" aria-hidden="true"></i>
-							<span>Processus alignés sur l'<abbr title="International Organization for Standardization">ISO</abbr> 9241-210 et 9241-110 : parcours utilisateur examinés à chaque sprint.</span>
-						</li>
-						<li class="d-flex align-items-start gap-2">
-							<i class="fa fa-check text-primary mt-1" aria-hidden="true"></i>
-							<span>Exports JSON, BOADICEA et CanRisk estampillés en ISO 8601 et contrôlés pour assurer la traçabilité clinique.</span>
-						</li>
-						<li class="d-flex align-items-start gap-2">
-							<i class="fa fa-check text-primary mt-1" aria-hidden="true"></i>
-							<span>Métriques de qualité structurées suivant l'ISO/IEC 25010 (fiabilité, maintenabilité, sécurité des données).</span>
-						</li>
-					</ul>
-					<div class="d-flex flex-wrap gap-3">
-						<a class="btn btn-primary btn-lg px-4" href="#main-content">Launch interactive demo</a>
-						<a class="btn btn-outline-secondary btn-lg px-4" href="docs/developer.html" target="_blank" rel="noopener noreferrer">Consult developer documentation</a>
-						<a class="btn btn-outline-dark btn-lg px-4" href="https://github.com/lionelsultan/pedigreejs" target="_blank" rel="noopener noreferrer">
-							<i class="fa fa-github me-2" aria-hidden="true"></i>View repository
-						</a>
-					</div>
-				</div>
-				<div class="col-lg-5">
-					<div class="card border-0 shadow-sm h-100" aria-labelledby="quality-card-heading">
-						<div class="card-body">
-							<p class="text-uppercase small text-secondary mb-2">Quality snapshot</p>
-							<h2 class="h4 mb-3" id="quality-card-heading">Operational metrics</h2>
-								<dl class="row g-3 small mb-0">
-									<dt class="col-6 text-muted text-uppercase small mb-1">Test coverage</dt>
-									<dd class="col-6 mb-0 fw-semibold">150 Jasmine specs</dd>
-									<dt class="col-6 text-muted text-uppercase small mb-1">Render time</dt>
-									<dd class="col-6 mb-0 fw-semibold">4–31 ms (10–100 nodes)</dd>
-									<dt class="col-6 text-muted text-uppercase small mb-1">Audit cadence</dt>
-									<dd class="col-6 mb-0 fw-semibold">Monthly ISO/WCAG review</dd>
-									<dt class="col-6 text-muted text-uppercase small mb-1">Change control</dt>
-									<dd class="col-6 mb-0 fw-semibold">Traceable via PLAN_ACTIONS.md</dd>
-								</dl>
-							<p class="text-muted small mt-3 mb-0">Horodatages ISO 8601 et validations locales garantissent des exports prêts pour les audits cliniques (ISO 15189 / ISO 27001).</p>
-						</div>
-					</div>
-				</div>
+	<header id="hero" class="section">
+		<div class="shell">
+			<div class="badge mb-3">Filière Ingénierie · Session 2024/25</div>
+			<h1 class="display-6 fw-semibold mb-3">Outil de création de Pedigree.</h1>
+			<p class="lead text-muted mb-4">Approche inspirée des départements d’école d’ingénieurs&nbsp;: rigueur académique, pipeline industriel, documentation alignée. 150 spécifications Jasmine, Rollup, et conformité ISO/WCAG.</p>
+			<div class="d-flex flex-wrap gap-2 mb-5">
+				<a class="btn-shad btn-solid" href="#atelier">Entrer dans l'atelier</a>
+				<a class="btn-shad btn-ghost" href="docs/developer.html">Dossier pédagogique</a>
+				<a class="btn-link" href="PLAN_ACTIONS.md">Plan d'études →</a>
+			</div>
+			<div class="card-shad">
+				<h2 class="h5 mb-3">Fiche signalétique</h2>
+				<dl class="inline">
+					<dt>Espace pédagogique</dt><dd>Rollup · ES Modules</dd>
+					<dt>Travaux pratiques</dt><dd>150 specs Jasmine</dd>
+					<dt>Cadence d'audit</dt><dd>Mensuelle (ISO/WCAG)</dd>
+					<dt>Référent qualité</dt><dd><a href="SESSION_CONTEXT.md">SESSION_CONTEXT</a></dd>
+				</dl>
 			</div>
 		</div>
 	</header>
 
-	<section id="summary" class="py-4 bg-body border-bottom" aria-labelledby="summary-heading">
-		<div class="container">
-			<div class="text-center mb-4">
-				<p class="text-uppercase text-secondary small mb-1">Executive snapshot</p>
-				<h2 class="h4 fw-semibold text-dark mb-2" id="summary-heading">Where the release stands today</h2>
-				<p class="text-muted small mb-0">Use this quick read to orient audits, demos, or go/no-go reviews.</p>
+	<section id="atelier" class="section">
+		<div class="shell">
+			<p class="badge mb-2">Atelier / Travaux pratiques</p>
+			<h2 class="h4 mb-3">Studio interactif</h2>
+			<p class="text-muted mb-4">ISO 9241-171 : navigation clavier, aria-live, préférences «&nbsp;réduction des mouvements&nbsp;», traçabilité horodatée.</p>
+			<div class="toolbar mb-3" role="group" aria-label="Outils de vue">
+				<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-in-control" title="Zoomer" data-bs-toggle="tooltip" data-bs-placement="top">
+					<i class="fa fa-search-plus"></i>
+				</button>
+				<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-out-control" title="Dézoomer" data-bs-toggle="tooltip" data-bs-placement="top">
+					<i class="fa fa-search-minus"></i>
+				</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" title="Plein écran" data-bs-toggle="tooltip" data-bs-placement="top" aria-pressed="false" aria-controls="pedigrees">
+					<i class="fa fa-expand"></i>
+				</button>
 			</div>
-			<div class="row g-4">
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<p class="text-uppercase text-secondary small mb-1">Deployment readiness</p>
-							<h3 class="h5 mb-3">At a glance</h3>
-							<ul class="small text-muted mb-0">
-								<li>Rollup bundle (IIFE + ES) produced via `npm run build`.</li>
-								<li>150 Jasmine specs, lint enforced via Rollup pipeline.</li>
-								<li>Docs kept in sync with <code>PLAN_ACTIONS.md</code> and audits.</li>
-							</ul>
-						</div>
-					</article>
+			<div id="pedigrees" class="pedigree-stage position-relative" role="application" aria-label="Canvas de pedigree">
+				<div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" id="canvas-loading" style="display:none; background: rgba(248, 250, 252, 0.9);">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Chargement…</span>
+					</div>
 				</div>
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<p class="text-uppercase text-secondary small mb-1">Compliance status</p>
-							<h3 class="h5 mb-3">Controls & checkpoints</h3>
-							<ul class="small text-muted mb-0">
-								<li><strong>ISO 9241 / WCAG:</strong> focus order, skip link, aria-live controls verified Nov 2024.</li>
-								<li><strong>ISO 8601:</strong> exports, logs, and audit notes stamped automatically.</li>
-								<li><strong>ISO/IEC 27001:</strong> no PII persisted; anonymisation toggles enforced during export.</li>
-							</ul>
-						</div>
-					</article>
-				</div>
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<p class="text-uppercase text-secondary small mb-1">Quick actions</p>
-							<h3 class="h5 mb-3">Next steps</h3>
-							<ul class="small text-muted mb-3">
-								<li><a href="docs/developer.html" class="link-primary text-decoration-none">Developer onboarding</a></li>
-								<li><a href="README.md" class="link-primary text-decoration-none">Repository README</a></li>
-								<li><a href="PLAN_ACTIONS.md" class="link-primary text-decoration-none">Plan & change log</a></li>
-							</ul>
-							<p class="text-muted small mb-0">Need to evaluate? Run <code>npm test</code> then <code>npm run build-es</code> to compare artifacts.</p>
-						</div>
-					</article>
-				</div>
+			</div>
+			<div id="node_properties" class="mt-3"></div>
+
+			<div class="card-shad mt-4">
+				<h3 class="h5 mb-3">Bloc notes</h3>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li class="mb-2"><strong id="dataset-status">Démo chargée</strong> — restauration automatique via storage.</li>
+					<li class="mb-2">Temps de rendu : <span id="performance-info">—</span></li>
+					<li class="mb-3 d-flex flex-wrap gap-2">
+						<button class="btn btn-sm btn-outline-primary" type="button" id="save-boadicea">Export BOADICEA v4</button>
+						<button class="btn btn-sm btn-outline-secondary" type="button" id="save-canrisk">Export CanRisk</button>
+					</li>
+					<li>
+						<label for="load" class="form-label small">Charger un JSON</label>
+						<input type="file" id="load" class="form-control form-control-sm" accept="application/json">
+					</li>
+					<li class="mt-3">Historique undo/redo limité à 500 entrées (LRU) avec horodatage ISO 8601.</li>
+					<li>Specs situées dans <code>spec/javascripts/*_spec.js</code>.</li>
+				</ul>
 			</div>
 		</div>
 	</section>
 
-	<!-- Delivery Roadmap -->
-	<section class="py-5 bg-body" aria-labelledby="release-heading">
-		<div class="container">
-			<div class="text-center mb-4">
-				<p class="text-uppercase text-secondary small mb-2">Release v4.0.0-rc1</p>
-				<h2 class="h3 fw-semibold text-dark mb-2" id="release-heading">Delivery roadmap &amp; audit trail</h2>
-				<p class="text-muted mb-0">Each milestone is documented, peer-reviewed, and cross-referenced with ISO, WCAG, and clinical governance requirements.</p>
+	<section id="parcours" class="section bg-white">
+		<div class="shell">
+			<p class="badge mb-2">Parcours pédagogique</p>
+			<h2 class="h4 mb-4">Du cours magistral au projet clinique</h2>
+			<div class="card-shad">
+				<h3 class="h5 mb-2">Cours</h3>
+				<p class="text-muted mb-2">Architecture modulée autour de validation, DOM et tree-utils. Documentation synchronisée (README + AGENTS).</p>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li><a href="README.md">Notes de cours</a></li>
+					<li><a href="AGENTS.md">Guide contributeurs</a></li>
+				</ul>
 			</div>
-			<div class="row g-4">
-				<div class="col-md-6">
-					<article class="card h-100 border-0 shadow-sm" aria-labelledby="phase1-title">
-						<div class="card-body">
-							<div class="d-flex align-items-center justify-content-between text-secondary small text-uppercase">
-								<span>Phase 1</span>
-								<span>Completed Nov 2024</span>
-							</div>
-							<h3 class="h5 mt-3 mb-3 text-dark" id="phase1-title">Architecture Refactoring</h3>
-							<p class="text-muted small mb-3">Scope aligned with ISO/IEC 25010 maintainability attributes and ISO 9241 ergonomics guidance.</p>
-							<ul id="phase1" class="mt-3 list-unstyled" role="list">
-								<li><strong>Architecture unbundled:</strong> utils.js reduced from 775 → 75 LOC (-90%), new validation/dom/tree-utils modules.</li>
-								<li><strong>Quality gates:</strong> 100% coverage across new modules (133 Jasmine specs).</li>
-								<li><strong>Reliability fixes:</strong> is_fullscreen() and fullscreen toggles now deterministic.</li>
-							</ul>
-						</div>
-					</article>
-				</div>
-				<div class="col-md-6">
-					<article class="card h-100 border-0 shadow-sm" aria-labelledby="phase2-title">
-						<div class="card-body">
-							<div class="d-flex align-items-center justify-content-between text-secondary small text-uppercase">
-								<span>Phase 2</span>
-								<span>Completed Nov 2024</span>
-							</div>
-							<h3 class="h5 mt-3 mb-3 text-dark" id="phase2-title">Performance &amp; Cache Optimization</h3>
-							<p class="text-muted small mb-3">Benchmarks recorded for ISO/IEC 25010 performance efficiency evidence.</p>
-							<ul id="phase2" class="mt-3 list-unstyled" role="list">
-								<li><strong>Deterministic render:</strong> 4–31&nbsp;ms rebuild time for 10–100 individuals <span class="badge bg-success">verified</span>.</li>
-								<li><strong>Cache policy:</strong> LRU eviction &amp; array-based position store reduce layout thrash.</li>
-								<li><strong>Regression safety net:</strong> +17 specs (total 150) with zero failures.</li>
-								<li><strong>Decision log:</strong> No further perf work required; thresholds already surpass UX KPI.</li>
-							</ul>
-						</div>
-					</article>
-				</div>
+			<div class="card-shad">
+				<h3 class="h5 mb-2">Travaux dirigés</h3>
+				<p class="text-muted mb-2">Cas concrets : neuf exemples documentés, presets de labels, gestion consanguinité/adoption.</p>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li><a href="docs/example4.html">PED + génotypes</a></li>
+					<li><a href="docs/example7.html">Jumeaux & adoption</a></li>
+					<li><a href="docs/example9.html">Consanguinité</a></li>
+				</ul>
 			</div>
-			<div class="alert alert-primary mt-4" role="alert">
-				📚 <strong>Documentation:</strong>
-				<a class="alert-link" href="PHASE1_AUDIT_REPORT.md">Phase 1 Report</a>,
-				<a class="alert-link" href="PHASE2_PERFORMANCE_REPORT.md">Phase 2 Report</a>,
-				<a class="alert-link" href="PLAN_ACTIONS.md">Action Plan</a>
+			<div class="card-shad">
+				<h3 class="h5 mb-2">Laboratoire</h3>
+				<p class="text-muted mb-2">Exports BOADICEA/CanRisk, cache LRU, instrumentation perf (4–31&nbsp;ms pour 10–100 individus).</p>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li><a href="PHASE2_PERFORMANCE_REPORT.md">Rapport performances</a></li>
+					<li><a href="VISUAL_ENHANCEMENTS.md">Améliorations visuelles</a></li>
+					<li><a href="SESSION_CONTEXT.md">Session context</a></li>
+				</ul>
 			</div>
 		</div>
 	</section>
 
-	<!-- Main Content -->
-	<main id="main-content" class="py-5" role="main">
-		<div class="container">
-			<div class="row g-4 align-items-start">
-				<div class="col-lg-4">
-					<div class="card shadow-sm h-100" aria-labelledby="controls-heading">
-						<div class="card-body d-flex flex-column gap-4">
-							<div>
-								<h2 class="h5" id="controls-heading">Interactive controls</h2>
-								<p class="text-muted small mb-2">Manage datasets, exports, and audit logs from a single, keyboard-accessible toolbar.</p>
-								<ul class="small text-muted ps-3 mb-0">
-									<li>All exports are timestamped in ISO 8601 and include dataset hashes for change control.</li>
-									<li>Default focus order matches WCAG 2.2 AA guidance; tooltips expose equivalent text.</li>
-								</ul>
-							</div>
-							<div class="btn-toolbar" role="toolbar" aria-label="Primary actions">
-								<div class="btn-group flex-wrap w-100" role="group">
-									<input id="load" type="file" class="visually-hidden" aria-label="Load pedigree file" />
-									<label for="load" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Load a JSON pedigree file"><i class="fa fa-upload me-1" aria-hidden="true"></i> Load</label>
-									<button id="save" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Download the current dataset as JSON"><i class="fa fa-save me-1" aria-hidden="true"></i> Save</button>
-									<button id="print" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Open the browser print dialog"><i class="fa fa-print me-1" aria-hidden="true"></i> Print</button>
-									<button id="svg_download" type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Export the SVG drawing"><i class="fa fa-file-code me-1" aria-hidden="true"></i> SVG</button>
-									<button id="png_download" type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a raster image"><i class="fa fa-file-image me-1" aria-hidden="true"></i> PNG</button>
-								</div>
-							</div>
-							<div class="btn-group d-flex" role="group" aria-label="Export formats">
-								<button id="save-boadicea" type="button" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a BOADICEA v4 compatible file">
-									<i class="fa fa-dna me-1" aria-hidden="true"></i> BOADICEA v4
-								</button>
-								<button id="save-canrisk" type="button" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Export a CanRisk pedigree file (non anonymised)">
-									<i class="fa fa-vial me-1" aria-hidden="true"></i> CanRisk
-								</button>
-							</div>
-							<div class="alert alert-secondary small mb-0" role="status" aria-live="polite">
-								<span class="fw-semibold">Status:</span> <span id="dataset-status" class="ms-1">Loading…</span>
-							</div>
-							<div class="mt-2">
-								<small class="text-muted">
-									<span id="performance-info" class="badge bg-success" role="status" aria-live="polite"></span>
-								</small>
-							</div>
-							<p class="text-muted small mb-0">Need help configuring PedigreeJS? See the <a href="AGENTS.md" class="link-secondary text-decoration-none">contributor guide (AGENTS.md)</a> for ISO, WCAG, and security references.</p>
-						</div>
-					</div>
-				</div>
-				<div class="col-lg-8">
-					<div class="card shadow-sm" aria-labelledby="canvas-heading">
-						<div class="card-body">
-							<div class="d-flex justify-content-between align-items-center mb-3">
-								<h2 class="h5 mb-0" id="canvas-heading">
-									<i class="fa fa-sitemap me-2 text-primary" aria-hidden="true"></i>Pedigree canvas
-								</h2>
-								<div class="btn-group" role="group" aria-label="View controls">
-									<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-in-control" data-bs-toggle="tooltip" data-bs-placement="top" title="Zoom in">
-										<i class="fa fa-search-plus" aria-hidden="true"></i>
-										<span class="visually-hidden">Zoom in</span>
-									</button>
-									<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-out-control" data-bs-toggle="tooltip" data-bs-placement="top" title="Zoom out">
-										<i class="fa fa-search-minus" aria-hidden="true"></i>
-										<span class="visually-hidden">Zoom out</span>
-									</button>
-									<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle fullscreen" aria-pressed="false" aria-controls="pedigrees">
-										<i class="fa fa-expand" aria-hidden="true"></i>
-										<span class="visually-hidden">Toggle fullscreen</span>
-										</button>
-									</div>
-								</div>
-								<p class="text-muted small mb-3" id="canvas-description">Conforms to ISO 9241-171 guidance: zoom, pan, and edit actions remain available via keyboard and assistive technology helpers.</p>
-								<div id="pedigrees" class="pedigree-stage border rounded-3 bg-white p-3 position-relative" role="application" aria-labelledby="canvas-heading" aria-describedby="canvas-description">
-									<div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" id="canvas-loading" style="background: rgba(255,255,255,0.9); z-index: 10; display: none;">
-										<div class="spinner-border text-primary" role="status">
-											<span class="visually-hidden">Loading...</span>
-									</div>
-								</div>
-							</div>
-							<div id="node_properties" class="mt-3"></div>
-						</div>
-					</div>
-				</div>
+	<section id="normes" class="section">
+		<div class="shell">
+			<p class="badge mb-2">Charte & normes</p>
+			<h2 class="h4 mb-4">Contrôles systématiques</h2>
+			<div class="card-shad">
+				<h3 class="h5">Ergonomie</h3>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li>Skip link, repères ARIA, focus visible.</li>
+					<li>Touch targets ≥ 44 px, contrast ≥ 4.5:1.</li>
+					<li>Raccourcis documentés dans <a href="docs/demo.html">docs/demo.html</a>.</li>
+				</ul>
 			</div>
-			<section class="mt-5">
-				<div class="card shadow-sm border-0">
-					<div class="card-body p-4 p-lg-5">
-						<!-- Overview Section -->
-							<section aria-labelledby="overview-heading">
-							<h2 id="overview-heading">Overview</h2>
-							<p>
-							<strong>PedigreeJS</strong> orchestrates <a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank" rel="noopener noreferrer">standard pedigree nomenclature</a> through <a href="https://d3js.org/" target="_blank" rel="noopener noreferrer">D3.js</a>, producing scalable SVG visuals, editable datasets, and ISO 8601–ready exports for clinical workflows.
-							</p>
-							<p>
-							The toolkit separates domain logic (validation, DOM orchestration, tree utilities) into audited modules, surfaces keyboard-friendly widgets, and stores editing history in browser storage so that every action can be undone or replayed during reviews.
-							</p>
-							<ul class="list-unstyled text-muted" role="list">
-								<li>Customisable canvas (size, colour, typography) plus fullscreen mode for multidisciplinary boards.</li>
-								<li>Local history persisted per browser session to support ISO 9001 traceability expectations.</li>
-								<li>Reference material: <a href="docs/developer.html" class="link-primary">developer documentation</a> and <a href="docs/demo.html" class="link-primary">live demonstration</a>.</li>
-							</ul>
-							<p>Additional configuration samples:</p>
-							<ul role="list">
-								<li>Example 1: <a href="docs/example1.html">diabetes example</a></li>
-								<li>Example 2: <a href="docs/example2.html">change background, node colours and using local storage</a></li>
-								<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
-								<li>Example 4: <a href="docs/example4.html">PED file example with genotype data</a></li>
-								<li>Example 5: <a href="docs/example5.html">consanguineous partners and first and last name labels</a></li>
-								<li>Example 6: <a href="docs/example6.html">example pedigree validation</a></li>
-								<li>Example 7: <a href="docs/example7.html">twins, divorced, miscarriage, termination, stillbirth and adoption</a></li>
-								<li>Example 8: <a href="docs/example8.html">search pedigree data</a></li>
-								<li>Example 9: <a href="docs/example9.html">consanguineous partners at different levels</a></li>
-							</ul>
-							</section>
-						
-							<!-- Building Pedigrees Section -->
-							<section aria-labelledby="building-heading">
-							<h2 id="building-heading">Building Pedigrees</h2>
-							<p>Construction flows follow ISO 9241-110 dialogue principles (suitability for the task, conformity with user expectations, error tolerance).</p>
-							<ol class="ps-3">
-								<li><strong>Contextual widgets:</strong> hover or focus an individual to display partner <i class="fa fa-link" aria-hidden="true"></i>, parent <i class="fa fa-arrow-up" aria-hidden="true"></i>, sibling <i class="fa fa-user-plus" aria-hidden="true"></i>, and child <i class="fa fa-arrow-down" aria-hidden="true"></i> tools.</li>
-								<li><strong>Symbol palette:</strong> add male <i class="fa fa-square-o" aria-hidden="true"></i>, female <i class="fa fa-circle-o" aria-hidden="true"></i>, unknown <i class="fa fa-square-o fa-rotate-45" aria-hidden="true"></i>, dizygotic twin <i class="fa fa-angle-up" aria-hidden="true"></i>, or monozygotic twin <i class="fa fa-caret-up" aria-hidden="true"></i> markers with a single click.</li>
-								<li><strong>Attribute editor:</strong> enable the <code>edit</code> option to open a default dialog (triggered via <i class="fa fa-cog" aria-hidden="true"></i>) or inject a custom editor for specialised data capture.</li>
-								<li><strong>Complex relations:</strong> drag the triple dashed handle <img alt="handle widget" src="docs/img/handle.png"> to create consanguineous partners or half-sibling groups across generations.</li>
-								<li><strong>Safety nets:</strong> undo <i class="fa fa-undo" aria-hidden="true"></i>, redo <i class="fa fa-repeat" aria-hidden="true"></i>, reset <i class="fa fa-refresh" aria-hidden="true"></i>, and fullscreen <i class="fa fa-arrows-alt" aria-hidden="true"></i> keep workshops under control.</li>
-							</ol>
-							</section>
-						
-							<!-- Loading and Saving Section -->
-							<section aria-labelledby="loading-heading">
-							<h2 id="loading-heading">Loading and Saving Pedigree Data</h2>
-							<p>Data exchange workflows are aligned with ISO 8601 timestamps and ISO/IEC 27001 change-control practices:</p>
-							<ul>
-								<li><strong>JSON clipboard:</strong> copy/paste entire pedigrees for quick iteration. The downloaded JSON mirrors the clipboard payload.</li>
-								<li><strong>BOADICEA v4:</strong> use <em>Save BOADICEA</em> to export in the expected schema for <a href="https://canrisk.org" target="_blank" rel="noopener noreferrer">CanRisk / BOADICEA</a> ingestion.</li>
-								<li><strong>CanRisk:</strong> <em>Save CanRisk</em> respects anonymisation flags; personal data is only included when explicitly allowed.</li>
-								<li><strong>PED ingest:</strong> Load <a href="https://www.cog-genomics.org/plink/1.9/formats#ped" target="_blank" rel="noopener noreferrer">PED files</a> (see <a href="docs/example4.html">example</a>) or <a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank" rel="noopener noreferrer">CanRisk JSON</a> samples.</li>
-							</ul>
-							<p class="text-muted small">Editing controls temporarily disable themselves whenever an individual is flagged as "requires verification", ensuring workflows remain compliant.</p>
-							</section>
-							
-							<!-- Options Reference -->
-							<section aria-labelledby="options-heading">
-					<h2 id="options-heading">Options Reference</h2>
-					<div class="accordion" id="optionsAccordion">
-							<div class="accordion-item">
-								<h3 class="accordion-header" id="headingCore">
-									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCore" aria-expanded="true" aria-controls="collapseCore">
-										Core
-									</button>
-								</h3>
-								<div id="collapseCore" class="accordion-collapse collapse show" aria-labelledby="headingCore" data-bs-parent="#optionsAccordion">
-									<div class="accordion-body">
-										<dl class="row gy-3">
-											<dt id="targetDiv" class="col-12 fw-semibold">targetDiv</dt>
-											<dd class="col-12">This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd>
-											<dt id="btn_target" class="col-12 fw-semibold">btn_target</dt>
-											<dd class="col-12">This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd>
-											<dt id="dataset" class="col-12 fw-semibold">dataset</dt>
-											<dd class="col-12">The pedigree data to be displayed, <em>e.g.</em><pre class="options" role="region" aria-label="Dataset example"><code>[
-	{"name": "m21", "sex": "M", "top_level": true},
-	{"name": "f21", "sex": "F", "top_level": true},
-	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
-]</code></pre></dd>
-										</dl>
-									</div>
-								</div>
-							</div>
-						<div class="accordion-item">
-							<h3 class="accordion-header" id="headingLayout">
-								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLayout" aria-expanded="false" aria-controls="collapseLayout">
-									Layout & Labels
-								</button>
-							</h3>
-								<div id="collapseLayout" class="accordion-collapse collapse" aria-labelledby="headingLayout" data-bs-parent="#optionsAccordion">
-									<div class="accordion-body">
-										<dl class="row gy-3">
-											<dt id="labels" class="col-12 fw-semibold">labels</dt>
-											<dd class="col-12">Array of attributes to display under the individual's symbol, <em>e.g.</em> ['age', 'yob', 'alleles'].</dd>
-											<dt id="font_size" class="col-12 fw-semibold">font_size</dt>
-											<dd class="col-12">Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</dd>
-											<dt id="font_family" class="col-12 fw-semibold">font_family</dt>
-											<dd class="col-12">Define the font-family of the labels, <em>e.g.</em> 'times'.</dd>
-											<dt id="font_weight" class="col-12 fw-semibold">font_weight</dt>
-											<dd class="col-12">Define the font-weight of the labels, <em>e.g.</em> 400, 700.</dd>
-											<dt id="width" class="col-12 fw-semibold">width</dt>
-											<dd class="col-12">Width of the SVG element, <em>e.g.</em> 600.</dd>
-											<dt id="height" class="col-12 fw-semibold">height</dt>
-											<dd class="col-12">Height of the SVG element, <em>e.g.</em> 400.</dd>
-											<dt id="symbol_size" class="col-12 fw-semibold">symbol_size</dt>
-											<dd class="col-12">Size of the nodes, <em>e.g.</em> 35.</dd>
-										</dl>
-									</div>
-								</div>
-						</div>
-						<div class="accordion-item">
-							<h3 class="accordion-header" id="headingStorage">
-								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStorage" aria-expanded="false" aria-controls="collapseStorage">
-									Storage & History
-								</button>
-							</h3>
-							<div id="collapseStorage" class="accordion-collapse collapse" aria-labelledby="headingStorage" data-bs-parent="#optionsAccordion">
-								<div class="accordion-body">
-									<dl class="row gy-3">
-										<dt id="store_type" class="col-12 fw-semibold">store_type</dt>
-										<dd class="col-12">Pedigree storage (for undo, redo) set to 'session', 'local' or 'array'. Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>'. <strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.</dd>
-									</dl>
-								</div>
-							</div>
-						</div>
-						<div class="accordion-item">
-							<h3 class="accordion-header" id="headingZoom">
-								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseZoom" aria-expanded="false" aria-controls="collapseZoom">
-									Zoom & Interaction
-								</button>
-							</h3>
-							<div id="collapseZoom" class="accordion-collapse collapse" aria-labelledby="headingZoom" data-bs-parent="#optionsAccordion">
-								<div class="accordion-body">
-									<dl class="row gy-3">
-										<dt id="zoomIn" class="col-12 fw-semibold">zoomIn</dt>
-										<dd class="col-12">The factor by which the svg size can be scaled down, default 1 (no zoom in).</dd>
-										<dt id="zoomOut" class="col-12 fw-semibold">zoomOut</dt>
-										<dd class="col-12">The factor by which the svg size can be scaled up, default 1 (no zoom out).</dd>
-										<dt id="zoomSrc" class="col-12 fw-semibold">zoomSrc</dt>
-										<dd class="col-12">The source of zoom events, default ['wheel', 'button'].</dd>
-									</dl>
-								</div>
-							</div>
-						</div>
-						<div class="accordion-item">
-							<h3 class="accordion-header" id="headingBehavior">
-								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBehavior" aria-expanded="false" aria-controls="collapseBehavior">
-									Behavior
-								</button>
-							</h3>
-							<div id="collapseBehavior" class="accordion-collapse collapse" aria-labelledby="headingBehavior" data-bs-parent="#optionsAccordion">
-								<div class="accordion-body">
-									<dl class="row gy-3">
-										<dt id="edit" class="col-12 fw-semibold">edit</dt>
-										<dd class="col-12">Set to true to use the default dialog editor, or supply a function to provide a custom editor.</dd>
-										<dt id="dragNode" class="col-12 fw-semibold">dragNode</dt>
-										<dd class="col-12">Allow nodes to be dragged (default true).</dd>
-										<dt id="showWidgets" class="col-12 fw-semibold">showWidgets</dt>
-										<dd class="col-12">Show the contextual widgets on hover (default true).</dd>
-										<dt id="DEBUG" class="col-12 fw-semibold">DEBUG</dt>
-										<dd class="col-12">When true, more console output is provided and `noparents` nodes remain visible.</dd>
-									</dl>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
-						
-						<!-- Publication Section -->
-						<section aria-labelledby="publication-heading">
-						<h2 id="publication-heading">Publication</h2>
-						<p class="mb-1"><strong>pedigreejs: a web-based graphical pedigree editor</strong></p>
-						<p class="mb-1">Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, <em>et al.</em></p>
-						<p class="mb-0">
-							<cite><em>Bioinformatics</em></cite>. <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank" rel="noopener noreferrer">doi:10.1093/bioinformatics/btx705</a>
-						</p>
-						</section>
-						</div>
-						
-					</div>
-				</div>
-			</section>
-		</div>
-	</main>
-
-	<section id="standards" class="py-5 bg-white border-top" aria-labelledby="standards-heading">
-		<div class="container">
-			<div class="text-center mb-5">
-				<p class="text-uppercase text-secondary small mb-2">Governance</p>
-				<h2 class="h3 fw-semibold text-dark mb-2" id="standards-heading">Standards &amp; Accessibility Alignment</h2>
-				<p class="text-muted mb-0">Practices reference ISO 9241 (ergonomics), ISO/IEC 25010 (software quality), ISO 8601 (timestamps), and WCAG 2.2 AA accessibility guidance.</p>
+			<div class="card-shad">
+				<h3 class="h5">Qualité logicielle</h3>
+				<dl class="inline">
+					<dt>Fiabilité</dt><dd>Undo/redo journalisé</dd>
+					<dt>Performance</dt><dd>4–31 ms mesurés</dd>
+					<dt>Maintenabilité</dt><dd>Lint + tests PR</dd>
+					<dt>Sécurité</dt><dd>Aucune PII stockée</dd>
+				</dl>
 			</div>
-			<div class="row g-4">
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<h3 class="h5">Human-centred design</h3>
-							<p class="text-muted small">ISO 9241-210 / 9241-171 principles embedded in day-to-day work.</p>
-							<ul class="small text-muted mb-0">
-								<li>Focus order and skip links reviewed in every UX audit.</li>
-								<li>Touch targets ≥ 44 px, contrast ≥ 4.5:1, ARIA labels mirrored to icons.</li>
-								<li>Keyboard shortcuts documented inside `docs/` for workshops.</li>
-							</ul>
-						</div>
-					</article>
-				</div>
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<h3 class="h5">Software quality</h3>
-							<p class="text-muted small">Mapped to ISO/IEC 25010 attributes.</p>
-							<dl class="row small mb-0">
-								<dt class="col-6 text-muted text-uppercase small">Reliability</dt>
-								<dd class="col-6 mb-2">Undo/redo history with cache recovery.</dd>
-								<dt class="col-6 text-muted text-uppercase small">Performance</dt>
-								<dd class="col-6 mb-2">4–31&nbsp;ms renders logged in audits.</dd>
-								<dt class="col-6 text-muted text-uppercase small">Maintainability</dt>
-								<dd class="col-6 mb-0">Modular ES build, lint + tests per PR.</dd>
-								<dt class="col-6 text-muted text-uppercase small">Security</dt>
-								<dd class="col-6 mb-0">No PII persisted; exports anonymisable.</dd>
-							</dl>
-						</div>
-					</article>
-				</div>
-				<div class="col-lg-4">
-					<article class="card h-100 border-0 shadow-sm">
-						<div class="card-body">
-							<h3 class="h5">Data governance</h3>
-							<p class="text-muted small">Evidence trail ready for ISO 27001 change-control.</p>
-							<ul class="small text-muted mb-0">
-								<li>Exports tagged with ISO 8601 timestamps and dataset hashes.</li>
-								<li>Audit docs: <a href="AUDIT_PEDIGREEJS.md">AUDIT_PEDIGREEJS.md</a>, <a href="VISUAL_ENHANCEMENTS.md">VISUAL_ENHANCEMENTS.md</a>.</li>
-								<li>Action register: <a href="PLAN_ACTIONS.md">PLAN_ACTIONS.md</a>, <a href="SESSION_CONTEXT.md">SESSION_CONTEXT.md</a>.</li>
-							</ul>
-						</div>
-					</article>
-				</div>
-			</div>
-			<div class="card border-0 shadow-sm mt-4">
-				<div class="card-body">
-					<div class="row g-4">
-						<div class="col-lg-6">
-							<h3 class="h6 text-uppercase text-secondary">Accessibility checklist</h3>
-							<ul class="small text-muted mb-0">
-								<li>Skip link, semantic landmarks, and aria-live regions for dynamic updates.</li>
-								<li>Tooltips mirrored as plain text descriptions for assistive tech.</li>
-								<li>Animations respect `prefers-reduced-motion` (see script below).</li>
-							</ul>
-						</div>
-						<div class="col-lg-6">
-							<h3 class="h6 text-uppercase text-secondary">Key references</h3>
-							<ul class="small text-muted mb-0">
-								<li><a href="AUDIT_UX_UI_2025-11-11.md">UX/UI audit 2025-11-11</a></li>
-								<li><a href="PHASE3_PLAN_ACTIONS_UX.md">Phase 3 UX plan</a></li>
-								<li><a href="VISUAL_FIXES_SUMMARY.md">Visual fixes summary</a></li>
-							</ul>
-						</div>
-					</div>
-				</div>
+			<div class="card-shad">
+				<h3 class="h5">Documentation</h3>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li><a href="PLAN_ACTIONS.md">Plan d’actions</a></li>
+					<li><a href="AUDIT_PEDIGREEJS.md">Audit global</a></li>
+					<li><a href="AUDIT_FONCTIONNEL.md">Audit fonctionnel</a></li>
+					<li><a href="PHASE3_PLAN_ACTIONS_UX.md">Plan UX</a></li>
+				</ul>
 			</div>
 		</div>
-		</section>
+	</section>
 
-		<section id="faq-support" class="py-5 bg-light border-top" aria-labelledby="faq-heading">
-			<div class="container">
-				<div class="row g-4">
-					<div class="col-lg-7">
-						<h2 class="h4 mb-3" id="faq-heading">FAQ &amp; Operating guidance</h2>
-						<div class="accordion" id="faqAccordion">
-							<div class="accordion-item">
-								<h3 class="accordion-header" id="faqOne">
-									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOneContent" aria-expanded="true" aria-controls="faqOneContent">
-										How do I reset the canvas without losing provenance?
-									</button>
-								</h3>
-								<div id="faqOneContent" class="accordion-collapse collapse show" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
-									<div class="accordion-body small text-muted">
-										Use the in-app <strong>Reset</strong> control to clear the viewport, then restore the previous state via <strong>Undo</strong>. The action log stays available in browser storage, keeping the ISO 9001 traceability chain intact.
-									</div>
-								</div>
-							</div>
-							<div class="accordion-item">
-								<h3 class="accordion-header" id="faqTwo">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwoContent" aria-expanded="false" aria-controls="faqTwoContent">
-										Where are anonymisation and consent flags configured?
-									</button>
-								</h3>
-								<div id="faqTwoContent" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
-									<div class="accordion-body small text-muted">
-										Set the relevant attributes in your dataset or custom editor. The export helpers (`save-canrisk`, `save-boadicea`) automatically include or strip identifiers depending on that flag, and the status banner highlights the current mode.
-									</div>
-								</div>
-							</div>
-							<div class="accordion-item">
-								<h3 class="accordion-header" id="faqThree">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThreeContent" aria-expanded="false" aria-controls="faqThreeContent">
-										What testing should run before shipping changes?
-									</button>
-								</h3>
-								<div id="faqThreeContent" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
-									<div class="accordion-body small text-muted">
-										Run <code>npm test</code> (Jasmine browser runner), <code>npm run build</code>, and attach screenshots for any UI adjustments per the repository guidelines in <code>AGENTS.md</code>.
-									</div>
-								</div>
+	<section id="ressources" class="section bg-white">
+		<div class="shell">
+			<p class="badge mb-2">Ressources</p>
+			<h2 class="h4 mb-4">Bibliothèque & rituels</h2>
+			<div class="card-shad">
+				<h3 class="h5 mb-2">Bibliothèque</h3>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li><a href="docs/AUDIT_PHASE1_PEDIGREE_UTILS_TREE.md">Audit phase 1</a></li>
+					<li><a href="docs/AUDIT_PHASE4_CACHE_LABELS_TWINS.md">Audit phase 4</a></li>
+					<li><a href="CRITICAL_FIXES_PLAN.md">Plan de corrections critiques</a></li>
+					<li><a href="VISUAL_FIXES_SUMMARY.md">Synthèse correctifs visuels</a></li>
+				</ul>
+			</div>
+			<div class="card-shad">
+				<h3 class="h5 mb-2">Rituels d'évaluation</h3>
+				<ol class="list-muted mb-0" role="list">
+					<li>Lancer <code>npm test</code> puis partager des captures UI.</li>
+					<li>Exécuter <code>npm run build</code> et <code>npm run build-es</code>.</li>
+					<li>Consigner dans <code>PLAN_ACTIONS.md</code> et <code>SESSION_CONTEXT.md</code>.</li>
+				</ol>
+			</div>
+		</div>
+	</section>
+
+	<section id="faq-support" class="section">
+		<div class="shell">
+			<h2 class="h4 mb-4">FAQ & support</h2>
+			<div class="card-shad mb-4">
+				<div class="accordion" id="faqAccordion">
+					<div class="accordion-item">
+						<h3 class="accordion-header" id="faq1">
+							<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1content" aria-expanded="true" aria-controls="faq1content">
+								Comment remettre le canvas à zéro sans perdre le traçage ?
+							</button>
+						</h3>
+						<div id="faq1content" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+							<div class="accordion-body small text-muted">
+								Utiliser <strong>Reset</strong>, puis revenir via <strong>Undo</strong>. Le journal reste stocké côté navigateur pour assurer la traçabilité ISO 9001.
 							</div>
 						</div>
 					</div>
-					<div class="col-lg-5">
-						<div class="card border-0 shadow-sm h-100">
-							<div class="card-body">
-								<h3 class="h5 mb-3">Support &amp; escalation</h3>
-								<dl class="row small mb-0">
-									<dt class="col-5 text-muted text-uppercase small">Slack</dt>
-									<dd class="col-7 mb-2"><code>#pedigreejs-core</code></dd>
-									<dt class="col-5 text-muted text-uppercase small">Email</dt>
-									<dd class="col-7 mb-2"><a href="mailto:pedigreejs@ccge.example" class="link-primary">pedigreejs@ccge.example</a></dd>
-									<dt class="col-12 text-muted text-uppercase small">Documentation set</dt>
-									<dd class="col-12 mb-0">
-										<ul class="list-unstyled mb-0">
-											<li><a href="SESSION_CONTEXT.md">Session context</a></li>
-											<li><a href="AUDIT_FONCTIONNEL.md">Functional audit</a></li>
-											<li><a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
-										</ul>
-									</dd>
-								</dl>
-								<p class="text-muted small mt-3 mb-0">For incidents impacting clinical workflows, follow the escalation ladder in <code>PHASE3_PLAN_ACTIONS_UX.md</code> and attach console logs generated with the DEBUG flag.</p>
+					<div class="accordion-item">
+						<h3 class="accordion-header" id="faq2">
+							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2content" aria-expanded="false" aria-controls="faq2content">
+								Où paramétrer anonymisation et consentements ?
+							</button>
+						</h3>
+						<div id="faq2content" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+							<div class="accordion-body small text-muted">
+								Ajouter les attributs au dataset ou dans l'éditeur personnalisé. Les exports <code>save-canrisk</code> et <code>save-boadicea</code> respectent ce flag, et la bannière de statut affiche le mode en cours.
+							</div>
+						</div>
+					</div>
+					<div class="accordion-item">
+						<h3 class="accordion-header" id="faq3">
+							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3content" aria-expanded="false" aria-controls="faq3content">
+								Quelles validations avant une soutenance ?
+							</button>
+						</h3>
+						<div id="faq3content" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+							<div class="accordion-body small text-muted">
+								Lancer <code>npm test</code>, <code>npm run build</code>, vérifier le lint embarqué, puis déposer sur le dépôt avec captures et références aux plans d’action.
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</section>
 
-	<footer class="bg-dark text-white py-4" aria-label="Footer">
-		<div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">
+			<div class="card-shad">
+				<h3 class="h5 mb-3">Support & escalade</h3>
+				<ul class="list-muted list-unstyled mb-0" role="list">
+					<li class="mb-2"><strong>Slack :</strong> <code>#pedigreejs-core</code></li>
+					<li class="mb-2"><strong>Dossiers essentiels :</strong> <a href="SESSION_CONTEXT.md">Session context</a>, <a href="AUDIT_FONCTIONNEL.md">Audit fonctionnel</a>, <a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
+				</ul>
+				<p class="small text-muted mt-3 mb-0">Pour toute remontée impactant les flux cliniques, suivre <code>PHASE3_PLAN_ACTIONS_UX.md</code> et joindre les logs DEBUG.</p>
+			</div>
+		</div>
+	</section>
+
+	<footer class="py-4">
+		<div class="shell d-flex flex-column flex-lg-row justify-content-between gap-3">
 			<div>
-				<p class="text-uppercase small text-white-50 mb-1">PedigreeJS</p>
-				<p class="mb-0 small text-white-50">Maintained by CCGE-BOADICEA contributors • Documentation reviewed quarterly.</p>
+				<p class="text-uppercase small text-muted mb-1">PedigreeJS</p>
+				<p class="mb-0 small text-muted">Documentation auditée chaque trimestre.</p>
 			</div>
 			<div class="d-flex flex-wrap gap-3 small">
-				<a href="README.md" class="link-light text-decoration-none">README</a>
-				<a href="AGENTS.md" class="link-light text-decoration-none">Contributor guide</a>
-				<a href="LICENSE" class="link-light text-decoration-none">License</a>
-				<a href="https://github.com/lionelsultan/pedigreejs/issues" class="link-light text-decoration-none" target="_blank" rel="noopener noreferrer">Open an issue</a>
+				<a href="README.md" class="link-dark text-decoration-none">README</a>
+				<a href="AGENTS.md" class="link-dark text-decoration-none">AGENTS</a>
+				<a href="LICENSE" class="link-dark text-decoration-none">LICENSE</a>
+				<a href="https://github.com/lionelsultan/pedigreejs/issues" class="link-dark text-decoration-none" target="_blank" rel="noopener noreferrer">Issues</a>
 			</div>
 		</div>
 	</footer>
@@ -692,39 +396,32 @@
 			<div class="toast-header text-bg-dark border-0">
 				<strong class="me-auto" id="actionToastTitle">PedigreeJS</strong>
 				<small id="actionToastTime">now</small>
-				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
 			</div>
-			<div class="toast-body" id="actionToastBody">
-				Ready.
-			</div>
+			<div class="toast-body" id="actionToastBody">Ready.</div>
 		</div>
 	</div>
+
 	<script>
 	document.addEventListener('DOMContentLoaded', function () {
-		// Initialize Bootstrap tooltips
 		if (typeof bootstrap !== 'undefined') {
 			document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (triggerEl) {
 				new bootstrap.Tooltip(triggerEl);
 			});
 		}
 
-		// Initialize toast notification system
 		const toastEl = document.getElementById('actionToast');
 		if (toastEl && typeof bootstrap !== 'undefined') {
-			const toast = new bootstrap.Toast(toastEl, {
-				autohide: true,
-				delay: 3000
-			});
+			new bootstrap.Toast(toastEl, {autohide: true, delay: 3000});
 		}
 
-		// Navigation highlighting with Intersection Observer
-		const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+		const navLinks = document.querySelectorAll('.navbar-nav .nav-link, nav .nav-link');
 		const sections = Array.from(navLinks, link => document.querySelector(link.getAttribute('href')));
 		const observer = new IntersectionObserver(entries => {
 			entries.forEach(entry => {
 				const id = entry.target.getAttribute('id');
 				if (!id) return;
-				const link = document.querySelector(`.navbar-nav .nav-link[href="#${id}"]`);
+				const link = document.querySelector(`a.nav-link[href="#${id}"]`);
 				if (link) {
 					link.classList.toggle('active', entry.isIntersecting);
 				}
@@ -732,53 +429,36 @@
 		}, {rootMargin: '-60% 0px -35% 0px'});
 		sections.forEach(section => section && observer.observe(section));
 
-		// Smooth scrolling for anchor links (respect reduced motion)
-		const prefersReducedMotion = typeof window.matchMedia === 'function'
-			? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-			: false;
+		const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 			anchor.addEventListener('click', function (e) {
 				const hash = this.getAttribute('href');
-				if (!hash || hash.length <= 1) {
-					return;
-				}
+				if (!hash || hash.length <= 1) return;
 				const target = document.querySelector(hash);
-				if (!target) {
-					return;
-				}
+				if (!target) return;
 				e.preventDefault();
-				target.scrollIntoView({
-					behavior: prefersReducedMotion ? 'auto' : 'smooth',
-					block: 'start'
-				});
+				target.scrollIntoView({behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start'});
 				if (typeof target.focus === 'function') {
-					if (!target.hasAttribute('tabindex')) {
-						target.setAttribute('tabindex', '-1');
-					}
+					if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
 					target.focus({preventScroll: true});
 				}
 			});
 		});
 
-		// Error handling for missing dependencies
-		let missingDeps = [];
+		const missingDeps = [];
 		if (typeof jQuery === 'undefined') missingDeps.push('jQuery');
 		if (typeof d3 === 'undefined') missingDeps.push('D3.js');
 		if (typeof bootstrap === 'undefined') missingDeps.push('Bootstrap');
-
 		if (missingDeps.length > 0) {
 			console.warn('Missing dependencies:', missingDeps.join(', '));
 			const alertDiv = document.createElement('div');
 			alertDiv.className = 'alert alert-warning alert-dismissible fade show';
 			alertDiv.innerHTML = `
-				<strong>Warning:</strong> Some dependencies failed to load (${missingDeps.join(', ')}). 
-				Some features may not work correctly.
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				<strong>Attention :</strong> certains modules n'ont pas été chargés (${missingDeps.join(', ')}).
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
 			`;
-			const insertionTarget = document.getElementById('main-content') || document.body;
-			if (insertionTarget && typeof insertionTarget.prepend === 'function') {
-				insertionTarget.prepend(alertDiv);
-			}
+			const insertionTarget = document.getElementById('atelier') || document.body;
+			if (insertionTarget.prepend) insertionTarget.prepend(alertDiv);
 		}
 	});
 	</script>
