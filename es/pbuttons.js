@@ -126,7 +126,8 @@ function reset(opts) {
 		let newdataset =  copy_dataset(local_dataset);
 		proband = newdataset[getProbandIndex(newdataset)];
 		//let children = pedigree_util.getChildren(newdataset, proband);
-		proband.name = "ch1";
+		// Phase 3.2.5: Preserve proband.name to maintain external references
+		// proband.name = "ch1";  // REMOVED: This was resetting the name incorrectly
 		proband.mother = "f21";
 		proband.father = "m21";
 		// clear pedigree data but keep proband data and risk factors
