@@ -126,11 +126,15 @@ export function addWidgets(opts, node) {
 		let dztwin = d3.select(this).classed("dztwin");
 		let twin_type;
 		let sex;
-		if(mztwin || dztwin) {
+		// Phase 3.2.4: Allow sex selection for dizygotic twins, force same sex for monozygotic
+		if(mztwin) {
+			// Monozygotic (identical) twins must have same sex as sibling
 			sex = add_person.node.datum().data.sex;
-			twin_type = (mztwin ? "mztwin" : "dztwin");
+			twin_type = "mztwin";
 		} else {
+			// Dizygotic twins and regular persons: read sex from clicked button
 			sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+			twin_type = dztwin ? "dztwin" : undefined;
 		}
 
 		if(add_person.type === 'addsibling')
