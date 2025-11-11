@@ -2,37 +2,10 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="robots" content="index,follow">
-	<meta name="referrer" content="strict-origin-when-cross-origin">
-	<link rel="canonical" href="https://lionelsultan.github.io/pedigreejs/">
-	<meta name="application-name" content="PedigreeJS">
-	<meta name="color-scheme" content="light">
-	<meta name="theme-color" content="#0d6efd">
+	<title>PedigreeJS · Test</title>
 
-	<title>PedigreeJS · Outil de création de Pedigree</title>
-	<meta name="description" content="PedigreeJS propose un studio interactif élégant pour concevoir, valider et exporter des pedigrees cliniques." />
-	<meta name="keywords" content="pedigree, ingénieur, d3.js, clinique, audit, javascript" />
-	<meta name="author" content="CCGE-BOADICEA" />
-
-	<meta property="og:title" content="PedigreeJS · Outil de création de Pedigree" />
-	<meta property="og:description" content="Un atelier web inspiré des normes d’écoles d’ingénieurs pour bâtir des pedigrees interactifs." />
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://lionelsultan.github.io/pedigreejs/" />
-	<meta property="og:image" content="https://lionelsultan.github.io/pedigreejs/docs/img/cover.png" />
-	<meta property="og:site_name" content="PedigreeJS" />
-	<meta property="og:locale" content="fr_FR" />
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="PedigreeJS · Outil de création de Pedigree" />
-
-	<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-	<link rel="preconnect" href="https://code.jquery.com" crossorigin>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW7CM1Ll" crossorigin="anonymous" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+/CM1Ll" crossorigin="anonymous" />
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="build/pedigreejs.v4.0.0-rc1.css" />
@@ -41,426 +14,83 @@
 	<link rel="stylesheet" href="css/critical-fixes.css" />
 
 	<style>
-		:root {
-			--background: #f8fafc;
-			--card: #ffffff;
-			--border: #e5e7eb;
-			--muted: #6b7280;
-			--heading: #0f172a;
-			--radius-xl: 28px;
-		}
-
-		* { box-sizing: border-box; }
-
 		body {
-			font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-			background: var(--background);
-			color: var(--heading);
+			font-family: system-ui, -apple-system, sans-serif;
+			background: #f8fafc;
 			margin: 0;
+			padding: 20px;
 		}
 
-		.shell {
-			max-width: 820px;
+		.container {
+			max-width: 1200px;
 			margin: 0 auto;
-			padding: 0 1.5rem;
 		}
-
-		nav {
-			backdrop-filter: blur(12px);
-			border-bottom: 1px solid var(--border);
-		}
-
-		.nav-link { color: var(--muted); font-weight: 500; }
-		.nav-link.active { color: var(--heading); }
-
-		.section {
-			padding: 64px 0;
-			border-bottom: 1px solid var(--border);
-		}
-
-		.card-shad {
-			background: var(--card);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-xl);
-			padding: 32px;
-			margin-bottom: 32px;
-			box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-		}
-
-		.card-shad:last-child { margin-bottom: 0; }
-
-		.btn-shad {
-			border-radius: 999px;
-			font-weight: 500;
-			padding: 0.75rem 1.5rem;
-			border: 1px solid transparent;
-		}
-
-		.btn-solid { background: #0f172a; color: #fff; }
-		.btn-ghost { background: transparent; border-color: var(--border); color: var(--heading); }
-		.btn-link { color: #0f172a; text-decoration: none; font-weight: 600; }
-
-		.badge {
-			font-size: 0.75rem;
-			color: var(--muted);
-			text-transform: uppercase;
-			letter-spacing: 0.08em;
-		}
-
-		dl.inline {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			row-gap: 0.75rem;
-			column-gap: 1rem;
-		}
-
-		dl.inline dt { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); }
-		dl.inline dd { margin: 0; font-weight: 600; }
-
-		.list-muted { color: var(--muted); }
 
 		#pedigrees {
-			border-radius: var(--radius-xl);
-			border: 1px solid var(--border);
-			background: var(--card);
-			min-height: 400px;
+			border-radius: 12px;
+			border: 1px solid #e5e7eb;
+			background: #ffffff;
+			min-height: 600px;
+			margin-bottom: 20px;
 		}
 
-		.toolbar { display: flex; gap: 0.5rem; justify-content: flex-end; }
-		.toolbar button { border-radius: 999px; }
-
-		.accordion-button { font-weight: 500; }
-
-		footer { border-top: 1px solid var(--border); }
+		.toolbar {
+			display: flex;
+			gap: 0.5rem;
+			justify-content: flex-end;
+			margin-bottom: 1rem;
+		}
 	</style>
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" defer integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer integrity="sha256-8glLv2FBs1lyLE/kVOtsSw8OQswQzHr5IfwVj864ZTk=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" defer integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
- 	<script src="build/pedigreejs.v4.0.0-rc1.min.js" defer></script>
+	<script src="build/pedigreejs.v4.0.0-rc1.min.js" defer></script>
 	<script src="js/index-page.js" defer></script>
 	<script src="js/visual-enhancements.js" defer></script>
 </head>
 <body>
-	<a href="#atelier" class="skip-nav btn btn-link">Aller au contenu principal</a>
-	<noscript>
-		<div class="alert alert-warning rounded-0 mb-0 text-center" role="alert">
-			PedigreeJS requiert JavaScript pour charger l'atelier interactif.
-		</div>
-	</noscript>
+	<div class="container">
+		<h1 class="my-4">PedigreeJS · Test</h1>
 
-	<nav class="py-3">
-		<div class="shell d-flex flex-wrap justify-content-between align-items-center gap-3">
-			<a class="text-decoration-none fw-semibold text-dark" href="#hero">PedigreeJS</a>
-			<ul class="nav small text-uppercase gap-3">
-				<li class="nav-item"><a class="nav-link px-0" href="#hero">Préambule</a></li>
-				<li class="nav-item"><a class="nav-link px-0" href="#atelier">Atelier</a></li>
-				<li class="nav-item"><a class="nav-link px-0" href="#parcours">Parcours</a></li>
-				<li class="nav-item"><a class="nav-link px-0" href="#normes">Normes</a></li>
-				<li class="nav-item"><a class="nav-link px-0" href="#ressources">Ressources</a></li>
-				<li class="nav-item"><a class="nav-link px-0" href="#faq-support">Support</a></li>
-			</ul>
+		<div class="toolbar" role="group" aria-label="Outils de vue">
+			<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-in-control" title="Zoomer">
+				<i class="fa fa-search-plus"></i> Zoom +
+			</button>
+			<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-out-control" title="Dézoomer">
+				<i class="fa fa-search-minus"></i> Zoom -
+			</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" title="Plein écran" aria-pressed="false" aria-controls="pedigrees">
+				<i class="fa fa-expand"></i> Plein écran
+			</button>
 		</div>
-	</nav>
 
-	<header id="hero" class="section">
-		<div class="shell">
-			<div class="badge mb-3">Filière Ingénierie · Session 2024/25</div>
-			<h1 class="display-6 fw-semibold mb-3">Outil de création de Pedigree.</h1>
-			<p class="lead text-muted mb-4">Approche inspirée des départements d’école d’ingénieurs&nbsp;: rigueur académique, pipeline industriel, documentation alignée. 150 spécifications Jasmine, Rollup, et conformité ISO/WCAG.</p>
-			<div class="d-flex flex-wrap gap-2 mb-5">
-				<a class="btn-shad btn-solid" href="#atelier">Entrer dans l'atelier</a>
-				<a class="btn-shad btn-ghost" href="docs/developer.html">Dossier pédagogique</a>
-				<a class="btn-link" href="PLAN_ACTIONS.md">Plan d'études →</a>
-			</div>
-			<div class="card-shad">
-				<h2 class="h5 mb-3">Fiche signalétique</h2>
-				<dl class="inline">
-					<dt>Espace pédagogique</dt><dd>Rollup · ES Modules</dd>
-					<dt>Travaux pratiques</dt><dd>150 specs Jasmine</dd>
-					<dt>Cadence d'audit</dt><dd>Mensuelle (ISO/WCAG)</dd>
-					<dt>Référent qualité</dt><dd><a href="SESSION_CONTEXT.md">SESSION_CONTEXT</a></dd>
-				</dl>
-			</div>
-		</div>
-	</header>
-
-	<section id="atelier" class="section">
-		<div class="shell">
-			<p class="badge mb-2">Atelier / Travaux pratiques</p>
-			<h2 class="h4 mb-3">Studio interactif</h2>
-			<p class="text-muted mb-4">ISO 9241-171 : navigation clavier, aria-live, préférences «&nbsp;réduction des mouvements&nbsp;», traçabilité horodatée.</p>
-			<div class="toolbar mb-3" role="group" aria-label="Outils de vue">
-				<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-in-control" title="Zoomer" data-bs-toggle="tooltip" data-bs-placement="top">
-					<i class="fa fa-search-plus"></i>
-				</button>
-				<button type="button" class="btn btn-sm btn-outline-primary" id="zoom-out-control" title="Dézoomer" data-bs-toggle="tooltip" data-bs-placement="top">
-					<i class="fa fa-search-minus"></i>
-				</button>
-				<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" title="Plein écran" data-bs-toggle="tooltip" data-bs-placement="top" aria-pressed="false" aria-controls="pedigrees">
-					<i class="fa fa-expand"></i>
-				</button>
-			</div>
-			<div id="pedigrees" class="pedigree-stage position-relative" role="application" aria-label="Canvas de pedigree">
-				<div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" id="canvas-loading" style="display:none; background: rgba(248, 250, 252, 0.9);">
-					<div class="spinner-border text-primary" role="status">
-						<span class="visually-hidden">Chargement…</span>
-					</div>
+		<div id="pedigrees" class="position-relative" role="application" aria-label="Canvas de pedigree">
+			<div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" id="canvas-loading" style="display:none; background: rgba(248, 250, 252, 0.9);">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Chargement…</span>
 				</div>
 			</div>
-			<div id="node_properties" class="mt-3"></div>
-
-			<div class="card-shad mt-4">
-				<h3 class="h5 mb-3">Bloc notes</h3>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li class="mb-2"><strong id="dataset-status">Démo chargée</strong> — restauration automatique via storage.</li>
-					<li class="mb-2">Temps de rendu : <span id="performance-info">—</span></li>
-					<li class="mb-3 d-flex flex-wrap gap-2">
-						<button class="btn btn-sm btn-outline-primary" type="button" id="save-boadicea">Export BOADICEA v4</button>
-						<button class="btn btn-sm btn-outline-secondary" type="button" id="save-canrisk">Export CanRisk</button>
-					</li>
-					<li>
-						<label for="load" class="form-label small">Charger un JSON</label>
-						<input type="file" id="load" class="form-control form-control-sm" accept="application/json">
-					</li>
-					<li class="mt-3">Historique undo/redo limité à 500 entrées (LRU) avec horodatage ISO 8601.</li>
-					<li>Specs situées dans <code>spec/javascripts/*_spec.js</code>.</li>
-				</ul>
-			</div>
 		</div>
-	</section>
 
-	<section id="parcours" class="section bg-white">
-		<div class="shell">
-			<p class="badge mb-2">Parcours pédagogique</p>
-			<h2 class="h4 mb-4">Du cours magistral au projet clinique</h2>
-			<div class="card-shad">
-				<h3 class="h5 mb-2">Cours</h3>
-				<p class="text-muted mb-2">Architecture modulée autour de validation, DOM et tree-utils. Documentation synchronisée (README + AGENTS).</p>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li><a href="README.md">Notes de cours</a></li>
-					<li><a href="AGENTS.md">Guide contributeurs</a></li>
-				</ul>
-			</div>
-			<div class="card-shad">
-				<h3 class="h5 mb-2">Travaux dirigés</h3>
-				<p class="text-muted mb-2">Cas concrets : neuf exemples documentés, presets de labels, gestion consanguinité/adoption.</p>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li><a href="docs/example4.html">PED + génotypes</a></li>
-					<li><a href="docs/example7.html">Jumeaux & adoption</a></li>
-					<li><a href="docs/example9.html">Consanguinité</a></li>
-				</ul>
-			</div>
-			<div class="card-shad">
-				<h3 class="h5 mb-2">Laboratoire</h3>
-				<p class="text-muted mb-2">Exports BOADICEA/CanRisk, cache LRU, instrumentation perf (4–31&nbsp;ms pour 10–100 individus).</p>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li><a href="PHASE2_PERFORMANCE_REPORT.md">Rapport performances</a></li>
-					<li><a href="VISUAL_ENHANCEMENTS.md">Améliorations visuelles</a></li>
-					<li><a href="SESSION_CONTEXT.md">Session context</a></li>
-				</ul>
-			</div>
-		</div>
-	</section>
+		<div id="node_properties" class="mt-3"></div>
 
-	<section id="normes" class="section">
-		<div class="shell">
-			<p class="badge mb-2">Charte & normes</p>
-			<h2 class="h4 mb-4">Contrôles systématiques</h2>
-			<div class="card-shad">
-				<h3 class="h5">Ergonomie</h3>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li>Skip link, repères ARIA, focus visible.</li>
-					<li>Touch targets ≥ 44 px, contrast ≥ 4.5:1.</li>
-					<li>Raccourcis documentés dans <a href="docs/demo.html">docs/demo.html</a>.</li>
-				</ul>
+		<div class="mt-4 p-3 border rounded bg-white">
+			<h3 class="h5 mb-3">Contrôles</h3>
+			<div class="mb-3 d-flex flex-wrap gap-2">
+				<button class="btn btn-sm btn-outline-primary" type="button" id="save-boadicea">Export BOADICEA</button>
+				<button class="btn btn-sm btn-outline-secondary" type="button" id="save-canrisk">Export CanRisk</button>
 			</div>
-			<div class="card-shad">
-				<h3 class="h5">Qualité logicielle</h3>
-				<dl class="inline">
-					<dt>Fiabilité</dt><dd>Undo/redo journalisé</dd>
-					<dt>Performance</dt><dd>4–31 ms mesurés</dd>
-					<dt>Maintenabilité</dt><dd>Lint + tests PR</dd>
-					<dt>Sécurité</dt><dd>Aucune PII stockée</dd>
-				</dl>
-			</div>
-			<div class="card-shad">
-				<h3 class="h5">Documentation</h3>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li><a href="PLAN_ACTIONS.md">Plan d’actions</a></li>
-					<li><a href="AUDIT_PEDIGREEJS.md">Audit global</a></li>
-					<li><a href="AUDIT_FONCTIONNEL.md">Audit fonctionnel</a></li>
-					<li><a href="PHASE3_PLAN_ACTIONS_UX.md">Plan UX</a></li>
-				</ul>
-			</div>
-		</div>
-	</section>
-
-	<section id="ressources" class="section bg-white">
-		<div class="shell">
-			<p class="badge mb-2">Ressources</p>
-			<h2 class="h4 mb-4">Bibliothèque & rituels</h2>
-			<div class="card-shad">
-				<h3 class="h5 mb-2">Bibliothèque</h3>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li><a href="docs/AUDIT_PHASE1_PEDIGREE_UTILS_TREE.md">Audit phase 1</a></li>
-					<li><a href="docs/AUDIT_PHASE4_CACHE_LABELS_TWINS.md">Audit phase 4</a></li>
-					<li><a href="CRITICAL_FIXES_PLAN.md">Plan de corrections critiques</a></li>
-					<li><a href="VISUAL_FIXES_SUMMARY.md">Synthèse correctifs visuels</a></li>
-				</ul>
-			</div>
-			<div class="card-shad">
-				<h3 class="h5 mb-2">Rituels d'évaluation</h3>
-				<ol class="list-muted mb-0" role="list">
-					<li>Lancer <code>npm test</code> puis partager des captures UI.</li>
-					<li>Exécuter <code>npm run build</code> et <code>npm run build-es</code>.</li>
-					<li>Consigner dans <code>PLAN_ACTIONS.md</code> et <code>SESSION_CONTEXT.md</code>.</li>
-				</ol>
-			</div>
-		</div>
-	</section>
-
-	<section id="faq-support" class="section">
-		<div class="shell">
-			<h2 class="h4 mb-4">FAQ & support</h2>
-			<div class="card-shad mb-4">
-				<div class="accordion" id="faqAccordion">
-					<div class="accordion-item">
-						<h3 class="accordion-header" id="faq1">
-							<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1content" aria-expanded="true" aria-controls="faq1content">
-								Comment remettre le canvas à zéro sans perdre le traçage ?
-							</button>
-						</h3>
-						<div id="faq1content" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-							<div class="accordion-body small text-muted">
-								Utiliser <strong>Reset</strong>, puis revenir via <strong>Undo</strong>. Le journal reste stocké côté navigateur pour assurer la traçabilité ISO 9001.
-							</div>
-						</div>
-					</div>
-					<div class="accordion-item">
-						<h3 class="accordion-header" id="faq2">
-							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2content" aria-expanded="false" aria-controls="faq2content">
-								Où paramétrer anonymisation et consentements ?
-							</button>
-						</h3>
-						<div id="faq2content" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-							<div class="accordion-body small text-muted">
-								Ajouter les attributs au dataset ou dans l'éditeur personnalisé. Les exports <code>save-canrisk</code> et <code>save-boadicea</code> respectent ce flag, et la bannière de statut affiche le mode en cours.
-							</div>
-						</div>
-					</div>
-					<div class="accordion-item">
-						<h3 class="accordion-header" id="faq3">
-							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3content" aria-expanded="false" aria-controls="faq3content">
-								Quelles validations avant une soutenance ?
-							</button>
-						</h3>
-						<div id="faq3content" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-							<div class="accordion-body small text-muted">
-								Lancer <code>npm test</code>, <code>npm run build</code>, vérifier le lint embarqué, puis déposer sur le dépôt avec captures et références aux plans d’action.
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="card-shad">
-				<h3 class="h5 mb-3">Support & escalade</h3>
-				<ul class="list-muted list-unstyled mb-0" role="list">
-					<li class="mb-2"><strong>Slack :</strong> <code>#pedigreejs-core</code></li>
-					<li class="mb-2"><strong>Dossiers essentiels :</strong> <a href="SESSION_CONTEXT.md">Session context</a>, <a href="AUDIT_FONCTIONNEL.md">Audit fonctionnel</a>, <a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
-				</ul>
-				<p class="small text-muted mt-3 mb-0">Pour toute remontée impactant les flux cliniques, suivre <code>PHASE3_PLAN_ACTIONS_UX.md</code> et joindre les logs DEBUG.</p>
-			</div>
-		</div>
-	</section>
-
-	<footer class="py-4">
-		<div class="shell d-flex flex-column flex-lg-row justify-content-between gap-3">
 			<div>
-				<p class="text-uppercase small text-muted mb-1">PedigreeJS</p>
-				<p class="mb-0 small text-muted">Documentation auditée chaque trimestre.</p>
+				<label for="load" class="form-label small">Charger un JSON</label>
+				<input type="file" id="load" class="form-control form-control-sm" accept="application/json">
 			</div>
-			<div class="d-flex flex-wrap gap-3 small">
-				<a href="README.md" class="link-dark text-decoration-none">README</a>
-				<a href="AGENTS.md" class="link-dark text-decoration-none">AGENTS</a>
-				<a href="LICENSE" class="link-dark text-decoration-none">LICENSE</a>
-				<a href="https://github.com/lionelsultan/pedigreejs/issues" class="link-dark text-decoration-none" target="_blank" rel="noopener noreferrer">Issues</a>
+			<div class="mt-3 small text-muted">
+				<div>Statut : <strong id="dataset-status">Démo chargée</strong></div>
+				<div>Temps de rendu : <span id="performance-info">—</span></div>
 			</div>
-		</div>
-	</footer>
-
-	<div class="toast-container position-fixed bottom-0 end-0 p-3">
-		<div id="actionToast" class="toast text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
-			<div class="toast-header text-bg-dark border-0">
-				<strong class="me-auto" id="actionToastTitle">PedigreeJS</strong>
-				<small id="actionToastTime">now</small>
-				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
-			</div>
-			<div class="toast-body" id="actionToastBody">Ready.</div>
 		</div>
 	</div>
-
-	<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		if (typeof bootstrap !== 'undefined') {
-			document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (triggerEl) {
-				new bootstrap.Tooltip(triggerEl);
-			});
-		}
-
-		const toastEl = document.getElementById('actionToast');
-		if (toastEl && typeof bootstrap !== 'undefined') {
-			new bootstrap.Toast(toastEl, {autohide: true, delay: 3000});
-		}
-
-		const navLinks = document.querySelectorAll('.navbar-nav .nav-link, nav .nav-link');
-		const sections = Array.from(navLinks, link => document.querySelector(link.getAttribute('href')));
-		const observer = new IntersectionObserver(entries => {
-			entries.forEach(entry => {
-				const id = entry.target.getAttribute('id');
-				if (!id) return;
-				const link = document.querySelector(`a.nav-link[href="#${id}"]`);
-				if (link) {
-					link.classList.toggle('active', entry.isIntersecting);
-				}
-			});
-		}, {rootMargin: '-60% 0px -35% 0px'});
-		sections.forEach(section => section && observer.observe(section));
-
-		const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-			anchor.addEventListener('click', function (e) {
-				const hash = this.getAttribute('href');
-				if (!hash || hash.length <= 1) return;
-				const target = document.querySelector(hash);
-				if (!target) return;
-				e.preventDefault();
-				target.scrollIntoView({behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start'});
-				if (typeof target.focus === 'function') {
-					if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-					target.focus({preventScroll: true});
-				}
-			});
-		});
-
-		const missingDeps = [];
-		if (typeof jQuery === 'undefined') missingDeps.push('jQuery');
-		if (typeof d3 === 'undefined') missingDeps.push('D3.js');
-		if (typeof bootstrap === 'undefined') missingDeps.push('Bootstrap');
-		if (missingDeps.length > 0) {
-			console.warn('Missing dependencies:', missingDeps.join(', '));
-			const alertDiv = document.createElement('div');
-			alertDiv.className = 'alert alert-warning alert-dismissible fade show';
-			alertDiv.innerHTML = `
-				<strong>Attention :</strong> certains modules n'ont pas été chargés (${missingDeps.join(', ')}).
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-			`;
-			const insertionTarget = document.getElementById('atelier') || document.body;
-			if (insertionTarget.prepend) insertionTarget.prepend(alertDiv);
-		}
-	});
-	</script>
 </body>
 </html>
