@@ -232,3 +232,44 @@ export function unconnected(dataset){
 	let names = $.map(dataset, function(val, _i){return val.name;});
 	return $.map(names, function(name, _i){return $.inArray(name, connected) === -1 ? name : null;});
 }
+
+/**
+ * Determine if the sex of a person can be changed.
+ * Sex cannot be changed if the person is already a parent (referenced as mother/father)
+ * by other people in the dataset, unless the current sex is 'U' (unknown).
+ *
+ * Phase 3.1.5 - Unified sex change rules
+ *
+ * @param node - The person node to check
+ * @param dataset - The full pedigree dataset
+ * @return true if sex can be changed, false otherwise
+ */
+export function canChangeSex(node, dataset) {
+	// Validation des paramètres
+	if(!node || !dataset) {
+		return true; // Par défaut, autoriser le changement si données manquantes
+	}
+
+	// On peut toujours changer de 'U' (unknown) vers un sexe défini
+	// Car 'U' n'a pas de contraintes de cohérence mère/père
+	if(node.sex === 'U') {
+		return true;
+	}
+
+	// Vérifier si ce nœud est référencé comme parent (mother ou father)
+	// par d'autres personnes dans le dataset
+	const isReferencedAsParent = dataset.some(person => {
+		// Un nœud est parent s'il est référencé comme mother ou father
+		return person.mother === node.name || person.father === node.name;
+	});
+
+	// Si le nœud est déjà parent et a un sexe défini (M ou F),
+	// on ne peut pas changer le sexe car cela casserait la cohérence
+	// (ex: une mother doit être 'F', un father doit être 'M')
+	if(isReferencedAsParent && node.sex !== 'U') {
+		return false;
+	}
+
+	// Dans tous les autres cas, autoriser le changement
+	return true;
+}

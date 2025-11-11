@@ -526,10 +526,17 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Exception pour settings (instantané)
   - Doc : `PHASE3_TASK_3.1.3_COMPLETION.md`
 - 🔴 À faire : Tâche 3.1.4 - Logique addpartner (1h, analyse requise)
-- 🔴 À faire : Tâche 3.1.5 - Unifier règles sexe (45 min) **← PROCHAINE**
+- ✅ **COMPLÉTÉ** : Tâche 3.1.5 - Unifier règles sexe (35 min, 2025-11-11)
+  - Créé fonction partagée `canChangeSex()` dans validation.js
+  - Logique unifiée : vérifie si nœud référencé comme parent (mother/father)
+  - Modifié popup_form.js avec namespace import et accès via utils.roots
+  - Modifié widgets.js pour utiliser canChangeSex()
+  - Permet changements depuis 'U' (unknown) même si parent
+  - Élimine incohérence entre popup et widget
+  - Doc : `PHASE3_TASK_3.1.5_COMPLETION.md`
 
-**Progression Phase 3.1** : 2/5 tâches (40%)
-**Temps total** : 55 min (objectif : 3-4h) - En avance !
+**Progression Phase 3.1** : 3/5 tâches (60%)
+**Temps total** : 90 min (objectif : 3-4h) - Excellent progrès !
 
 ---
 

@@ -6,15 +6,16 @@
 
 // pedigree form
 import {syncTwins} from './twins.js';
-import {copy_dataset, getNodeByName} from './utils.js';
+import * as utils from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
+import {canChangeSex} from './validation.js';
 
 
 // handle family history change events (undo/redo/delete)
 $(document).on('fhChange', function(e, opts){
 	try {
 		let id = $('#id_name').val();  // get name from hidden field
-		let node = getNodeByName(pedcache_current(opts), id)
+		let node = utils.getNodeByName(pedcache_current(opts), id)
 		if(node === undefined)
 			$('form > fieldset').prop("disabled", true);
 		else
@@ -83,8 +84,20 @@ export function nodeclick(node) {
 	// clear gene tests
 	$('select[name*="_gene_test"]').val('-');
 
-	// disable sex radio buttons if the person has a partner
-	$("input[id^='id_sex_']").prop("disabled", (node.parent_node && node.sex !== 'U' ? true : false));
+	// disable sex radio buttons if the person is already a parent (Phase 3.1.5)
+	// Note: récupère le dataset depuis les utils.roots car opts n'est pas disponible dans nodeclick
+	let dataset = null;
+	try {
+		// Essayer de récupérer le dataset depuis le premier pedigree chargé
+		let targetDivs = Object.keys(utils.roots || {});
+		if(targetDivs.length > 0) {
+			dataset = utils.roots[targetDivs[0]]._dataset;
+		}
+	} catch(e) {
+		// Si erreur, autoriser le changement par défaut
+	}
+	let sexCanChange = canChangeSex(node, dataset);
+	$("input[id^='id_sex_']").prop("disabled", !sexCanChange);
 
 	// disable pathology for male relatives (as not used by model)
 	// and if no breast cancer age of diagnosis
@@ -138,7 +151,7 @@ function update_ashkn(newdataset) {
 // Save Ashkenazi status
 export function save_ashkn(opts) {
 	let dataset = pedcache_current(opts);
-	let newdataset = copy_dataset(dataset);
+	let newdataset = utils.copy_dataset(dataset);
 	update_ashkn(newdataset);
 	opts.dataset = newdataset;
 	$(document).trigger('rebuild', [opts]);
@@ -147,8 +160,8 @@ export function save_ashkn(opts) {
 export function save(opts) {
 	let dataset = pedcache_current(opts);
 	let name = $('#id_name').val();
-	let newdataset = copy_dataset(dataset);
-	let person = getNodeByName(newdataset, name);
+	let newdataset = utils.copy_dataset(dataset);
+	let person = utils.getNodeByName(newdataset, name);
 	if(!person) {
 		console.warn('person not found when saving details');
 		return;

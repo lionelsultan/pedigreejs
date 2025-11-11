@@ -195,8 +195,50 @@ var pedigreejs = (function (exports) {
 	  });
 	}
 
+	/**
+	 * Determine if the sex of a person can be changed.
+	 * Sex cannot be changed if the person is already a parent (referenced as mother/father)
+	 * by other people in the dataset, unless the current sex is 'U' (unknown).
+	 *
+	 * Phase 3.1.5 - Unified sex change rules
+	 *
+	 * @param node - The person node to check
+	 * @param dataset - The full pedigree dataset
+	 * @return true if sex can be changed, false otherwise
+	 */
+	function canChangeSex(node, dataset) {
+	  // Validation des paramètres
+	  if (!node || !dataset) {
+	    return true; // Par défaut, autoriser le changement si données manquantes
+	  }
+
+	  // On peut toujours changer de 'U' (unknown) vers un sexe défini
+	  // Car 'U' n'a pas de contraintes de cohérence mère/père
+	  if (node.sex === 'U') {
+	    return true;
+	  }
+
+	  // Vérifier si ce nœud est référencé comme parent (mother ou father)
+	  // par d'autres personnes dans le dataset
+	  const isReferencedAsParent = dataset.some(person => {
+	    // Un nœud est parent s'il est référencé comme mother ou father
+	    return person.mother === node.name || person.father === node.name;
+	  });
+
+	  // Si le nœud est déjà parent et a un sexe défini (M ou F),
+	  // on ne peut pas changer le sexe car cela casserait la cohérence
+	  // (ex: une mother doit être 'F', un father doit être 'M')
+	  if (isReferencedAsParent && node.sex !== 'U') {
+	    return false;
+	  }
+
+	  // Dans tous les autres cas, autoriser le changement
+	  return true;
+	}
+
 	var validation = /*#__PURE__*/Object.freeze({
 		__proto__: null,
+		canChangeSex: canChangeSex,
 		create_err: create_err,
 		unconnected: unconnected,
 		validate_age_yob: validate_age_yob,
@@ -2797,8 +2839,20 @@ var pedigreejs = (function (exports) {
 	  // clear gene tests
 	  $('select[name*="_gene_test"]').val('-');
 
-	  // disable sex radio buttons if the person has a partner
-	  $("input[id^='id_sex_']").prop("disabled", node.parent_node && node.sex !== 'U' ? true : false);
+	  // disable sex radio buttons if the person is already a parent (Phase 3.1.5)
+	  // Note: récupère le dataset depuis les utils.roots car opts n'est pas disponible dans nodeclick
+	  let dataset = null;
+	  try {
+	    // Essayer de récupérer le dataset depuis le premier pedigree chargé
+	    let targetDivs = Object.keys(roots || {});
+	    if (targetDivs.length > 0) {
+	      dataset = roots[targetDivs[0]]._dataset;
+	    }
+	  } catch (e) {
+	    // Si erreur, autoriser le changement par défaut
+	  }
+	  let sexCanChange = canChangeSex(node, dataset);
+	  $("input[id^='id_sex_']").prop("disabled", !sexCanChange);
 
 	  // disable pathology for male relatives (as not used by model)
 	  // and if no breast cancer age of diagnosis
@@ -3377,9 +3431,10 @@ var pedigreejs = (function (exports) {
 	  table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value=" + (d.data.age ? d.data.age : "") + "></td></tr>";
 	  table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value=" + (d.data.yob ? d.data.yob : "") + "></td></tr>";
 
-	  // check if person has a partner
-	  const hasPartner = d.data.parent_node && d.data.sex !== 'U';
-	  const disableInp = hasPartner ? "disabled" : "";
+	  // check if sex can be changed (Phase 3.1.5)
+	  let dataset = current(opts);
+	  const sexCanChange = canChangeSex(d.data, dataset);
+	  const disableInp = sexCanChange ? "" : "disabled";
 	  const label = '<label class="radio-inline"><input type="radio" name="sex" ';
 	  table += '<tr><td colspan="2" id="id_sex">' + label + 'value="M" ' + (d.data.sex === 'M' ? "checked " : " ") + disableInp + '>Male</label>' + label + 'value="F" ' + (d.data.sex === 'F' ? "checked " : " ") + disableInp + '>Female</label>' + label + 'value="U" ' + disableInp + '>Unknown</label>' + '</td></tr>';
 

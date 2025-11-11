@@ -9,6 +9,7 @@ import * as utils from './utils.js';
 import {save} from './popup_form.js';
 import {current as pedcache_current} from './pedcache.js';
 import {getUniqueTwinID, setMzTwin, checkTwins} from './twins.js';
+import {canChangeSex} from './validation.js';
 
 
 let dragging;
@@ -478,9 +479,10 @@ function openEditDialog(opts, d) {
 	table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
 		(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
-	// check if person has a partner
-	const hasPartner = d.data.parent_node && d.data.sex !== 'U';
-	const disableInp = (hasPartner ? "disabled" : "")
+	// check if sex can be changed (Phase 3.1.5)
+	let dataset = pedcache_current(opts);
+	const sexCanChange = canChangeSex(d.data, dataset);
+	const disableInp = (sexCanChange ? "" : "disabled")
 	const label = '<label class="radio-inline"><input type="radio" name="sex" ';
 	table += '<tr><td colspan="2" id="id_sex">' +
 			 label+'value="M" '+(d.data.sex === 'M' ? "checked " : " ")+disableInp+'>Male</label>' +
