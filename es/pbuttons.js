@@ -50,7 +50,9 @@ function addPbuttonEvents(opts) {
 			opts.dataset = local_dataset;
 		}
 		$(document).trigger('rebuild', [opts]);
-		setTimeout(function(){ scale_to_fit(opts); }, 500);
+		// Phase 3.2.3: Preserve zoom/pan position in fullscreen
+		// scale_to_fit(opts) was called here, but it resets the zoom
+		// The rebuild automatically restores the cached position via init_zoom()
     });
 
 	$('#fullscreen').on('click', function(_e) {
