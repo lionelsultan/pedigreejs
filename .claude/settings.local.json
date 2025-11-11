@@ -17,7 +17,8 @@
       "Bash(python3:*)",
       "Bash(curl:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(killall:*)"
     ],
     "deny": [],
     "ask": []

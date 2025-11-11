@@ -4,7 +4,7 @@
 **Sévérité** : 🔴 Critique (fonctionnalité cassée)
 **Fichier** : `es/widgets.js`
 **Fonction** : `addpartner()`
-**Lignes modifiées** : 784-787
+**Lignes modifiées** : 777-813
 
 ---
 
@@ -102,7 +102,7 @@ Le partenaire doit avoir **les mêmes parents** que le nœud cible pour être au
 
 ## ✅ SOLUTION IMPLÉMENTÉE
 
-### Code corrigé
+### Code corrigé (Revision finale)
 ```javascript
 export function addpartner(opts, dataset, name) {
     let root = utils.roots[opts.targetDiv];
@@ -111,27 +111,45 @@ export function addpartner(opts, dataset, name) {
     if(!tree_node)
         throw utils.create_err('Person '+name+' not found when adding partner');
 
-    // ✅ BUG FIX: Use skip_parent_copy = false to ensure partner has same parents (same level)
-    let partner = addsibling(dataset, tree_node.data,
-                             tree_node.data.sex === 'F' ? 'M' : 'F',
-                             tree_node.data.sex === 'F',
-                             undefined,
-                             false);  // ← skip_parent_copy = false
-    // Then mark as noparents to hide parent lines in rendering
+    // Create partner as a new individual (not a sibling)
+    // Partner should be top_level to position at same depth without showing parent lines
+    let partner = {"name": utils.makeid(4), "sex": tree_node.data.sex === 'F' ? 'M' : 'F'};
+    if(tree_node.data.top_level) {
+        partner.top_level = true;
+    } else {
+        // For non-top-level persons, partner should also be positioned at same level
+        // Use same parents for depth calculation but mark as noparents to hide lines
+        partner.mother = tree_node.data.mother;
+        partner.father = tree_node.data.father;
+    }
     partner.noparents = true;
 
+    // Insert partner next to the target
+    let idx = utils.getIdxByName(dataset, tree_node.data.name);
+    if(tree_node.data.sex === 'F') {
+        if(idx > 0) idx--;  // add to left (partner on left of female)
+    } else {
+        idx++;  // add to right (partner on right of male)
+    }
+    dataset.splice(idx, 0, partner);
+
+    // Create child to link the couple
     let child = {"name": utils.makeid(4), "sex": "M"};
     child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
     child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
-    let idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
-    dataset.splice(idx, 0, child);
+    let child_idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
+    dataset.splice(child_idx, 0, child);
 }
 ```
 
-### Changements
-**Ligne 784** : `skip_parent_copy` changé de `true` à `false`
-**Ligne 784-786** : Ajout commentaires explicatifs
+### Changements (Révision finale)
+**Lignes 784-813** : Réécriture complète de la fonction
+- Ne plus utiliser `addsibling()` mais créer le partenaire directement
+- Si target est `top_level`: partner est aussi `top_level`
+- Sinon: partner reçoit les mêmes parents (pour le depth) + `noparents = true`
+- Insertion explicite du partner à côté du target dans le dataset
+- Création de l'enfant pour lier le couple
 
 ---
 

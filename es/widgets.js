@@ -781,17 +781,35 @@ export function addpartner(opts, dataset, name) {
 	if(!tree_node)
 		throw utils.create_err('Person '+name+' not found when adding partner');
 
-	// BUG FIX: Use skip_parent_copy = false to ensure partner has same parents (same level)
-	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F', undefined, false);
-	// Then mark as noparents to hide parent lines in rendering
+	// Create partner as a new individual (not a sibling)
+	// Partner should be top_level to position at same depth without showing parent lines
+	let partner = {"name": utils.makeid(4), "sex": tree_node.data.sex === 'F' ? 'M' : 'F'};
+	if(tree_node.data.top_level) {
+		partner.top_level = true;
+	} else {
+		// For non-top-level persons, partner should also be positioned at same level
+		// Use same parents for depth calculation but mark as noparents to hide lines
+		partner.mother = tree_node.data.mother;
+		partner.father = tree_node.data.father;
+	}
 	partner.noparents = true;
 
+	// Insert partner next to the target
+	let idx = utils.getIdxByName(dataset, tree_node.data.name);
+	if(tree_node.data.sex === 'F') {
+		if(idx > 0) idx--;  // add to left (partner on left of female)
+	} else {
+		idx++;  // add to right (partner on right of male)
+	}
+	dataset.splice(idx, 0, partner);
+
+	// Create child to link the couple
 	let child = {"name": utils.makeid(4), "sex": "M"};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
-	let idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
-	dataset.splice(idx, 0, child);
+	let child_idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
+	dataset.splice(child_idx, 0, child);
 }
 
 // get adjacent nodes at the same depth
