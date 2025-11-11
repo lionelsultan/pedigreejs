@@ -3704,7 +3704,10 @@ var pedigreejs = (function (exports) {
 	  let flat_tree = root ? flatten(root) : [];
 	  let tree_node = getTreeNode(flat_tree, dataset, name);
 	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding partner');
-	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F', undefined, true);
+
+	  // BUG FIX: Use skip_parent_copy = false to ensure partner has same parents (same level)
+	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F', undefined, false);
+	  // Then mark as noparents to hide parent lines in rendering
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),
