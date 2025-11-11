@@ -122,7 +122,7 @@ export function build(options) {
 	utils.adjust_coords(opts, nodes, flattenNodes);
 
 	let ptrLinkNodes = utils.linkNodes(flattenNodes, partners);
-	check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
+	let clashes = check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines (Phase 3.1.2)
 
 	let node = ped.selectAll(".node")
 				  .data(nodes.descendants())
@@ -335,6 +335,42 @@ export function build(options) {
 				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
 			});
 
+	// Phase 3.1.2 - Appliquer feedback visuel aux liens qui clashent
+	if(clashes.length > 0) {
+		partners.each(function(d) {
+			// Vérifier si ce lien a un clash
+			let hasClash = clashes.some(c =>
+				(c.node.mother.data.name === d.mother.data.name &&
+				 c.node.father.data.name === d.father.data.name)
+			);
+
+			if(hasClash) {
+				d3.select(this)
+					.attr('stroke', '#D5494A')  // Rouge
+					.attr('stroke-width', 2.5)
+					.attr('stroke-dasharray', '5,5')
+					.append('title')
+					.text('⚠️ Avertissement : Ce lien croise d\'autres liens de partenaires. Le tracé a été ajusté pour éviter les chevauchements.');
+			}
+		});
+
+		// Ajouter un message d'avertissement global si clashes détectés
+		if(!opts.DEBUG) {
+			// Enlever l'ancien warning s'il existe
+			$('#'+opts.targetDiv).parent().find('.pedigree-warning').remove();
+			// Ajouter le nouveau warning
+			$('#'+opts.targetDiv).parent().prepend(
+				'<div class="pedigree-warning" style="background:#FFF3CD;border:1px solid #FFC107;padding:10px;margin-bottom:10px;border-radius:4px;font-size:14px;">' +
+				'<strong>⚠️ Avertissement :</strong> ' + clashes.length +
+				' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.' +
+				'</div>'
+			);
+		}
+	} else {
+		// Pas de clashes, enlever le warning s'il existe
+		$('#'+opts.targetDiv).parent().find('.pedigree-warning').remove();
+	}
+
 	// links to children
 	ped.selectAll(".link")
 		.data(root.links(nodes.descendants()))
@@ -474,12 +510,18 @@ function get_bracket(dx, dy, indent, opts) {
 }
 
 // check for crossing of partner lines
+// Phase 3.1.2 - Modifié pour retourner les clashes pour feedback visuel
 function check_ptr_links(opts, ptrLinkNodes){
+	let clashes = [];
 	for(let a=0; a<ptrLinkNodes.length; a++) {
 		let clash = check_ptr_link_clashes(opts, ptrLinkNodes[a]);
-		if(clash)
-			console.log("CLASH :: "+ptrLinkNodes[a].mother.data.name+" "+ptrLinkNodes[a].father.data.name, clash);
+		if(clash) {
+			clashes.push({node: ptrLinkNodes[a], clash: clash});
+			if(opts.DEBUG)
+				console.log("CLASH :: "+ptrLinkNodes[a].mother.data.name+" "+ptrLinkNodes[a].father.data.name, clash);
+		}
 	}
+	return clashes;
 }
 
 export function check_ptr_link_clashes(opts, anode) {

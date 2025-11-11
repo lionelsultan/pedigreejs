@@ -518,7 +518,13 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Protégé handlers rebuild/build avec try/finally
   - Build réussi, aucune régression
   - Doc : `PHASE3_TASK_3.1.1_COMPLETION.md`
-- 🔴 À faire : Tâche 3.1.2 - Feedback visuel clashes (1h)
+- ✅ **COMPLÉTÉ** : Tâche 3.1.2 - Feedback visuel clashes (45 min, 2025-11-11)
+  - Modifié check_ptr_links() pour retourner array de clashes
+  - Appliqué style rouge pointillé aux liens problématiques
+  - Ajouté tooltips explicatifs au survol
+  - Ajouté badge d'avertissement global si clashes détectés
+  - Log console uniquement en mode DEBUG
+  - Doc : `PHASE3_TASK_3.1.2_COMPLETION.md`
 - ✅ **COMPLÉTÉ** : Tâche 3.1.3 - Débounce widgets (25 min, 2025-11-11)
   - Ajouté flag `_widgetClickInProgress` au scope module
   - Protégé popup sélection sexe + widgets principaux
@@ -535,8 +541,8 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Élimine incohérence entre popup et widget
   - Doc : `PHASE3_TASK_3.1.5_COMPLETION.md`
 
-**Progression Phase 3.1** : 3/5 tâches (60%)
-**Temps total** : 90 min (objectif : 3-4h) - Excellent progrès !
+**Progression Phase 3.1** : 4/5 tâches (80%)
+**Temps total** : 135 min (objectif : 3-4h) - Excellent progrès !
 
 ---
 
