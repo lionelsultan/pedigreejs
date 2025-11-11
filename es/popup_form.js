@@ -25,6 +25,17 @@ $(document).on('fhChange', function(e, opts){
 	}
 })
 
+// Phase 3.2.1: Auto-enable pathology fields when breast cancer diagnosis age is entered
+$(document).on('change input', "[id^='id_breast_cancer_diagnosis_age']", function() {
+	let value = $(this).val();
+	let sexInput = $("input[name='sex']:checked");
+
+	// Only enable pathology for females with a diagnosis age
+	if(value && value !== '' && sexInput.val() === 'F') {
+		$("select[id$='_bc_pathology']").prop("disabled", false);
+	}
+})
+
 // update status field and age label - 0 = alive, 1 = dead
 export function updateStatus(status) {
 	$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
