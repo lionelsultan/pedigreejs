@@ -519,11 +519,17 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Build réussi, aucune régression
   - Doc : `PHASE3_TASK_3.1.1_COMPLETION.md`
 - 🔴 À faire : Tâche 3.1.2 - Feedback visuel clashes (1h)
-- 🔴 À faire : Tâche 3.1.3 - Débounce widgets (30 min) **← PROCHAINE**
+- ✅ **COMPLÉTÉ** : Tâche 3.1.3 - Débounce widgets (25 min, 2025-11-11)
+  - Ajouté flag `_widgetClickInProgress` au scope module
+  - Protégé popup sélection sexe + widgets principaux
+  - Timeout 300ms pour permettre rebuild
+  - Exception pour settings (instantané)
+  - Doc : `PHASE3_TASK_3.1.3_COMPLETION.md`
 - 🔴 À faire : Tâche 3.1.4 - Logique addpartner (1h, analyse requise)
-- 🔴 À faire : Tâche 3.1.5 - Unifier règles sexe (45 min)
+- 🔴 À faire : Tâche 3.1.5 - Unifier règles sexe (45 min) **← PROCHAINE**
 
-**Progression Phase 3.1** : 1/5 tâches (20%)
+**Progression Phase 3.1** : 2/5 tâches (40%)
+**Temps total** : 55 min (objectif : 3-4h) - En avance !
 
 ---
 

@@ -208,11 +208,12 @@ Un plan d'action complet a été créé dans **`PHASE3_PLAN_ACTIONS_UX.md`** ave
 **Tâches prioritaires** :
 - ✅ **3.1.1 : Race condition rebuild (30 min)** - Flag `_isBuilding` ✅ **COMPLÉTÉ** (2025-11-11)
 - 🔴 3.1.2 : Feedback visuel clashes (1h) - Liens rouges + tooltips
-- 🔴 3.1.3 : Débounce widgets (30 min) - Protection double-clic **← PROCHAINE**
+- ✅ **3.1.3 : Débounce widgets (25 min)** - Protection double-clic ✅ **COMPLÉTÉ** (2025-11-11)
 - ⚠️ 3.1.4 : Logique addpartner (1h) - Revoir conditions de visibilité (analyse requise)
-- 🔴 3.1.5 : Unifier règles sexe (45 min) - Fonction `canChangeSex()` partagée
+- 🔴 3.1.5 : Unifier règles sexe (45 min) - Fonction `canChangeSex()` partagée **← PROCHAINE**
 
-**Progression** : 1/5 tâches complétées (20%)
+**Progression** : 2/5 tâches complétées (40%)
+**Temps passé** : 55 min (objectif : 3-4h) - Excellent progrès !
 
 ### Phase 3.2 - Améliorations UX (2-3h)
 

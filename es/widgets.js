@@ -14,6 +14,10 @@ import {getUniqueTwinID, setMzTwin, checkTwins} from './twins.js';
 let dragging;
 let last_mouseover;
 
+// Protection contre les double-clics qui créent des doublons
+// (Phase 3.1.3 - Correction UX/UI critique)
+let _widgetClickInProgress = false;
+
 function getTreeNode(flat_tree, dataset, name) {
 	if(!name)
 		return undefined;
@@ -106,6 +110,16 @@ export function addWidgets(opts, node) {
 	// click the person type selection
 	d3.selectAll(".persontype")
 	  .on("click", function () {
+		// Protection contre les double-clics (Phase 3.1.3)
+		if (_widgetClickInProgress) {
+			if(opts.DEBUG) {
+				console.log('Widget click ignored: action already in progress');
+			}
+			return;
+		}
+
+		_widgetClickInProgress = true;
+
 		let newdataset = utils.copy_dataset(pedcache_current(opts));
 		let mztwin = d3.select(this).classed("mztwin");
 		let dztwin = d3.select(this).classed("dztwin");
@@ -122,12 +136,19 @@ export function addWidgets(opts, node) {
 			addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
 		else if(add_person.type === 'addchild')
 			addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
-		else
+		else {
+			_widgetClickInProgress = false;
 			return;
+		}
 		opts.dataset = newdataset;
 		$(document).trigger('rebuild', [opts]);
 		d3.selectAll('.popup_selection').attr("opacity", 0);
 		add_person = {};
+
+		// Réactiver après un délai pour permettre le rebuild
+		setTimeout(() => {
+			_widgetClickInProgress = false;
+		}, 300);
 	  })
 	  .on("mouseover", function() {
 		  if(add_person.node)
@@ -248,10 +269,24 @@ export function addWidgets(opts, node) {
 	d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 	  .on("click", function (e) {
 		  e.stopPropagation();
+
+		// Protection contre les double-clics (Phase 3.1.3)
+		if (_widgetClickInProgress) {
+			if(opts.DEBUG) {
+				console.log('Widget action ignored: action already in progress');
+			}
+			return;
+		}
+
 		let opt = d3.select(this).attr('class');
 		let d = d3.select(this.parentNode).datum();
 		if(opts.DEBUG) {
 			console.log(opt);
+		}
+
+		// Bloquer les clics pendant l'action (sauf settings qui est instantané)
+		if(opt !== 'settings') {
+			_widgetClickInProgress = true;
 		}
 
 		let newdataset;
@@ -277,6 +312,13 @@ export function addWidgets(opts, node) {
 		}
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
+
+		// Réactiver après un délai (sauf settings)
+		if(opt !== 'settings') {
+			setTimeout(() => {
+				_widgetClickInProgress = false;
+			}, 300);
+		}
 	});
 
 	// other mouse events
