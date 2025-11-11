@@ -320,16 +320,19 @@
 				canvas.requestFullscreen().then(() => {
 					icon.className = 'fa fa-compress';
 					this.setAttribute('title', 'Exit fullscreen');
+					this.setAttribute('aria-pressed', 'true');
 					canvas.style.background = '#f8f9fa';
 					canvas.style.padding = '2rem';
 					showToast('Entered fullscreen mode', 'View');
 				}).catch(() => {
+					this.setAttribute('aria-pressed', 'false');
 					showToast('Fullscreen not supported', 'Error');
 				});
 			} else {
 				document.exitFullscreen().then(() => {
 					icon.className = 'fa fa-expand';
 					this.setAttribute('title', 'Toggle fullscreen');
+					this.setAttribute('aria-pressed', 'false');
 					canvas.style.background = '';
 					canvas.style.padding = '';
 					showToast('Exited fullscreen mode', 'View');

@@ -467,14 +467,44 @@ describe('Test pedigree SVG ', function() {
 		});*/
 
 		it('should be allowed', function() {
-			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			var workingDataset = pedigree_util.copy_dataset(newopts.dataset);
 			var fnodes = pedigree_util.flatten(pedigree_util.roots[newopts.targetDiv]);
 			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
-			widgets.delete_node_dataset(newopts.dataset, ana.data, newopts);
+			widgets.delete_node_dataset(workingDataset, ana.data, newopts);
+			newopts.dataset = workingDataset;
 			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts);
+		});
+
+		it('should invoke the completion callback with the updated dataset', function() {
+			var fnodes = pedigree_util.flatten(pedigree_util.roots[newopts.targetDiv]);
+			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
+			var workingDataset = pedigree_util.copy_dataset(newopts.dataset);
+			var onDone = jasmine.createSpy('onDone');
+
+			widgets.delete_node_dataset(workingDataset, ana.data, newopts, onDone);
+
+			expect(onDone).toHaveBeenCalledWith(newopts, workingDataset);
+			expect(pedigree_util.getNodeByName(workingDataset, 'Ana')).toBeUndefined();
+		});
+
+		it('should warn the user when deletion splits the pedigree', function() {
+			var originalMessages = pedigree_util.messages;
+			var warningTriggered = false;
+			pedigree_util.messages = function() {
+				warningTriggered = true;
+			};
+
+			var workingDataset = pedigree_util.copy_dataset(newopts.dataset);
+			workingDataset.push({"name": "loner", "sex": "M", "top_level": true});
+			var fnodes = pedigree_util.flatten(pedigree_util.roots[newopts.targetDiv]);
+			var tom = pedigree_util.getNodeByName(fnodes, 'Tom');
+			widgets.delete_node_dataset(workingDataset, tom.data, newopts);
+
+			pedigree_util.messages = originalMessages;
+			expect(warningTriggered).toBeTrue();
 		});
 	});
 

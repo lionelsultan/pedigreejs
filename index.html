@@ -134,24 +134,16 @@
 						<div class="card-body">
 							<p class="text-uppercase small text-secondary mb-2">Quality snapshot</p>
 							<h2 class="h4 mb-3" id="quality-card-heading">Operational metrics</h2>
-							<dl class="row g-3 small mb-0">
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small mb-1">Test coverage</dt>
-									<dd class="mb-0 fw-semibold">150 Jasmine specs</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small mb-1">Render time</dt>
-									<dd class="mb-0 fw-semibold">4–31 ms (10–100 nodes)</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small mb-1">Audit cadence</dt>
-									<dd class="mb-0 fw-semibold">Monthly ISO/WCAG review</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small mb-1">Change control</dt>
-									<dd class="mb-0 fw-semibold">Traceable via PLAN_ACTIONS.md</dd>
-								</div>
-							</dl>
+								<dl class="row g-3 small mb-0">
+									<dt class="col-6 text-muted text-uppercase small mb-1">Test coverage</dt>
+									<dd class="col-6 mb-0 fw-semibold">150 Jasmine specs</dd>
+									<dt class="col-6 text-muted text-uppercase small mb-1">Render time</dt>
+									<dd class="col-6 mb-0 fw-semibold">4–31 ms (10–100 nodes)</dd>
+									<dt class="col-6 text-muted text-uppercase small mb-1">Audit cadence</dt>
+									<dd class="col-6 mb-0 fw-semibold">Monthly ISO/WCAG review</dd>
+									<dt class="col-6 text-muted text-uppercase small mb-1">Change control</dt>
+									<dd class="col-6 mb-0 fw-semibold">Traceable via PLAN_ACTIONS.md</dd>
+								</dl>
 							<p class="text-muted small mt-3 mb-0">Horodatages ISO 8601 et validations locales garantissent des exports prêts pour les audits cliniques (ISO 15189 / ISO 27001).</p>
 						</div>
 					</div>
@@ -327,7 +319,7 @@
 										<i class="fa fa-search-minus" aria-hidden="true"></i>
 										<span class="visually-hidden">Zoom out</span>
 									</button>
-									<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle fullscreen">
+									<button type="button" class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle fullscreen" aria-pressed="false" aria-controls="pedigrees">
 										<i class="fa fa-expand" aria-hidden="true"></i>
 										<span class="visually-hidden">Toggle fullscreen</span>
 										</button>
@@ -407,45 +399,55 @@
 							<section aria-labelledby="options-heading">
 					<h2 id="options-heading">Options Reference</h2>
 					<div class="accordion" id="optionsAccordion">
-						<div class="accordion-item">
-							<h3 class="accordion-header" id="headingCore">
-								<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCore" aria-expanded="true" aria-controls="collapseCore">
-									Core
-								</button>
-							</h3>
-							<div id="collapseCore" class="accordion-collapse collapse show" aria-labelledby="headingCore" data-bs-parent="#optionsAccordion">
-								<div class="accordion-body">
-									<dl class="row row-cols-1 gy-3">
-										<div class="col"><dt id="targetDiv" class="fw-semibold">targetDiv</dt><dd>This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd></div>
-										<div class="col"><dt id="btn_target" class="fw-semibold">btn_target</dt><dd>This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd></div>
-										<div class="col"><dt id="dataset" class="fw-semibold">dataset</dt><dd>The pedigree data to be displayed, <em>e.g.</em><pre class="options" role="region" aria-label="Dataset example"><code>[
+							<div class="accordion-item">
+								<h3 class="accordion-header" id="headingCore">
+									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCore" aria-expanded="true" aria-controls="collapseCore">
+										Core
+									</button>
+								</h3>
+								<div id="collapseCore" class="accordion-collapse collapse show" aria-labelledby="headingCore" data-bs-parent="#optionsAccordion">
+									<div class="accordion-body">
+										<dl class="row gy-3">
+											<dt id="targetDiv" class="col-12 fw-semibold">targetDiv</dt>
+											<dd class="col-12">This is the id of the HTML div used for drawing the pedigree, <em>e.g.</em> 'pedigree_edit'.</dd>
+											<dt id="btn_target" class="col-12 fw-semibold">btn_target</dt>
+											<dd class="col-12">This is the id of the HTML div used for the buttons, <em>e.g.</em> 'pedigree_history'.</dd>
+											<dt id="dataset" class="col-12 fw-semibold">dataset</dt>
+											<dd class="col-12">The pedigree data to be displayed, <em>e.g.</em><pre class="options" role="region" aria-label="Dataset example"><code>[
 	{"name": "m21", "sex": "M", "top_level": true},
 	{"name": "f21", "sex": "F", "top_level": true},
 	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer": true, "proband": true}
-]</code></pre></dd></div>
-									</dl>
+]</code></pre></dd>
+										</dl>
+									</div>
 								</div>
 							</div>
-						</div>
 						<div class="accordion-item">
 							<h3 class="accordion-header" id="headingLayout">
 								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLayout" aria-expanded="false" aria-controls="collapseLayout">
 									Layout & Labels
 								</button>
 							</h3>
-							<div id="collapseLayout" class="accordion-collapse collapse" aria-labelledby="headingLayout" data-bs-parent="#optionsAccordion">
-								<div class="accordion-body">
-									<dl class="row row-cols-1 gy-3">
-										<div class="col"><dt id="labels" class="fw-semibold">labels</dt><dd>Array of attributes to display under the individual's symbol, <em>e.g.</em> ['age', 'yob', 'alleles'].</dd></div>
-										<div class="col"><dt id="font_size" class="fw-semibold">font_size</dt><dd>Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</dd></div>
-										<div class="col"><dt id="font_family" class="fw-semibold">font_family</dt><dd>Define the font-family of the labels, <em>e.g.</em> 'times'.</dd></div>
-										<div class="col"><dt id="font_weight" class="fw-semibold">font_weight</dt><dd>Define the font-weight of the labels, <em>e.g.</em> 400, 700.</dd></div>
-										<div class="col"><dt id="width" class="fw-semibold">width</dt><dd>Width of the SVG element, <em>e.g.</em> 600.</dd></div>
-										<div class="col"><dt id="height" class="fw-semibold">height</dt><dd>Height of the SVG element, <em>e.g.</em> 400.</dd></div>
-										<div class="col"><dt id="symbol_size" class="fw-semibold">symbol_size</dt><dd>Size of the nodes, <em>e.g.</em> 35.</dd></div>
-									</dl>
+								<div id="collapseLayout" class="accordion-collapse collapse" aria-labelledby="headingLayout" data-bs-parent="#optionsAccordion">
+									<div class="accordion-body">
+										<dl class="row gy-3">
+											<dt id="labels" class="col-12 fw-semibold">labels</dt>
+											<dd class="col-12">Array of attributes to display under the individual's symbol, <em>e.g.</em> ['age', 'yob', 'alleles'].</dd>
+											<dt id="font_size" class="col-12 fw-semibold">font_size</dt>
+											<dd class="col-12">Define the font-size of the labels, <em>e.g.</em> '0.75em' or '10px'.</dd>
+											<dt id="font_family" class="col-12 fw-semibold">font_family</dt>
+											<dd class="col-12">Define the font-family of the labels, <em>e.g.</em> 'times'.</dd>
+											<dt id="font_weight" class="col-12 fw-semibold">font_weight</dt>
+											<dd class="col-12">Define the font-weight of the labels, <em>e.g.</em> 400, 700.</dd>
+											<dt id="width" class="col-12 fw-semibold">width</dt>
+											<dd class="col-12">Width of the SVG element, <em>e.g.</em> 600.</dd>
+											<dt id="height" class="col-12 fw-semibold">height</dt>
+											<dd class="col-12">Height of the SVG element, <em>e.g.</em> 400.</dd>
+											<dt id="symbol_size" class="col-12 fw-semibold">symbol_size</dt>
+											<dd class="col-12">Size of the nodes, <em>e.g.</em> 35.</dd>
+										</dl>
+									</div>
 								</div>
-							</div>
 						</div>
 						<div class="accordion-item">
 							<h3 class="accordion-header" id="headingStorage">
@@ -455,8 +457,9 @@
 							</h3>
 							<div id="collapseStorage" class="accordion-collapse collapse" aria-labelledby="headingStorage" data-bs-parent="#optionsAccordion">
 								<div class="accordion-body">
-									<dl class="row row-cols-1 gy-3">
-										<div class="col"><dt id="store_type" class="fw-semibold">store_type</dt><dd>Pedigree storage (for undo, redo) set to 'session', 'local' or 'array'. Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>'. <strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.</dd></div>
+									<dl class="row gy-3">
+										<dt id="store_type" class="col-12 fw-semibold">store_type</dt>
+										<dd class="col-12">Pedigree storage (for undo, redo) set to 'session', 'local' or 'array'. Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp" target="_blank" rel="noopener noreferrer">session</a>'. <strong>Recent improvements:</strong> Array mode now includes LRU eviction (max 500 entries) and position storage for zoom/pan state.</dd>
 									</dl>
 								</div>
 							</div>
@@ -469,10 +472,13 @@
 							</h3>
 							<div id="collapseZoom" class="accordion-collapse collapse" aria-labelledby="headingZoom" data-bs-parent="#optionsAccordion">
 								<div class="accordion-body">
-									<dl class="row row-cols-1 gy-3">
-										<div class="col"><dt id="zoomIn" class="fw-semibold">zoomIn</dt><dd>The factor by which the svg size can be scaled down, default 1 (no zoom in).</dd></div>
-										<div class="col"><dt id="zoomOut" class="fw-semibold">zoomOut</dt><dd>The factor by which the svg size can be scaled up, default 1 (no zoom out).</dd></div>
-										<div class="col"><dt id="zoomSrc" class="fw-semibold">zoomSrc</dt><dd>The source of zoom events, default ['wheel', 'button'].</dd></div>
+									<dl class="row gy-3">
+										<dt id="zoomIn" class="col-12 fw-semibold">zoomIn</dt>
+										<dd class="col-12">The factor by which the svg size can be scaled down, default 1 (no zoom in).</dd>
+										<dt id="zoomOut" class="col-12 fw-semibold">zoomOut</dt>
+										<dd class="col-12">The factor by which the svg size can be scaled up, default 1 (no zoom out).</dd>
+										<dt id="zoomSrc" class="col-12 fw-semibold">zoomSrc</dt>
+										<dd class="col-12">The source of zoom events, default ['wheel', 'button'].</dd>
 									</dl>
 								</div>
 							</div>
@@ -485,11 +491,15 @@
 							</h3>
 							<div id="collapseBehavior" class="accordion-collapse collapse" aria-labelledby="headingBehavior" data-bs-parent="#optionsAccordion">
 								<div class="accordion-body">
-									<dl class="row row-cols-1 gy-3">
-										<div class="col"><dt id="edit" class="fw-semibold">edit</dt><dd>Set to true to use the default dialog editor, or supply a function to provide a custom editor.</dd></div>
-										<div class="col"><dt id="dragNode" class="fw-semibold">dragNode</dt><dd>Allow nodes to be dragged (default true).</dd></div>
-										<div class="col"><dt id="showWidgets" class="fw-semibold">showWidgets</dt><dd>Show the contextual widgets on hover (default true).</dd></div>
-										<div class="col"><dt id="DEBUG" class="fw-semibold">DEBUG</dt><dd>When true, more console output is provided and `noparents` nodes remain visible.</dd></div>
+									<dl class="row gy-3">
+										<dt id="edit" class="col-12 fw-semibold">edit</dt>
+										<dd class="col-12">Set to true to use the default dialog editor, or supply a function to provide a custom editor.</dd>
+										<dt id="dragNode" class="col-12 fw-semibold">dragNode</dt>
+										<dd class="col-12">Allow nodes to be dragged (default true).</dd>
+										<dt id="showWidgets" class="col-12 fw-semibold">showWidgets</dt>
+										<dd class="col-12">Show the contextual widgets on hover (default true).</dd>
+										<dt id="DEBUG" class="col-12 fw-semibold">DEBUG</dt>
+										<dd class="col-12">When true, more console output is provided and `noparents` nodes remain visible.</dd>
 									</dl>
 								</div>
 							</div>
@@ -541,22 +551,14 @@
 							<h3 class="h5">Software quality</h3>
 							<p class="text-muted small">Mapped to ISO/IEC 25010 attributes.</p>
 							<dl class="row small mb-0">
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small">Reliability</dt>
-									<dd class="mb-2">Undo/redo history with cache recovery.</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small">Performance</dt>
-									<dd class="mb-2">4–31&nbsp;ms renders logged in audits.</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small">Maintainability</dt>
-									<dd class="mb-0">Modular ES build, lint + tests per PR.</dd>
-								</div>
-								<div class="col-6">
-									<dt class="text-muted text-uppercase small">Security</dt>
-									<dd class="mb-0">No PII persisted; exports anonymisable.</dd>
-								</div>
+								<dt class="col-6 text-muted text-uppercase small">Reliability</dt>
+								<dd class="col-6 mb-2">Undo/redo history with cache recovery.</dd>
+								<dt class="col-6 text-muted text-uppercase small">Performance</dt>
+								<dd class="col-6 mb-2">4–31&nbsp;ms renders logged in audits.</dd>
+								<dt class="col-6 text-muted text-uppercase small">Maintainability</dt>
+								<dd class="col-6 mb-0">Modular ES build, lint + tests per PR.</dd>
+								<dt class="col-6 text-muted text-uppercase small">Security</dt>
+								<dd class="col-6 mb-0">No PII persisted; exports anonymisable.</dd>
 							</dl>
 						</div>
 					</article>
@@ -649,24 +651,18 @@
 							<div class="card-body">
 								<h3 class="h5 mb-3">Support &amp; escalation</h3>
 								<dl class="row small mb-0">
-									<div class="col-5">
-										<dt class="text-muted text-uppercase small">Slack</dt>
-										<dd class="mb-2"><code>#pedigreejs-core</code></dd>
-									</div>
-									<div class="col-7">
-										<dt class="text-muted text-uppercase small">Email</dt>
-										<dd class="mb-2"><a href="mailto:pedigreejs@ccge.example" class="link-primary">pedigreejs@ccge.example</a></dd>
-									</div>
-									<div class="col-12">
-										<dt class="text-muted text-uppercase small">Documentation set</dt>
-										<dd class="mb-0">
-											<ul class="list-unstyled mb-0">
-												<li><a href="SESSION_CONTEXT.md">Session context</a></li>
-												<li><a href="AUDIT_FONCTIONNEL.md">Functional audit</a></li>
-												<li><a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
-											</ul>
-										</dd>
-									</div>
+									<dt class="col-5 text-muted text-uppercase small">Slack</dt>
+									<dd class="col-7 mb-2"><code>#pedigreejs-core</code></dd>
+									<dt class="col-5 text-muted text-uppercase small">Email</dt>
+									<dd class="col-7 mb-2"><a href="mailto:pedigreejs@ccge.example" class="link-primary">pedigreejs@ccge.example</a></dd>
+									<dt class="col-12 text-muted text-uppercase small">Documentation set</dt>
+									<dd class="col-12 mb-0">
+										<ul class="list-unstyled mb-0">
+											<li><a href="SESSION_CONTEXT.md">Session context</a></li>
+											<li><a href="AUDIT_FONCTIONNEL.md">Functional audit</a></li>
+											<li><a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
+										</ul>
+									</dd>
 								</dl>
 								<p class="text-muted small mt-3 mb-0">For incidents impacting clinical workflows, follow the escalation ladder in <code>PHASE3_PLAN_ACTIONS_UX.md</code> and attach console logs generated with the DEBUG flag.</p>
 							</div>
@@ -779,9 +775,9 @@
 				Some features may not work correctly.
 				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 			`;
-			const container = document.querySelector('.container');
-			if (container) {
-				container.insertBefore(alertDiv, container.firstChild);
+			const insertionTarget = document.getElementById('main-content') || document.body;
+			if (insertionTarget && typeof insertionTarget.prepend === 'function') {
+				insertionTarget.prepend(alertDiv);
 			}
 		}
 	});

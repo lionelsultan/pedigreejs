@@ -78,4 +78,29 @@ describe('widgets.js module', function() {
 			expect(twinSibling.father).toBe(existingChild.father);
 		});
 	});
+
+	describe('addpartner', function() {
+		it('ajoute un partenaire sans parents et un enfant de liaison', function() {
+			var dataset = [
+				{"name": "soloMom", "sex": "F", "top_level": true}
+			];
+			var opts = {targetDiv: 'spec_target'};
+
+			widgets.addpartner(opts, dataset, 'soloMom');
+
+			var partner = dataset.find(function(p) {
+				return p.noparents && p.name !== 'soloMom';
+			});
+			var child = dataset.find(function(p) {
+				return p.mother === 'soloMom' || p.father === 'soloMom';
+			});
+
+			expect(partner).toBeDefined();
+			expect(partner.sex).toBe('M');
+			expect(partner.top_level).toBeTrue();
+			expect(child).toBeDefined();
+			expect(child.mother === 'soloMom' || child.father === 'soloMom').toBeTrue();
+			expect(child.mother === partner.name || child.father === partner.name).toBeTrue();
+		});
+	});
 });
