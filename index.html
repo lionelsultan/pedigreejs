@@ -87,10 +87,12 @@
 			</button>
 			<div class="collapse navbar-collapse" id="primaryNav">
 				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+					<li class="nav-item"><a class="nav-link" href="#summary">At a glance</a></li>
 					<li class="nav-item"><a class="nav-link" href="#main-content">Demo</a></li>
 					<li class="nav-item"><a class="nav-link" href="#overview-heading">Overview</a></li>
 					<li class="nav-item"><a class="nav-link" href="#options-heading">Options</a></li>
 					<li class="nav-item"><a class="nav-link" href="#standards">Standards</a></li>
+					<li class="nav-item"><a class="nav-link" href="#faq-support">FAQ</a></li>
 					<li class="nav-item"><a class="nav-link" href="#publication-heading">Publication</a></li>
 				</ul>
 			</div>
@@ -157,6 +159,58 @@
 			</div>
 		</div>
 	</header>
+
+	<section id="summary" class="py-4 bg-body border-bottom" aria-labelledby="summary-heading">
+		<div class="container">
+			<div class="text-center mb-4">
+				<p class="text-uppercase text-secondary small mb-1">Executive snapshot</p>
+				<h2 class="h4 fw-semibold text-dark mb-2" id="summary-heading">Where the release stands today</h2>
+				<p class="text-muted small mb-0">Use this quick read to orient audits, demos, or go/no-go reviews.</p>
+			</div>
+			<div class="row g-4">
+				<div class="col-lg-4">
+					<article class="card h-100 border-0 shadow-sm">
+						<div class="card-body">
+							<p class="text-uppercase text-secondary small mb-1">Deployment readiness</p>
+							<h3 class="h5 mb-3">At a glance</h3>
+							<ul class="small text-muted mb-0">
+								<li>Rollup bundle (IIFE + ES) produced via `npm run build`.</li>
+								<li>150 Jasmine specs, lint enforced via Rollup pipeline.</li>
+								<li>Docs kept in sync with <code>PLAN_ACTIONS.md</code> and audits.</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+				<div class="col-lg-4">
+					<article class="card h-100 border-0 shadow-sm">
+						<div class="card-body">
+							<p class="text-uppercase text-secondary small mb-1">Compliance status</p>
+							<h3 class="h5 mb-3">Controls & checkpoints</h3>
+							<ul class="small text-muted mb-0">
+								<li><strong>ISO 9241 / WCAG:</strong> focus order, skip link, aria-live controls verified Nov 2024.</li>
+								<li><strong>ISO 8601:</strong> exports, logs, and audit notes stamped automatically.</li>
+								<li><strong>ISO/IEC 27001:</strong> no PII persisted; anonymisation toggles enforced during export.</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+				<div class="col-lg-4">
+					<article class="card h-100 border-0 shadow-sm">
+						<div class="card-body">
+							<p class="text-uppercase text-secondary small mb-1">Quick actions</p>
+							<h3 class="h5 mb-3">Next steps</h3>
+							<ul class="small text-muted mb-3">
+								<li><a href="docs/developer.html" class="link-primary text-decoration-none">Developer onboarding</a></li>
+								<li><a href="README.md" class="link-primary text-decoration-none">Repository README</a></li>
+								<li><a href="PLAN_ACTIONS.md" class="link-primary text-decoration-none">Plan & change log</a></li>
+							</ul>
+							<p class="text-muted small mb-0">Need to evaluate? Run <code>npm test</code> then <code>npm run build-es</code> to compare artifacts.</p>
+						</div>
+					</article>
+				</div>
+			</div>
+		</div>
+	</section>
 
 	<!-- Delivery Roadmap -->
 	<section class="py-5 bg-body" aria-labelledby="release-heading">
@@ -544,7 +598,83 @@
 				</div>
 			</div>
 		</div>
-	</section>
+		</section>
+
+		<section id="faq-support" class="py-5 bg-light border-top" aria-labelledby="faq-heading">
+			<div class="container">
+				<div class="row g-4">
+					<div class="col-lg-7">
+						<h2 class="h4 mb-3" id="faq-heading">FAQ &amp; Operating guidance</h2>
+						<div class="accordion" id="faqAccordion">
+							<div class="accordion-item">
+								<h3 class="accordion-header" id="faqOne">
+									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOneContent" aria-expanded="true" aria-controls="faqOneContent">
+										How do I reset the canvas without losing provenance?
+									</button>
+								</h3>
+								<div id="faqOneContent" class="accordion-collapse collapse show" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
+									<div class="accordion-body small text-muted">
+										Use the in-app <strong>Reset</strong> control to clear the viewport, then restore the previous state via <strong>Undo</strong>. The action log stays available in browser storage, keeping the ISO 9001 traceability chain intact.
+									</div>
+								</div>
+							</div>
+							<div class="accordion-item">
+								<h3 class="accordion-header" id="faqTwo">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwoContent" aria-expanded="false" aria-controls="faqTwoContent">
+										Where are anonymisation and consent flags configured?
+									</button>
+								</h3>
+								<div id="faqTwoContent" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
+									<div class="accordion-body small text-muted">
+										Set the relevant attributes in your dataset or custom editor. The export helpers (`save-canrisk`, `save-boadicea`) automatically include or strip identifiers depending on that flag, and the status banner highlights the current mode.
+									</div>
+								</div>
+							</div>
+							<div class="accordion-item">
+								<h3 class="accordion-header" id="faqThree">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThreeContent" aria-expanded="false" aria-controls="faqThreeContent">
+										What testing should run before shipping changes?
+									</button>
+								</h3>
+								<div id="faqThreeContent" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
+									<div class="accordion-body small text-muted">
+										Run <code>npm test</code> (Jasmine browser runner), <code>npm run build</code>, and attach screenshots for any UI adjustments per the repository guidelines in <code>AGENTS.md</code>.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-5">
+						<div class="card border-0 shadow-sm h-100">
+							<div class="card-body">
+								<h3 class="h5 mb-3">Support &amp; escalation</h3>
+								<dl class="row small mb-0">
+									<div class="col-5">
+										<dt class="text-muted text-uppercase small">Slack</dt>
+										<dd class="mb-2"><code>#pedigreejs-core</code></dd>
+									</div>
+									<div class="col-7">
+										<dt class="text-muted text-uppercase small">Email</dt>
+										<dd class="mb-2"><a href="mailto:pedigreejs@ccge.example" class="link-primary">pedigreejs@ccge.example</a></dd>
+									</div>
+									<div class="col-12">
+										<dt class="text-muted text-uppercase small">Documentation set</dt>
+										<dd class="mb-0">
+											<ul class="list-unstyled mb-0">
+												<li><a href="SESSION_CONTEXT.md">Session context</a></li>
+												<li><a href="AUDIT_FONCTIONNEL.md">Functional audit</a></li>
+												<li><a href="VISUAL_ENHANCEMENTS.md">Visual enhancements</a></li>
+											</ul>
+										</dd>
+									</div>
+								</dl>
+								<p class="text-muted small mt-3 mb-0">For incidents impacting clinical workflows, follow the escalation ladder in <code>PHASE3_PLAN_ACTIONS_UX.md</code> and attach console logs generated with the DEBUG flag.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
 	<footer class="bg-dark text-white py-4" aria-label="Footer">
 		<div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">

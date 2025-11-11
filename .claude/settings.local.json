@@ -15,7 +15,9 @@
       "WebFetch(domain:lionelsultan.github.io)",
       "Bash(timeout 3 bash:*)",
       "Bash(python3:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []
