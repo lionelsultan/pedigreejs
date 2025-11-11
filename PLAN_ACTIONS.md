@@ -212,10 +212,11 @@ Un plan d'action complet a été créé dans **`PHASE3_PLAN_ACTIONS_UX.md`** ave
 - ✅ **3.1.4 : Logique addpartner (30 min)** - Suppression condition bloquante ✅ **COMPLÉTÉ** (2025-11-11)
 - ✅ **3.1.5 : Unifier règles sexe (35 min)** - Fonction `canChangeSex()` partagée ✅ **COMPLÉTÉ** (2025-11-11)
 
-**Progression** : 5/5 tâches complétées (100%) - **PHASE 3.1 COMPLÉTÉE !** 🎉
+**Progression** : 5/5 tâches complétées (100%) - **✅ PHASE 3.1 COMPLÉTÉE ET VALIDÉE !** 🎉
 **Temps passé** : 165 min (objectif : 3-4h) - Sous budget !
+**Validation** : ✅ 151 specs, 0 failures (Tests Jasmine automatisés)
 
-### Phase 3.2 - Améliorations UX (2-3h)
+### Phase 3.2 - Améliorations UX (2-3h) - **EN COURS**
 
 **Tâches importantes** :
 - Réactivation auto champs pathologie
