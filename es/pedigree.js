@@ -14,6 +14,9 @@ import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
 import {init_dragging} from './dragging.js';
 
+// Protection contre les race conditions lors de rebuilds concurrents
+// (Phase 3.1.1 - Correction UX/UI critique)
+let _isBuilding = false;
 
 export function build(options) {
 	let opts = $.extend({ // defaults
@@ -569,9 +572,35 @@ export function rebuild(opts) {
 }
 
 $(document).on('rebuild', function(_e, opts){
-	rebuild(opts);
+	// Protection contre les race conditions (Phase 3.1.1)
+	if (_isBuilding) {
+		if(opts && opts.DEBUG) {
+			console.log('Rebuild ignored: build already in progress');
+		}
+		return;
+	}
+
+	_isBuilding = true;
+	try {
+		rebuild(opts);
+	} finally {
+		_isBuilding = false;
+	}
 })
 
 $(document).on('build', function(_e, opts){
-	build(opts);
+	// Protection contre les race conditions (Phase 3.1.1)
+	if (_isBuilding) {
+		if(opts && opts.DEBUG) {
+			console.log('Build ignored: build already in progress');
+		}
+		return;
+	}
+
+	_isBuilding = true;
+	try {
+		build(opts);
+	} finally {
+		_isBuilding = false;
+	}
 })

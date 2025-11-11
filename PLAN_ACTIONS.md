@@ -3,7 +3,7 @@
 *Document de suivi des corrections et améliorations identifiées dans l'audit de code*
 
 **Créé le** : 2024-11-09
-**Dernière mise à jour** : 2024-11-10
+**Dernière mise à jour** : 2025-11-11 (Audit UX/UI + Phase 3 UX)
 **Statut global** : 🟡 En cours
 
 ---
@@ -22,8 +22,9 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 |-------|--------|------------|---------------|--------------|
 | Phase 1 - Architecture critique | 🟢 **Terminé** | 100% | 2-3h | ~2h |
 | Phase 2 - Performance | 🟢 **Terminé** | 100% | 1.5-2h | ~1.5h |
-| Phase 3 - Tests et documentation | 🔴 **À faire** | 0% | 1-2h | - |
-| Phase 4 - Modernisation | 🔴 **À faire** | 0% | 1-2h | - |
+| **Phase 3 - Corrections UX/UI** ⭐ | 🔴 **À faire** | 0% | 6-8h | - |
+| Phase 4 - Tests et documentation | 🔴 **À faire** | 0% | 1-2h | - |
+| Phase 5 - Modernisation | 🔴 **À faire** | 0% | 1-2h | - |
 
 **Légende statuts** : 🔴 À faire | 🟡 En cours | 🟢 Terminé | ⚠️ Bloqué
 
@@ -178,7 +179,84 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ---
 
-## 🧪 Phase 3 - Tests et documentation (Priorité P1-P2)
+## 🎨 Phase 3 - Corrections UX/UI (Priorité P1) ⭐ NOUVEAU
+
+**Objectif** : Corriger les incohérences UX/UI ↔ logique technique identifiées dans l'audit
+**Durée estimée** : 6-8h
+**Statut** : 🔴 **À faire**
+**Basé sur** : AUDIT_UX_UI_2025-11-11.md (score actuel : 6.9/10)
+
+### 📋 Plan détaillé disponible
+
+Un plan d'action complet a été créé dans **`PHASE3_PLAN_ACTIONS_UX.md`** avec :
+- 19 problèmes identifiés (5 critiques 🔴, 9 majeurs ⚠️, 5 mineurs 🟡)
+- Découpage en 3 sous-phases (3.1 Critiques, 3.2 UX, 3.3 Polish)
+- Solutions techniques détaillées pour chaque problème
+- Tests à effectuer et critères de succès
+- Ordre d'exécution recommandé
+
+### Résumé des problèmes critiques (🔴)
+
+1. **Race condition dans rebuild** - Artefacts visuels lors de manipulations rapides
+2. **Clashes de liens sans feedback** - Liens qui se croisent sans avertissement visuel
+3. **Double-clic crée des doublons** - Protection manquante sur les widgets
+4. **Logique addpartner incohérente** - Impossible d'ajouter plusieurs partenaires
+5. **Règles de sexe conflictuelles** - Incohérence entre formulaire et éditeur
+
+### Phase 3.1 - Corrections critiques (3-4h) - **EN COURS**
+
+**Tâches prioritaires** :
+- ✅ **3.1.1 : Race condition rebuild (30 min)** - Flag `_isBuilding` ✅ **COMPLÉTÉ** (2025-11-11)
+- 🔴 3.1.2 : Feedback visuel clashes (1h) - Liens rouges + tooltips
+- 🔴 3.1.3 : Débounce widgets (30 min) - Protection double-clic **← PROCHAINE**
+- ⚠️ 3.1.4 : Logique addpartner (1h) - Revoir conditions de visibilité (analyse requise)
+- 🔴 3.1.5 : Unifier règles sexe (45 min) - Fonction `canChangeSex()` partagée
+
+**Progression** : 1/5 tâches complétées (20%)
+
+### Phase 3.2 - Améliorations UX (2-3h)
+
+**Tâches importantes** :
+- Réactivation auto champs pathologie
+- Feedback visuel drag consanguineous
+- Préserver zoom en fullscreen
+- Sélection sexe jumeaux dizygotes
+- Corriger `keep_proband_on_reset`
+
+### Phase 3.3 - Polish et optimisations (1-2h)
+
+**Améliorations cosmétiques** (optionnel) :
+- Tooltips boutons zoom
+- Optimiser triggers `fhChange`
+- Assouplir validation age/yob
+- Documenter mode DEBUG
+- Indicateurs visuels données invalides
+
+### Critères de validation Phase 3
+
+- [ ] Score UX/UI global : 6.9/10 → **8.5/10** (objectif)
+- [ ] 5 problèmes critiques → **0 problème** (tous corrigés)
+- [ ] 9 problèmes majeurs → **≤3 problèmes** (au moins 6 corrigés)
+- [ ] Aucune régression : **150 specs passent** toujours
+- [ ] Aucune race condition détectée en tests stress
+- [ ] Feedback visuel clair pour toutes les interactions
+
+### Livrables attendus
+
+- [ ] **Code** : Modifications dans `pedigree.js`, `widgets.js`, `popup_form.js`, `pbuttons.js`, `zoom.js`, `validation.js`
+- [ ] **Tests** : Ajout de tests si nécessaire, tous les tests passent
+- [ ] **Documentation** : `PHASE3_COMPLETION_REPORT.md` avec avant/après, nouveau score UX/UI
+- [ ] **Commits** : Commits atomiques par tâche avec messages descriptifs
+
+### 🚦 Ordre recommandé d'exécution
+
+**Semaine 1 - Critiques** : Tâches 3.1.1 → 3.1.3 → 3.1.5 → 3.1.2 → 3.1.4 (analyse requise)
+**Semaine 2 - UX** : Tâches 3.2.x selon priorités projet
+**Semaine 3 - Polish** : Tâches 3.3.x selon temps disponible (optionnel)
+
+---
+
+## 🧪 Phase 4 - Tests et documentation (Priorité P1-P2)
 
 **Objectif** : Couvrir modules non testés et documenter APIs  
 **Durée estimée** : 1-2h  
@@ -221,7 +299,7 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ---
 
-## 🔧 Phase 4 - Modernisation (Priorité P3)
+## 🔧 Phase 5 - Modernisation (Priorité P3)
 
 **Objectif** : Améliorer DX et extensibilité  
 **Durée estimée** : 1-2h  

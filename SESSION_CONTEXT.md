@@ -468,4 +468,63 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
 
 ---
 
+### 2025-11-11 - Audit UX/UI et Début Phase 3 : Corrections UX/UI ✅ EN COURS
+**Durée totale** : ~2h (audit 1h + planning 1h)
+**Objectif** : Auditer la correspondance UX/UI ↔ logique technique et créer plan Phase 3
+
+**Réalisations audit** :
+- ✅ Audit complet de 16 fichiers JavaScript (~3,500 LOC)
+- ✅ Identification de 19 problèmes (5 critiques 🔴, 9 majeurs ⚠️, 9 mineurs 🟡)
+- ✅ Mapping complet des événements jQuery (3 événements custom, 12 handlers)
+- ✅ Analyse de cohérence : Widgets, Boutons, Formulaires, États, Données affichées
+- ✅ Score global : **6.9/10**
+- ✅ Créé `AUDIT_UX_UI_2025-11-11.md` (348 LOC - rapport complet)
+
+**Réalisations planning** :
+- ✅ Créé `PHASE3_PLAN_ACTIONS_UX.md` (700+ LOC - plan détaillé)
+- ✅ Découpé en 3 sous-phases (3.1 Critiques, 3.2 UX, 3.3 Polish)
+- ✅ Solutions techniques pour chaque problème avec code et tests
+- ✅ Ordre d'exécution recommandé
+- ✅ Mis à jour `PLAN_ACTIONS.md` (Phase 3 UX ajoutée, phases décalées)
+- ✅ Traduit `CLAUDE.md` en français (348 LOC)
+
+**Problèmes critiques identifiés (🔴)** :
+1. **Race condition rebuild** - Artefacts visuels si rebuild pendant build
+2. **Clashes liens sans feedback** - Détectés mais pas affichés visuellement
+3. **Double-clic crée doublons** - Pas de protection sur widgets
+4. **Logique addpartner incohérente** - Bloque après 1 partenaire
+5. **Règles sexe conflictuelles** - Différentes entre formulaire et widgets
+
+**Décisions** :
+- Commencer Phase 3.1 (corrections critiques) en priorité
+- Objectif : Score 6.9/10 → 8.5/10
+- Approche itérative : 1 tâche → test → commit → suivante
+
+**Fichiers créés** :
+- `AUDIT_UX_UI_2025-11-11.md` - Audit complet UX/UI
+- `PHASE3_PLAN_ACTIONS_UX.md` - Plan d'actions détaillé Phase 3
+- `CLAUDE.md` (français) - Guide pour futures instances Claude Code
+
+**Métriques baseline Phase 3** :
+- Score UX/UI : 6.9/10
+- Problèmes critiques : 5
+- Problèmes majeurs : 9
+- Problèmes mineurs : 5
+- Tests : 150 specs, 0 failures
+
+**Phase 3.1 - Corrections critiques (3-4h estimées)** :
+- ✅ **COMPLÉTÉ** : Tâche 3.1.1 - Race condition rebuild (30 min, 2025-11-11)
+  - Ajouté flag `_isBuilding` au scope module
+  - Protégé handlers rebuild/build avec try/finally
+  - Build réussi, aucune régression
+  - Doc : `PHASE3_TASK_3.1.1_COMPLETION.md`
+- 🔴 À faire : Tâche 3.1.2 - Feedback visuel clashes (1h)
+- 🔴 À faire : Tâche 3.1.3 - Débounce widgets (30 min) **← PROCHAINE**
+- 🔴 À faire : Tâche 3.1.4 - Logique addpartner (1h, analyse requise)
+- 🔴 À faire : Tâche 3.1.5 - Unifier règles sexe (45 min)
+
+**Progression Phase 3.1** : 1/5 tâches (20%)
+
+---
+
 *Ce fichier contient tout le contexte nécessaire pour reprendre efficacement le travail d'amélioration du projet PedigreeJS. Mettre à jour à chaque session significative.*

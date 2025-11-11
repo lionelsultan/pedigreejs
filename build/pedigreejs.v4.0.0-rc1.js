@@ -3901,6 +3901,10 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+
+	// Protection contre les race conditions lors de rebuilds concurrents
+	// (Phase 3.1.1 - Correction UX/UI critique)
+	let _isBuilding = false;
 	function build(options) {
 	  let opts = $.extend({
 	    // defaults
@@ -4371,10 +4375,34 @@ var pedigreejs = (function (exports) {
 	  }
 	}
 	$(document).on('rebuild', function (_e, opts) {
-	  rebuild(opts);
+	  // Protection contre les race conditions (Phase 3.1.1)
+	  if (_isBuilding) {
+	    if (opts && opts.DEBUG) {
+	      console.log('Rebuild ignored: build already in progress');
+	    }
+	    return;
+	  }
+	  _isBuilding = true;
+	  try {
+	    rebuild(opts);
+	  } finally {
+	    _isBuilding = false;
+	  }
 	});
 	$(document).on('build', function (_e, opts) {
-	  build(opts);
+	  // Protection contre les race conditions (Phase 3.1.1)
+	  if (_isBuilding) {
+	    if (opts && opts.DEBUG) {
+	      console.log('Build ignored: build already in progress');
+	    }
+	    return;
+	  }
+	  _isBuilding = true;
+	  try {
+	    build(opts);
+	  } finally {
+	    _isBuilding = false;
+	  }
 	});
 
 	var pedigree = /*#__PURE__*/Object.freeze({
