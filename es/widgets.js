@@ -14,10 +14,31 @@ import {canChangeSex} from './validation.js';
 
 let dragging;
 let last_mouseover;
+let shiftKeyPressed = false;  // Phase 3.2.2: Track Shift key for consanguineous drag feedback
 
 // Protection contre les double-clics qui créent des doublons
 // (Phase 3.1.3 - Correction UX/UI critique)
 let _widgetClickInProgress = false;
+
+// Phase 3.2.2: Track Shift key for consanguineous partner drag visual feedback
+$(document).on('keydown keyup', function(e) {
+	let wasPressed = shiftKeyPressed;
+	shiftKeyPressed = e.shiftKey;
+
+	// Update cursor when Shift state changes
+	if(wasPressed !== shiftKeyPressed) {
+		if(shiftKeyPressed && last_mouseover && !dragging) {
+			// Shift pressed while hovering node: show crosshair cursor
+			d3.select('.pedigree_form svg').style('cursor', 'crosshair');
+			// Make drag handle more visible
+			d3.selectAll('.line_drag_selection').attr("stroke", "darkred").attr("stroke-width", 8);
+		} else if(!shiftKeyPressed && !dragging) {
+			// Shift released: restore normal cursor
+			d3.select('.pedigree_form svg').style('cursor', 'default');
+			d3.selectAll('.line_drag_selection').attr("stroke", "black").attr("stroke-width", 6);
+		}
+	}
+});
 
 function getTreeNode(flat_tree, dataset, name) {
 	if(!name)
@@ -361,6 +382,12 @@ export function addWidgets(opts, node) {
 		d3.select(this).selectAll('.indi_details').attr("opacity", 0);
 
 		setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
+
+		// Phase 3.2.2: Enhanced visual feedback when Shift pressed
+		if(shiftKeyPressed) {
+			d3.select('.pedigree_form svg').style('cursor', 'crosshair');
+			d3.selectAll('.line_drag_selection').attr("stroke", "darkred").attr("stroke-width", 8);
+		}
 	})
 	.on("mouseout", function(d){
 		if(dragging)
@@ -370,6 +397,14 @@ export function addWidgets(opts, node) {
 		if(highlight.indexOf(d) === -1)
 			d3.select(this).select('rect').attr("opacity", 0);
 		d3.select(this).selectAll('.indi_details').attr("opacity", 1);
+
+		// Phase 3.2.2: Restore normal cursor when leaving node
+		if(shiftKeyPressed) {
+			d3.select('.pedigree_form svg').style('cursor', 'default');
+			d3.selectAll('.line_drag_selection').attr("stroke", "black").attr("stroke-width", 6);
+		}
+		last_mouseover = undefined;
+
 		// hide popup if it looks like the mouse is moving north
 		let xcoord = d3.pointer(d)[0];
 		let ycoord = d3.pointer(d)[1];
@@ -403,7 +438,8 @@ function drag_handle(opts) {
                 .on("start", dragstart)
                 .on("drag", drag)
                 .on("end", dragstop));
-	dline.append("svg:title").text("drag to create consanguineous partners");
+	// Phase 3.2.2: Enhanced tooltip with Shift key hint
+	dline.append("svg:title").text("Hold Shift and drag to create consanguineous partners (blood-related)");
 
 	setLineDragPosition(0, 0, 0, 0);
 
