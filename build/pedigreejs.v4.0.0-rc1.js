@@ -3232,7 +3232,9 @@ var pedigreejs = (function (exports) {
 	  }
 	  for (let key in widgets) {
 	    let widget = node.filter(function (d) {
-	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
+	      // Phase 3.1.4 - Supprimé la condition bloquante sur addpartner
+	      // Permet maintenant d'ajouter plusieurs partenaires (remariage, polygamie)
+	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
 	    }).append("text").attr("class", key).attr("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
 	      return d.x;
 	    }).attr("yy", function (d) {

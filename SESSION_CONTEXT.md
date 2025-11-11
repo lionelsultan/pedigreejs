@@ -531,7 +531,12 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Timeout 300ms pour permettre rebuild
   - Exception pour settings (instantané)
   - Doc : `PHASE3_TASK_3.1.3_COMPLETION.md`
-- 🔴 À faire : Tâche 3.1.4 - Logique addpartner (1h, analyse requise)
+- ✅ **COMPLÉTÉ** : Tâche 3.1.4 - Logique addpartner (30 min, 2025-11-11)
+  - Supprimé condition bloquant addpartner après 1 partenaire
+  - Permet maintenant plusieurs partenaires (remariage, polygamie)
+  - Structure de données supportait déjà plusieurs partenaires
+  - Suppression de restriction UI artificielle
+  - Doc : `PHASE3_TASK_3.1.4_COMPLETION.md`
 - ✅ **COMPLÉTÉ** : Tâche 3.1.5 - Unifier règles sexe (35 min, 2025-11-11)
   - Créé fonction partagée `canChangeSex()` dans validation.js
   - Logique unifiée : vérifie si nœud référencé comme parent (mother/father)
@@ -541,8 +546,8 @@ if($.inArray(p.name, names) === -1 && !p.noparents){
   - Élimine incohérence entre popup et widget
   - Doc : `PHASE3_TASK_3.1.5_COMPLETION.md`
 
-**Progression Phase 3.1** : 4/5 tâches (80%)
-**Temps total** : 135 min (objectif : 3-4h) - Excellent progrès !
+**Progression Phase 3.1** : 5/5 tâches (100%) - **✅ PHASE COMPLÉTÉE !**
+**Temps total** : 165 min (2h45 / 3-4h objectif) - Sous budget !
 
 ---
 

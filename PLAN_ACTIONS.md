@@ -203,17 +203,17 @@ Un plan d'action complet a été créé dans **`PHASE3_PLAN_ACTIONS_UX.md`** ave
 4. **Logique addpartner incohérente** - Impossible d'ajouter plusieurs partenaires
 5. **Règles de sexe conflictuelles** - Incohérence entre formulaire et éditeur
 
-### Phase 3.1 - Corrections critiques (3-4h) - **EN COURS**
+### Phase 3.1 - Corrections critiques (3-4h) - **✅ COMPLÉTÉE**
 
 **Tâches prioritaires** :
 - ✅ **3.1.1 : Race condition rebuild (30 min)** - Flag `_isBuilding` ✅ **COMPLÉTÉ** (2025-11-11)
 - ✅ **3.1.2 : Feedback visuel clashes (45 min)** - Liens rouges + tooltips ✅ **COMPLÉTÉ** (2025-11-11)
 - ✅ **3.1.3 : Débounce widgets (25 min)** - Protection double-clic ✅ **COMPLÉTÉ** (2025-11-11)
-- ⚠️ 3.1.4 : Logique addpartner (1h) - Revoir conditions de visibilité (analyse requise)
+- ✅ **3.1.4 : Logique addpartner (30 min)** - Suppression condition bloquante ✅ **COMPLÉTÉ** (2025-11-11)
 - ✅ **3.1.5 : Unifier règles sexe (35 min)** - Fonction `canChangeSex()` partagée ✅ **COMPLÉTÉ** (2025-11-11)
 
-**Progression** : 4/5 tâches complétées (80%)
-**Temps passé** : 135 min (objectif : 3-4h) - Excellent progrès !
+**Progression** : 5/5 tâches complétées (100%) - **PHASE 3.1 COMPLÉTÉE !** 🎉
+**Temps passé** : 165 min (objectif : 3-4h) - Sous budget !
 
 ### Phase 3.2 - Améliorations UX (2-3h)
 
