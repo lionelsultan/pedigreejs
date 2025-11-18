@@ -18,7 +18,8 @@
       "Bash(curl:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(killall:*)"
+      "Bash(killall:*)",
+      "Bash(timeout 3 npm run server:*)"
     ],
     "deny": [],
     "ask": []
