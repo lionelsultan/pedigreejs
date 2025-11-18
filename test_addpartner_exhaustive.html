@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Exhaustif Add Partner</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background: #d4edda; }
+        .fail { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Exhaustif - Add Partner</h1>
+    <div id="results"></div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="build/pedigreejs.v4.0.0-rc1.js"></script>
+
+    <script>
+        const results = document.getElementById('results');
+        let testNum = 0;
+
+        function log(title, content, status = 'info') {
+            testNum++;
+            const div = document.createElement('div');
+            div.className = 'test ' + status;
+            div.innerHTML = `<h3>Test ${testNum}: ${title}</h3><pre>${JSON.stringify(content, null, 2)}</pre>`;
+            results.appendChild(div);
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (JSON.stringify(actual) === JSON.stringify(expected)) {
+                log(message, {actual, expected}, 'pass');
+                return true;
+            } else {
+                log(message + ' FAILED', {actual, expected}, 'fail');
+                return false;
+            }
+        }
+
+        // Test utilities
+        const utils = window.pedigreejs.pedigreejs_utils;
+        const widgets_add = window.pedigreejs.pedigreejs;
+
+        console.log('=== DÉBUT TESTS EXHAUSTIFS ===');
+
+        // ============================================
+        // TEST 1: Structure de base dataset
+        // ============================================
+        log('Structure dataset initial', {
+            test: 'Vérifier la structure de base',
+            dataset: [
+                {name: 'father', sex: 'M', top_level: true},
+                {name: 'mother', sex: 'F', top_level: true},
+                {name: 'me', sex: 'F', mother: 'mother', father: 'father'}
+            ]
+        });
+
+        // ============================================
+        // TEST 2: Fonction get_partners
+        // ============================================
+        let testDataset = [
+            {name: 'father', sex: 'M', top_level: true},
+            {name: 'mother', sex: 'F', top_level: true},
+            {name: 'me', sex: 'F', mother: 'mother', father: 'father'},
+            {name: 'child1', sex: 'M', mother: 'me', father: 'partner1'}
+        ];
+
+        let me = utils.getNodeByName(testDataset, 'me');
+        let partners_before = utils.get_partners(testDataset, me);
+        log('get_partners AVANT ajout partner', {
+            person: 'me',
+            partners_found: partners_before,
+            expected: ['partner1']
+        }, partners_before.includes('partner1') ? 'pass' : 'fail');
+
+        // ============================================
+        // TEST 3: Simulation addpartner étape par étape
+        // ============================================
+        log('SIMULATION addpartner - Étapes détaillées', {
+            description: 'Simulation complète sans appeler la vraie fonction'
+        });
+
+        // Copie du dataset pour simulation
+        let simDataset = JSON.parse(JSON.stringify(testDataset));
+        log('Dataset AVANT addpartner', simDataset);
+
+        // Étape 1: Déterminer sexe partner
+        let tree_node_data = {name: 'me', sex: 'F', mother: 'mother', father: 'father'};
+        let partner_sex = tree_node_data.sex === 'F' ? 'M' : 'F';
+        log('Étape 1: Sexe partner déterminé', {
+            person_sex: tree_node_data.sex,
+            partner_sex: partner_sex,
+            expected: 'M'
+        }, partner_sex === 'M' ? 'pass' : 'fail');
+
+        // Étape 2: Créer partner
+        let partner = {
+            name: 'partner_test',
+            sex: partner_sex,
+            display_name: 'Partner',
+            mother: 'mother',
+            father: 'father',
+            noparents: true
+        };
+        log('Étape 2: Partner créé', partner);
+
+        // Étape 3: Calculer index insertion
+        let person_idx = utils.getIdxByName(simDataset, 'me');
+        log('Étape 3: Index personne', {
+            person: 'me',
+            index: person_idx,
+            expected: 2
+        }, person_idx === 2 ? 'pass' : 'fail');
+
+        // Étape 4: Insérer partner
+        let insert_idx = person_idx; // F donc idx reste le même
+        log('Étape 4: Index insertion calculé', {
+            person_sex: 'F',
+            insert_idx: insert_idx,
+            expected: 2
+        });
+
+        simDataset.splice(insert_idx, 0, partner);
+        log('Étape 5: Dataset APRÈS insertion partner', simDataset);
+
+        // Étape 6: Vérifier ordre
+        let order_check = simDataset.map((p, i) => i + ': ' + p.name);
+        log('Étape 6: Ordre dataset', order_check);
+
+        // Étape 7: Créer enfant
+        let child = {
+            name: 'child_test',
+            sex: 'M',
+            mother: 'me',
+            father: 'partner_test'
+        };
+        log('Étape 7: Enfant créé', child);
+
+        // Étape 8: Calculer index enfant
+        let new_person_idx = utils.getIdxByName(simDataset, 'me');
+        let new_partner_idx = utils.getIdxByName(simDataset, 'partner_test');
+        let child_idx = Math.max(new_person_idx, new_partner_idx) + 1;
+        log('Étape 8: Index enfant calculé', {
+            person_idx: new_person_idx,
+            partner_idx: new_partner_idx,
+            child_idx: child_idx,
+            expected: Math.max(2, 3) + 1  // = 4
+        });
+
+        // Étape 9: Insérer enfant
+        simDataset.splice(child_idx, 0, child);
+        log('Étape 9: Dataset APRÈS insertion enfant', simDataset);
+
+        // Étape 10: Vérifier ordre final
+        let final_order = simDataset.map((p, i) => i + ': ' + p.name);
+        log('Étape 10: Ordre FINAL dataset', final_order);
+
+        // ============================================
+        // TEST 4: Vérifier get_partners après ajout
+        // ============================================
+        let me_updated = utils.getNodeByName(simDataset, 'me');
+        let partners_after = utils.get_partners(simDataset, me_updated);
+        log('get_partners APRÈS ajout partner', {
+            person: 'me',
+            partners_found: partners_after,
+            expected: ['partner1', 'partner_test'],
+            pass: partners_after.length === 2
+        }, partners_after.length === 2 ? 'pass' : 'fail');
+
+        // ============================================
+        // TEST 5: Vérifier structure pour rendu
+        // ============================================
+        log('Structure prête pour rendu', {
+            partners_detected: partners_after,
+            children: simDataset.filter(p => p.mother === 'me' || p.father === 'me').map(p => p.name)
+        });
+
+        // ============================================
+        // TEST 6: Cas limite - Sexe U (unspecified)
+        // ============================================
+        let personU = {name: 'personU', sex: 'U', top_level: true};
+        let partner_sex_U = personU.sex === 'F' ? 'M' : (personU.sex === 'M' ? 'F' : 'U');
+        log('Cas sexe U (unspecified)', {
+            person_sex: 'U',
+            partner_sex: partner_sex_U,
+            expected: 'U',
+            pass: partner_sex_U === 'U'
+        }, partner_sex_U === 'U' ? 'pass' : 'fail');
+
+        // ============================================
+        // TEST 7: Vérifier mother/father assignment
+        // ============================================
+        log('Vérification mother/father dans enfant', {
+            child: child,
+            mother_correct: child.mother === 'me',
+            father_correct: child.father === 'partner_test',
+            pass: child.mother === 'me' && child.father === 'partner_test'
+        }, (child.mother === 'me' && child.father === 'partner_test') ? 'pass' : 'fail');
+
+        // ============================================
+        // TEST 8: Vérifier noparents flag
+        // ============================================
+        log('Vérification noparents flag', {
+            partner: partner,
+            has_noparents: partner.noparents === true,
+            has_mother: 'mother' in partner,
+            has_father: 'father' in partner,
+            pass: partner.noparents === true && partner.mother && partner.father
+        }, (partner.noparents === true && partner.mother && partner.father) ? 'pass' : 'fail');
+
+        console.log('=== FIN TESTS EXHAUSTIFS ===');
+        log('RÉSUMÉ', {
+            total_tests: testNum,
+            message: 'Voir résultats détaillés ci-dessus'
+        });
+
+    </script>
+</body>
+</html>

@@ -330,8 +330,8 @@ export function addWidgets(opts, node) {
 			$(document).trigger('rebuild', [opts]);
 		} else if(opt === 'addpartner') {
 			newdataset = utils.copy_dataset(pedcache_current(opts));
+			opts.dataset = newdataset;  // Assign BEFORE calling addpartner
 			addpartner(opts, newdataset, d.data.name);
-			opts.dataset = newdataset;
 			$(document).trigger('rebuild', [opts]);
 		}
 		// trigger fhChange event

@@ -202,27 +202,68 @@ export function addpartner(opts, dataset, name) {
 	if(!tree_node)
 		throw utils.create_err('Person '+name+' not found when adding partner');
 
-	let partner = {"name": utils.makeid(4), "sex": tree_node.data.sex === 'F' ? 'M' : 'F'};
+	// CRITICAL: Cannot add partner if sex is unspecified
+	// Reason: getChildren() requires mother.sex === 'F' to function
+	// Without proper sex assignment, partner detection fails → broken visual rendering
+	if(tree_node.data.sex === 'U' || !tree_node.data.sex) {
+		throw utils.create_err(
+			'Cannot add partner: person has unspecified sex. ' +
+			'Please edit the person and set sex to M or F before adding a partner.'
+		);
+	}
+
+	// Determine partner sex (guaranteed to be 'M' or 'F' now)
+	let partner_sex = tree_node.data.sex === 'F' ? 'M' : 'F';
+
+	// Create partner with display_name for better UX
+	let partner = {
+		"name": utils.makeid(4),
+		"sex": partner_sex,
+		"display_name": "Partner"
+	};
+
 	if(tree_node.data.top_level) {
 		partner.top_level = true;
 	} else {
-		partner.mother = tree_node.data.mother;
-		partner.father = tree_node.data.father;
+		// Validate and copy parents if they exist
+		if(tree_node.data.mother && utils.getIdxByName(dataset, tree_node.data.mother) !== -1) {
+			partner.mother = tree_node.data.mother;
+		}
+		if(tree_node.data.father && utils.getIdxByName(dataset, tree_node.data.father) !== -1) {
+			partner.father = tree_node.data.father;
+		}
 	}
 	partner.noparents = true;
 
+	// Insert partner adjacent to the person, not at arbitrary position
+	// Convention: male on left of female (male index < female index)
 	let idx = utils.getIdxByName(dataset, tree_node.data.name);
 	if(tree_node.data.sex === 'F') {
-		if(idx > 0) idx--;
+		// person is female, insert male partner BEFORE (at person's position, shifting person right)
+		// idx stays the same
 	} else {
+		// person is male, insert female partner AFTER
 		idx++;
 	}
 	dataset.splice(idx, 0, partner);
 
-	let child = {"name": utils.makeid(4), "sex": "M"};
+	// CRITICAL: ALWAYS create a child to link the couple
+	// PedigreeJS detects partners via shared children (get_partners() function)
+	// Without a child, the partner won't be recognized as a partner → bad visual positioning
+	// Even if person has children with OTHER partners, we need a child for THIS couple
+	let child_sex = Math.random() < 0.5 ? 'M' : 'F';
+	let child = {"name": utils.makeid(4), "sex": child_sex};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
-	let child_idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
+	// Insert child right after the couple (after the rightmost partner)
+	// Since we follow convention male-female, female is always to the right
+	let person_idx = utils.getIdxByName(dataset, tree_node.data.name);
+	let partner_idx = utils.getIdxByName(dataset, partner.name);
+	let child_idx = Math.max(person_idx, partner_idx) + 1;
 	dataset.splice(child_idx, 0, child);
+
+	if(opts.DEBUG) {
+		console.log('Partner added with child: ' + child.name + ' (M:' + child.mother + ', F:' + child.father + ')');
+	}
 }
