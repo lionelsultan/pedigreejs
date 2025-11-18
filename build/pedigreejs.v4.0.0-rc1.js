@@ -33,7 +33,8 @@ var pedigreejs = (function (exports) {
 	    // deceased
 	    return year >= sum;
 	  }
-	  return Math.abs(year - sum) <= 1 && year >= sum;
+	  // Phase 3.3.1: Assouplir validation pour éviter faux positifs (anniversaire non encore passé)
+	  return Math.abs(year - sum) <= 2 && year >= sum;
 	}
 
 	// validate pedigree data
@@ -1351,14 +1352,17 @@ var pedigreejs = (function (exports) {
 	    "fa": "fa-crosshairs",
 	    "title": "scale-to-fit"
 	  });
+	  // Phase 3.3.3: Toujours afficher les boutons zoom, mais les griser si désactivés
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
-	    if (opts.zoomOut !== 1) btns.push({
+	    btns.push({
 	      "fa": "fa-minus-circle",
-	      "title": "zoom-out"
+	      "title": opts.zoomOut === 1 ? "zoom-out (disabled: already at minimum)" : "zoom-out",
+	      "disabled": opts.zoomOut === 1
 	    });
-	    if (opts.zoomIn !== 1) btns.push({
+	    btns.push({
 	      "fa": "fa-plus-circle",
-	      "title": "zoom-in"
+	      "title": opts.zoomIn === 1 ? "zoom-in (disabled: already at maximum)" : "zoom-in",
+	      "disabled": opts.zoomIn === 1
 	    });
 	  }
 	  btns.push({
@@ -1368,7 +1372,7 @@ var pedigreejs = (function (exports) {
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
 	    lis += '<span>';
-	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="' + btns[i].title + '"' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
+	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2' + (btns[i].disabled ? ' disabled-btn' : '') + '" ' + 'aria-hidden="true" title="' + btns[i].title + '" ' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + (btns[i].disabled ? 'style="opacity: 0.3; cursor: not-allowed;" ' : '') + '></i>';
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
@@ -1421,6 +1425,8 @@ var pedigreejs = (function (exports) {
 	    btn_zoom(opts, 0.95);
 	  }
 	  $('.fa-plus-circle, .fa-minus-circle').on('mousedown', function () {
+	    // Phase 3.3.3: Ignorer les clics sur les boutons désactivés
+	    if ($(this).hasClass('disabled-btn')) return;
 	    timeoutId = setInterval($(this).hasClass("fa-plus-circle") ? zoomIn : zoomOut, 50);
 	  }).on('mouseup mouseleave', function () {
 	    clearInterval(timeoutId);
@@ -3086,6 +3092,319 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+	function getTreeNode(flat_tree, dataset, name) {
+	  if (!name) return undefined;
+	  let node = flat_tree && flat_tree.length ? getNodeByName(flat_tree, name) : undefined;
+	  if (node) return node;
+	  let dataNode = getNodeByName(dataset, name);
+	  if (!dataNode) return undefined;
+	  if (dataNode.id === undefined) dataNode.id = getIdxByName(dataset, name);
+	  return {
+	    data: dataNode,
+	    depth: getDepth(dataset, name)
+	  };
+	}
+	function addchild(dataset, node, sex, nchild, twin_type) {
+	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
+	  if (typeof nchild === typeof undefined) nchild = 1;
+	  let children = getAllChildren(dataset, node);
+	  let ptr_name, idx;
+	  if (children.length === 0) {
+	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F');
+	    partner.noparents = true;
+	    ptr_name = partner.name;
+	    idx = getIdxByName(dataset, node.name) + 1;
+	  } else {
+	    let c = children[0];
+	    ptr_name = c.father === node.name ? c.mother : c.father;
+	    idx = getIdxByName(dataset, c.name);
+	  }
+	  let twin_id;
+	  if (twin_type) twin_id = getUniqueTwinID(dataset, twin_type);
+	  let newchildren = [];
+	  for (let i = 0; i < nchild; i++) {
+	    let child = {
+	      "name": makeid(4),
+	      "sex": sex,
+	      "mother": node.sex === 'F' ? node.name : ptr_name,
+	      "father": node.sex === 'F' ? ptr_name : node.name
+	    };
+	    dataset.splice(idx, 0, child);
+	    if (twin_type) child[twin_type] = twin_id;
+	    newchildren.push(child);
+	  }
+	  return newchildren;
+	}
+	function addsibling(dataset, node, sex, add_lhs, twin_type, skip_parent_copy = false) {
+	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
+	  let newbie = {
+	    "name": makeid(4),
+	    "sex": sex
+	  };
+	  if (node.top_level) {
+	    newbie.top_level = true;
+	  } else if (!skip_parent_copy) {
+	    newbie.mother = node.mother;
+	    newbie.father = node.father;
+	  }
+	  let idx = getIdxByName(dataset, node.name);
+	  if (twin_type) {
+	    setMzTwin(dataset, dataset[idx], newbie, twin_type);
+	  }
+	  if (add_lhs) {
+	    if (idx > 0) idx--;
+	  } else idx++;
+	  dataset.splice(idx, 0, newbie);
+	  return newbie;
+	}
+	function addparents(opts, dataset, name) {
+	  let mother, father;
+	  let root = roots[opts.targetDiv];
+	  let flat_tree = root ? flatten(root) : [];
+	  let tree_node = getTreeNode(flat_tree, dataset, name);
+	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding parents');
+	  let node = tree_node.data;
+	  let depth = tree_node.depth || getDepth(dataset, node.name);
+	  let pid = -101;
+	  let ptr_name;
+	  let children = getAllChildren(dataset, node);
+	  if (children.length > 0) {
+	    ptr_name = children[0].mother === node.name ? children[0].father : children[0].mother;
+	    let ptr_node_meta = getTreeNode(flat_tree, dataset, ptr_name);
+	    pid = ptr_node_meta && ptr_node_meta.data.id !== undefined ? ptr_node_meta.data.id : getIdxByName(dataset, ptr_name);
+	  }
+	  let i;
+	  if (depth === 1) {
+	    mother = {
+	      "name": makeid(4),
+	      "sex": "F",
+	      "top_level": true
+	    };
+	    father = {
+	      "name": makeid(4),
+	      "sex": "M",
+	      "top_level": true
+	    };
+	    dataset.splice(0, 0, mother);
+	    dataset.splice(0, 0, father);
+	    for (i = 0; i < dataset.length; i++) {
+	      if ((dataset[i].top_level || getDepth(dataset, dataset[i].name) === 2) && dataset[i].name !== mother.name && dataset[i].name !== father.name) {
+	        delete dataset[i].top_level;
+	        dataset[i].noparents = true;
+	        dataset[i].mother = mother.name;
+	        dataset[i].father = father.name;
+	      }
+	    }
+	  } else {
+	    let motherName = typeof tree_node.data.mother === 'string' ? tree_node.data.mother : tree_node.data.mother;
+	    motherName = motherName && motherName.name ? motherName.name : motherName;
+	    let fatherName = typeof tree_node.data.father === 'string' ? tree_node.data.father : tree_node.data.father;
+	    fatherName = fatherName && fatherName.name ? fatherName.name : fatherName;
+	    let node_mother = getTreeNode(flat_tree, dataset, motherName);
+	    let node_father = getTreeNode(flat_tree, dataset, fatherName);
+	    let node_sibs = getAllSiblings(dataset, node);
+	    let rid = 10000;
+	    let lid = tree_node.data.id;
+	    for (i = 0; i < node_sibs.length; i++) {
+	      let sibNode = getTreeNode(flat_tree, dataset, node_sibs[i].name);
+	      let sid = sibNode && sibNode.data.id !== undefined ? sibNode.data.id : getIdxByName(dataset, node_sibs[i].name);
+	      if (sid < rid && sid > tree_node.data.id) rid = sid;
+	      if (sid < lid) lid = sid;
+	    }
+	    let add_lhs = lid >= tree_node.data.id || pid === lid && rid < 10000;
+	    if (opts.DEBUG) console.log('lid=' + lid + ' rid=' + rid + ' nid=' + tree_node.data.id + ' ADD_LHS=' + add_lhs);
+	    let midx;
+	    if (!add_lhs && node_father.data.id > node_mother.data.id || add_lhs && node_father.data.id < node_mother.data.id) midx = getIdxByName(dataset, node.father);else midx = getIdxByName(dataset, node.mother);
+	    let parent = dataset[midx];
+	    father = addsibling(dataset, parent, 'M', add_lhs);
+	    mother = addsibling(dataset, parent, 'F', add_lhs);
+	    let faidx = getIdxByName(dataset, father.name);
+	    let moidx = getIdxByName(dataset, mother.name);
+	    if (faidx > moidx) {
+	      let tmpfa = dataset[faidx];
+	      dataset[faidx] = dataset[moidx];
+	      dataset[moidx] = tmpfa;
+	    }
+	    let orphans = getAdoptedSiblings(dataset, node);
+	    let nid = tree_node.data.id;
+	    for (i = 0; i < orphans.length; i++) {
+	      let orphan_meta = getTreeNode(flat_tree, dataset, orphans[i].name);
+	      let oid = orphan_meta && orphan_meta.data.id !== undefined ? orphan_meta.data.id : getIdxByName(dataset, orphans[i].name);
+	      if (opts.DEBUG) console.log('ORPHAN=' + i + ' ' + orphans[i].name + ' ' + (nid < oid && oid < rid) + ' nid=' + nid + ' oid=' + oid + ' rid=' + rid);
+	      if ((add_lhs || nid < oid) && oid < rid) {
+	        let oidx = getIdxByName(dataset, orphans[i].name);
+	        dataset[oidx].mother = mother.name;
+	        dataset[oidx].father = father.name;
+	      }
+	    }
+	  }
+	  if (depth === 2) {
+	    mother.top_level = true;
+	    father.top_level = true;
+	  }
+	  let idx = getIdxByName(dataset, node.name);
+	  dataset[idx].mother = mother.name;
+	  dataset[idx].father = father.name;
+	  delete dataset[idx].noparents;
+	  if ('parent_node' in node) {
+	    let ptr_node = dataset[getIdxByName(dataset, ptr_name)];
+	    if ('noparents' in ptr_node) {
+	      ptr_node.mother = mother.name;
+	      ptr_node.father = father.name;
+	    }
+	  }
+	}
+	function addpartner(opts, dataset, name) {
+	  let root = roots[opts.targetDiv];
+	  let flat_tree = root ? flatten(root) : [];
+	  let tree_node = getTreeNode(flat_tree, dataset, name);
+	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding partner');
+	  let partner = {
+	    "name": makeid(4),
+	    "sex": tree_node.data.sex === 'F' ? 'M' : 'F'
+	  };
+	  if (tree_node.data.top_level) {
+	    partner.top_level = true;
+	  } else {
+	    partner.mother = tree_node.data.mother;
+	    partner.father = tree_node.data.father;
+	  }
+	  partner.noparents = true;
+	  let idx = getIdxByName(dataset, tree_node.data.name);
+	  if (tree_node.data.sex === 'F') {
+	    if (idx > 0) idx--;
+	  } else {
+	    idx++;
+	  }
+	  dataset.splice(idx, 0, partner);
+	  let child = {
+	    "name": makeid(4),
+	    "sex": "M"
+	  };
+	  child.mother = tree_node.data.sex === 'F' ? tree_node.data.name : partner.name;
+	  child.father = tree_node.data.sex === 'F' ? partner.name : tree_node.data.name;
+	  let child_idx = getIdxByName(dataset, tree_node.data.name) + 2;
+	  dataset.splice(child_idx, 0, child);
+	}
+
+	/**
+	/* © 2023 University of Cambridge
+	/* SPDX-FileCopyrightText: 2023 University of Cambridge
+	/* SPDX-License-Identifier: GPL-3.0-or-later
+	**/
+
+	function adjacent_nodes(root, node, excludes) {
+	  let dnodes = getNodesAtDepth(flatten(root), node.depth, excludes);
+	  let lhs_node, rhs_node;
+	  for (let i = 0; i < dnodes.length; i++) {
+	    if (dnodes[i].x < node.x) lhs_node = dnodes[i];
+	    if (!rhs_node && dnodes[i].x > node.x) rhs_node = dnodes[i];
+	  }
+	  return [lhs_node, rhs_node];
+	}
+	function delete_node_dataset(dataset, node, opts, onDone) {
+	  let root = roots[opts.targetDiv];
+	  let fnodes = flatten(root);
+	  let deletes = [];
+	  let i, j;
+	  if (node.id === undefined) {
+	    let d3node = getNodeByName(fnodes, node.name);
+	    if (d3node !== undefined) node = d3node.data;
+	  }
+	  if (node.parent_node) {
+	    for (i = 0; i < node.parent_node.length; i++) {
+	      let parent = node.parent_node[i];
+	      let ps = [getNodeByName(dataset, parent.mother.name), getNodeByName(dataset, parent.father.name)];
+	      for (j = 0; j < ps.length; j++) {
+	        if (ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
+	          dataset.splice(getIdxByName(dataset, ps[j].name), 1);
+	          deletes.push(ps[j]);
+	        }
+	      }
+	      let children = parent.children;
+	      let children_names = $.map(children, function (p, _i) {
+	        return p.name;
+	      });
+	      for (j = 0; j < children.length; j++) {
+	        let child = getNodeByName(dataset, children[j].name);
+	        if (child) {
+	          child.noparents = true;
+	          let ptrs = get_partners(dataset, child);
+	          let ptr;
+	          if (ptrs.length > 0) ptr = getNodeByName(dataset, ptrs[0]);
+	          if (ptr && ptr.mother !== child.mother) {
+	            child.mother = ptr.mother;
+	            child.father = ptr.father;
+	          } else if (ptr) {
+	            let child_node = getNodeByName(fnodes, child.name);
+	            let adj = adjacent_nodes(root, child_node, children_names);
+	            child.mother = adj[0] ? adj[0].data.mother : adj[1] ? adj[1].data.mother : null;
+	            child.father = adj[0] ? adj[0].data.father : adj[1] ? adj[1].data.father : null;
+	          } else {
+	            dataset.splice(getIdxByName(dataset, child.name), 1);
+	          }
+	        }
+	      }
+	    }
+	  } else {
+	    let idxToRemove = getIdxByName(dataset, node.name);
+	    if (idxToRemove >= 0) dataset.splice(idxToRemove, 1);
+	  }
+	  for (i = 0; i < deletes.length; i++) {
+	    let del = deletes[i];
+	    let sibs = getAllSiblings(dataset, del);
+	    if (sibs.length < 1) {
+	      let data_node = getNodeByName(fnodes, del.name);
+	      let ancestors$1 = [];
+	      if (data_node && typeof data_node.ancestors === 'function') ancestors$1 = data_node.ancestors();else ancestors$1 = ancestors(dataset, del);
+	      for (j = 0; j < ancestors$1.length; j++) {
+	        let ancestor = ancestors$1[j];
+	        let ancestorData = ancestor && ancestor.data ? ancestor.data : ancestor;
+	        if (opts.DEBUG) console.log(ancestorData);
+	        let motherName = ancestorData && ancestorData.mother ? ancestorData.mother.name ? ancestorData.mother.name : ancestorData.mother : null;
+	        let fatherName = ancestorData && ancestorData.father ? ancestorData.father.name ? ancestorData.father.name : ancestorData.father : null;
+	        if (motherName && fatherName) {
+	          if (opts.DEBUG) console.log('DELETE ', motherName, fatherName);
+	          let mIdx = getIdxByName(dataset, motherName);
+	          let fIdx = getIdxByName(dataset, fatherName);
+	          if (mIdx >= 0) dataset.splice(mIdx, 1);
+	          if (fIdx >= 0) dataset.splice(fIdx, 1);
+	        }
+	      }
+	    }
+	  }
+	  checkTwins(dataset);
+	  let uc;
+	  // Use injected messages function for testing, or default to utils.messages
+	  let messagesFunc = opts.messages || messages;
+	  try {
+	    let newopts = $.extend({}, opts);
+	    newopts.dataset = copy_dataset(dataset);
+	    validate_pedigree(newopts);
+	    uc = unconnected(dataset);
+	  } catch (err) {
+	    messagesFunc('Warning', 'Deletion of this pedigree member is disallowed.');
+	    throw err;
+	  }
+	  if (uc.length > 0) {
+	    if (unconnected(opts.dataset).length === 0) {
+	      console.error("individuals unconnected to pedigree ", uc);
+	      messagesFunc("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+	      return;
+	    }
+	  }
+	  if (onDone) {
+	    onDone(opts, dataset);
+	  }
+	  return dataset;
+	}
+
+	/**
+	/* © 2023 University of Cambridge
+	/* SPDX-FileCopyrightText: 2023 University of Cambridge
+	/* SPDX-License-Identifier: GPL-3.0-or-later
+	**/
+
 	let dragging;
 	let last_mouseover;
 	let shiftKeyPressed = false; // Phase 3.2.2: Track Shift key for consanguineous drag feedback
@@ -3113,18 +3432,7 @@ var pedigreejs = (function (exports) {
 	    }
 	  }
 	});
-	function getTreeNode(flat_tree, dataset, name) {
-	  if (!name) return undefined;
-	  let node = flat_tree && flat_tree.length ? getNodeByName(flat_tree, name) : undefined;
-	  if (node) return node;
-	  let dataNode = getNodeByName(dataset, name);
-	  if (!dataNode) return undefined;
-	  if (dataNode.id === undefined) dataNode.id = getIdxByName(dataset, name);
-	  return {
-	    data: dataNode,
-	    depth: getDepth(dataset, name)
-	  };
-	}
+
 	//
 	// Add widgets to nodes and bind events
 	function addWidgets(opts, node) {
@@ -3537,329 +3845,6 @@ var pedigreejs = (function (exports) {
 	  return;
 	}
 
-	// add children to a given node
-	function addchild(dataset, node, sex, nchild, twin_type) {
-	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
-	  if (typeof nchild === typeof undefined) nchild = 1;
-	  let children = getAllChildren(dataset, node);
-	  let ptr_name, idx;
-	  if (children.length === 0) {
-	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F');
-	    partner.noparents = true;
-	    ptr_name = partner.name;
-	    idx = getIdxByName(dataset, node.name) + 1;
-	  } else {
-	    let c = children[0];
-	    ptr_name = c.father === node.name ? c.mother : c.father;
-	    idx = getIdxByName(dataset, c.name);
-	  }
-	  let twin_id;
-	  if (twin_type) twin_id = getUniqueTwinID(dataset, twin_type);
-	  let newchildren = [];
-	  for (let i = 0; i < nchild; i++) {
-	    let child = {
-	      "name": makeid(4),
-	      "sex": sex,
-	      "mother": node.sex === 'F' ? node.name : ptr_name,
-	      "father": node.sex === 'F' ? ptr_name : node.name
-	    };
-	    dataset.splice(idx, 0, child);
-	    if (twin_type) child[twin_type] = twin_id;
-	    newchildren.push(child);
-	  }
-	  return newchildren;
-	}
-
-	//
-	function addsibling(dataset, node, sex, add_lhs, twin_type, skip_parent_copy = false) {
-	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
-	  let newbie = {
-	    "name": makeid(4),
-	    "sex": sex
-	  };
-	  if (node.top_level) {
-	    newbie.top_level = true;
-	  } else if (!skip_parent_copy) {
-	    newbie.mother = node.mother;
-	    newbie.father = node.father;
-	  }
-	  let idx = getIdxByName(dataset, node.name);
-	  if (twin_type) {
-	    setMzTwin(dataset, dataset[idx], newbie, twin_type);
-	  }
-	  if (add_lhs) {
-	    // add to LHS
-	    if (idx > 0) idx--;
-	  } else idx++;
-	  dataset.splice(idx, 0, newbie);
-	  return newbie;
-	}
-
-	// add parents to the 'node'
-	function addparents(opts, dataset, name) {
-	  let mother, father;
-	  let root = roots[opts.targetDiv];
-	  let flat_tree = root ? flatten(root) : [];
-	  let tree_node = getTreeNode(flat_tree, dataset, name);
-	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding parents');
-	  let node = tree_node.data;
-	  let depth = tree_node.depth || getDepth(dataset, node.name); // depth of the node in relation to the root (depth = 1 is a top_level node)
-
-	  let pid = -101;
-	  let ptr_name;
-	  let children = getAllChildren(dataset, node);
-	  if (children.length > 0) {
-	    ptr_name = children[0].mother === node.name ? children[0].father : children[0].mother;
-	    let ptr_node_meta = getTreeNode(flat_tree, dataset, ptr_name);
-	    pid = ptr_node_meta && ptr_node_meta.data.id !== undefined ? ptr_node_meta.data.id : getIdxByName(dataset, ptr_name);
-	  }
-	  let i;
-	  if (depth === 1) {
-	    mother = {
-	      "name": makeid(4),
-	      "sex": "F",
-	      "top_level": true
-	    };
-	    father = {
-	      "name": makeid(4),
-	      "sex": "M",
-	      "top_level": true
-	    };
-	    dataset.splice(0, 0, mother);
-	    dataset.splice(0, 0, father);
-	    for (i = 0; i < dataset.length; i++) {
-	      if ((dataset[i].top_level || getDepth(dataset, dataset[i].name) === 2) && dataset[i].name !== mother.name && dataset[i].name !== father.name) {
-	        delete dataset[i].top_level;
-	        dataset[i].noparents = true;
-	        dataset[i].mother = mother.name;
-	        dataset[i].father = father.name;
-	      }
-	    }
-	  } else {
-	    let motherName = typeof tree_node.data.mother === 'string' ? tree_node.data.mother : tree_node.data.mother;
-	    motherName = motherName && motherName.name ? motherName.name : motherName;
-	    let fatherName = typeof tree_node.data.father === 'string' ? tree_node.data.father : tree_node.data.father;
-	    fatherName = fatherName && fatherName.name ? fatherName.name : fatherName;
-	    let node_mother = getTreeNode(flat_tree, dataset, motherName);
-	    let node_father = getTreeNode(flat_tree, dataset, fatherName);
-	    let node_sibs = getAllSiblings(dataset, node);
-
-	    // lhs & rhs id's for siblings of this node
-	    let rid = 10000;
-	    let lid = tree_node.data.id;
-	    for (i = 0; i < node_sibs.length; i++) {
-	      let sibNode = getTreeNode(flat_tree, dataset, node_sibs[i].name);
-	      let sid = sibNode && sibNode.data.id !== undefined ? sibNode.data.id : getIdxByName(dataset, node_sibs[i].name);
-	      if (sid < rid && sid > tree_node.data.id) rid = sid;
-	      if (sid < lid) lid = sid;
-	    }
-	    let add_lhs = lid >= tree_node.data.id || pid === lid && rid < 10000;
-	    if (opts.DEBUG) console.log('lid=' + lid + ' rid=' + rid + ' nid=' + tree_node.data.id + ' ADD_LHS=' + add_lhs);
-	    let midx;
-	    if (!add_lhs && node_father.data.id > node_mother.data.id || add_lhs && node_father.data.id < node_mother.data.id) midx = getIdxByName(dataset, node.father);else midx = getIdxByName(dataset, node.mother);
-	    let parent = dataset[midx];
-	    father = addsibling(dataset, parent, 'M', add_lhs);
-	    mother = addsibling(dataset, parent, 'F', add_lhs);
-	    let faidx = getIdxByName(dataset, father.name);
-	    let moidx = getIdxByName(dataset, mother.name);
-	    if (faidx > moidx) {
-	      // switch to ensure father on lhs of mother
-	      let tmpfa = dataset[faidx];
-	      dataset[faidx] = dataset[moidx];
-	      dataset[moidx] = tmpfa;
-	    }
-	    let orphans = getAdoptedSiblings(dataset, node);
-	    let nid = tree_node.data.id;
-	    for (i = 0; i < orphans.length; i++) {
-	      let orphan_meta = getTreeNode(flat_tree, dataset, orphans[i].name);
-	      let oid = orphan_meta && orphan_meta.data.id !== undefined ? orphan_meta.data.id : getIdxByName(dataset, orphans[i].name);
-	      if (opts.DEBUG) console.log('ORPHAN=' + i + ' ' + orphans[i].name + ' ' + (nid < oid && oid < rid) + ' nid=' + nid + ' oid=' + oid + ' rid=' + rid);
-	      if ((add_lhs || nid < oid) && oid < rid) {
-	        let oidx = getIdxByName(dataset, orphans[i].name);
-	        dataset[oidx].mother = mother.name;
-	        dataset[oidx].father = father.name;
-	      }
-	    }
-	  }
-	  if (depth === 2) {
-	    mother.top_level = true;
-	    father.top_level = true;
-	  }
-	  let idx = getIdxByName(dataset, node.name);
-	  dataset[idx].mother = mother.name;
-	  dataset[idx].father = father.name;
-	  delete dataset[idx].noparents;
-	  if ('parent_node' in node) {
-	    let ptr_node = dataset[getIdxByName(dataset, ptr_name)];
-	    if ('noparents' in ptr_node) {
-	      ptr_node.mother = mother.name;
-	      ptr_node.father = father.name;
-	    }
-	  }
-	}
-
-	// add partner
-	function addpartner(opts, dataset, name) {
-	  let root = roots[opts.targetDiv];
-	  let flat_tree = root ? flatten(root) : [];
-	  let tree_node = getTreeNode(flat_tree, dataset, name);
-	  if (!tree_node) throw create_err('Person ' + name + ' not found when adding partner');
-
-	  // Create partner as a new individual (not a sibling)
-	  // Partner should be top_level to position at same depth without showing parent lines
-	  let partner = {
-	    "name": makeid(4),
-	    "sex": tree_node.data.sex === 'F' ? 'M' : 'F'
-	  };
-	  if (tree_node.data.top_level) {
-	    partner.top_level = true;
-	  } else {
-	    // For non-top-level persons, partner should also be positioned at same level
-	    // Use same parents for depth calculation but mark as noparents to hide lines
-	    partner.mother = tree_node.data.mother;
-	    partner.father = tree_node.data.father;
-	  }
-	  partner.noparents = true;
-
-	  // Insert partner next to the target
-	  let idx = getIdxByName(dataset, tree_node.data.name);
-	  if (tree_node.data.sex === 'F') {
-	    if (idx > 0) idx--; // add to left (partner on left of female)
-	  } else {
-	    idx++; // add to right (partner on right of male)
-	  }
-	  dataset.splice(idx, 0, partner);
-
-	  // Create child to link the couple
-	  let child = {
-	    "name": makeid(4),
-	    "sex": "M"
-	  };
-	  child.mother = tree_node.data.sex === 'F' ? tree_node.data.name : partner.name;
-	  child.father = tree_node.data.sex === 'F' ? partner.name : tree_node.data.name;
-	  let child_idx = getIdxByName(dataset, tree_node.data.name) + 2;
-	  dataset.splice(child_idx, 0, child);
-	}
-
-	// get adjacent nodes at the same depth
-	function adjacent_nodes(root, node, excludes) {
-	  let dnodes = getNodesAtDepth(flatten(root), node.depth, excludes);
-	  let lhs_node, rhs_node;
-	  for (let i = 0; i < dnodes.length; i++) {
-	    if (dnodes[i].x < node.x) lhs_node = dnodes[i];
-	    if (!rhs_node && dnodes[i].x > node.x) rhs_node = dnodes[i];
-	  }
-	  return [lhs_node, rhs_node];
-	}
-
-	// delete a node and descendants
-	function delete_node_dataset(dataset, node, opts, onDone) {
-	  let root = roots[opts.targetDiv];
-	  let fnodes = flatten(root);
-	  let deletes = [];
-	  let i, j;
-
-	  // get d3 data node
-	  if (node.id === undefined) {
-	    let d3node = getNodeByName(fnodes, node.name);
-	    if (d3node !== undefined) node = d3node.data;
-	  }
-	  if (node.parent_node) {
-	    for (i = 0; i < node.parent_node.length; i++) {
-	      let parent = node.parent_node[i];
-	      let ps = [getNodeByName(dataset, parent.mother.name), getNodeByName(dataset, parent.father.name)];
-	      // delete parents
-	      for (j = 0; j < ps.length; j++) {
-	        if (ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
-	          dataset.splice(getIdxByName(dataset, ps[j].name), 1);
-	          deletes.push(ps[j]);
-	        }
-	      }
-	      let children = parent.children;
-	      let children_names = $.map(children, function (p, _i) {
-	        return p.name;
-	      });
-	      for (j = 0; j < children.length; j++) {
-	        let child = getNodeByName(dataset, children[j].name);
-	        if (child) {
-	          child.noparents = true;
-	          let ptrs = get_partners(dataset, child);
-	          let ptr;
-	          if (ptrs.length > 0) ptr = getNodeByName(dataset, ptrs[0]);
-	          if (ptr && ptr.mother !== child.mother) {
-	            child.mother = ptr.mother;
-	            child.father = ptr.father;
-	          } else if (ptr) {
-	            let child_node = getNodeByName(fnodes, child.name);
-	            let adj = adjacent_nodes(root, child_node, children_names);
-	            child.mother = adj[0] ? adj[0].data.mother : adj[1] ? adj[1].data.mother : null;
-	            child.father = adj[0] ? adj[0].data.father : adj[1] ? adj[1].data.father : null;
-	          } else {
-	            dataset.splice(getIdxByName(dataset, child.name), 1);
-	          }
-	        }
-	      }
-	    }
-	  } else {
-	    let idxToRemove = getIdxByName(dataset, node.name);
-	    if (idxToRemove >= 0) dataset.splice(idxToRemove, 1);
-	  }
-
-	  // delete ancestors
-	  console.log(deletes);
-	  for (i = 0; i < deletes.length; i++) {
-	    let del = deletes[i];
-	    let sibs = getAllSiblings(dataset, del);
-	    console.log('DEL', del.name, sibs);
-	    if (sibs.length < 1) {
-	      console.log('del sibs', del.name, sibs);
-	      let data_node = getNodeByName(fnodes, del.name);
-	      let ancestors$1 = [];
-	      if (data_node && typeof data_node.ancestors === 'function') ancestors$1 = data_node.ancestors();else ancestors$1 = ancestors(dataset, del);
-	      for (j = 0; j < ancestors$1.length; j++) {
-	        let ancestor = ancestors$1[j];
-	        let ancestorData = ancestor && ancestor.data ? ancestor.data : ancestor;
-	        if (opts.DEBUG) console.log(ancestorData);
-	        let motherName = ancestorData && ancestorData.mother ? ancestorData.mother.name ? ancestorData.mother.name : ancestorData.mother : null;
-	        let fatherName = ancestorData && ancestorData.father ? ancestorData.father.name ? ancestorData.father.name : ancestorData.father : null;
-	        if (motherName && fatherName) {
-	          if (opts.DEBUG) console.log('DELETE ', motherName, fatherName);
-	          let mIdx = getIdxByName(dataset, motherName);
-	          let fIdx = getIdxByName(dataset, fatherName);
-	          if (mIdx >= 0) dataset.splice(mIdx, 1);
-	          if (fIdx >= 0) dataset.splice(fIdx, 1);
-	        }
-	      }
-	    }
-	  }
-	  // check integrity of mztwins settings
-	  checkTwins(dataset);
-	  let uc;
-	  try {
-	    // validate new pedigree dataset
-	    let newopts = $.extend({}, opts);
-	    newopts.dataset = copy_dataset(dataset);
-	    validate_pedigree(newopts);
-	    // check if pedigree is split
-	    uc = unconnected(dataset);
-	  } catch (err) {
-	    messages('Warning', 'Deletion of this pedigree member is disallowed.');
-	    throw err;
-	  }
-	  if (uc.length > 0) {
-	    // check & warn only if this is a new split
-	    if (unconnected(opts.dataset).length === 0) {
-	      console.error("individuals unconnected to pedigree ", uc);
-	      messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
-	      return;
-	    }
-	  }
-	  if (onDone) {
-	    onDone(opts, dataset);
-	  }
-	  return dataset;
-	}
-
 	var widgets = /*#__PURE__*/Object.freeze({
 		__proto__: null,
 		addWidgets: addWidgets,
@@ -3883,16 +3868,27 @@ var pedigreejs = (function (exports) {
 	    return 'display_name' in d.data ? d.data.display_name : '';
 	  }, undefined, ['display_name']);
 	  let font_size = parseInt(getPx(opts)) + 4;
+
+	  // Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
+	  let validate_age_yob_data = function (d) {
+	    // Valider age/yob si les deux sont présents
+	    if (d.data.age && d.data.yob && d.data.status) {
+	      return validate_age_yob(d.data.age, d.data.yob, d.data.status);
+	    }
+	    return true; // Valide si données manquantes
+	  };
+
 	  // display age/yob label first
 	  for (let ilab = 0; ilab < opts.labels.length; ilab++) {
 	    let label = opts.labels[ilab];
 	    let arr = Array.isArray(label) ? label : [label];
 	    if (arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
+	      // Phase 3.3.4: Ajouter indicateur visuel pour données age/yob invalides
 	      addLabel(opts, node, -opts.symbol_size, function (d) {
 	        return ypos(d, arr, font_size);
 	      }, function (d) {
 	        return get_text(d, arr);
-	      }, 'indi_details', arr);
+	      }, 'indi_details', arr, validate_age_yob_data);
 	    }
 	  }
 
@@ -3965,10 +3961,25 @@ var pedigreejs = (function (exports) {
 	}
 
 	// add label to node
-	function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
-	  node.filter(function (d) {
+	function addLabel(opts, node, fx, fy, ftext, class_label, labels, validate_fn) {
+	  let labels_sel = node.filter(function (d) {
 	    return !d.data.hidden && (!labels || node_has_label(d, labels));
-	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
+	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight)
+	  // Phase 3.3.4: Appliquer style visuel si données invalides
+	  .attr("fill", function (d) {
+	    if (validate_fn && !validate_fn(d)) {
+	      return "#d32f2f"; // Rouge pour données invalides
+	    }
+	    return null; // Style par défaut
+	  }).text(ftext);
+
+	  // Ajouter tooltip pour les données invalides
+	  labels_sel.append("title").text(function (d) {
+	    if (validate_fn && !validate_fn(d)) {
+	      return "Warning: Age and year of birth are inconsistent";
+	    }
+	    return "";
+	  });
 	}
 
 	// get height in pixels
@@ -4154,6 +4165,12 @@ var pedigreejs = (function (exports) {
 	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).attr("stroke", "darkgrey").attr("fill", opts.background) // or none
 	  .attr("stroke-width", 1);
 	  let ped = svg.append("g").attr("class", "diagram");
+
+	  // Phase 3.3.2: Indicateur visuel mode DEBUG
+	  if (opts.DEBUG) {
+	    svg.append("rect").attr("x", svg_dimensions.width - 120).attr("y", 5).attr("width", 110).attr("height", 25).attr("fill", "#ff9800").attr("stroke", "#f57c00").attr("stroke-width", 2).attr("rx", 3);
+	    svg.append("text").attr("x", svg_dimensions.width - 65).attr("y", 22).attr("text-anchor", "middle").attr("fill", "white").attr("font-weight", "bold").attr("font-size", "12px").text("DEBUG MODE");
+	  }
 	  let top_level = $.map(opts.dataset, function (val, _i) {
 	    return 'top_level' in val && val.top_level ? val : null;
 	  });

@@ -8,7 +8,6 @@
 import * as utils from './utils.js';
 import {save} from './popup_form.js';
 import {current as pedcache_current} from './pedcache.js';
-import {checkTwins} from './twins.js';
 import {canChangeSex} from './validation.js';
 import {addchild, addsibling, addparents, addpartner} from './widgets-add.js';
 import {delete_node_dataset} from './widgets-delete.js';

@@ -107,19 +107,21 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	checkTwins(dataset);
 
 	let uc;
+	// Use injected messages function for testing, or default to utils.messages
+	let messagesFunc = opts.messages || utils.messages;
 	try	{
 		let newopts = $.extend({}, opts);
 		newopts.dataset = utils.copy_dataset(dataset);
 		utils.validate_pedigree(newopts);
 		uc = utils.unconnected(dataset);
 	} catch(err) {
-		utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
+		messagesFunc('Warning', 'Deletion of this pedigree member is disallowed.')
 		throw err;
 	}
 	if(uc.length > 0) {
 		if(utils.unconnected(opts.dataset).length === 0) {
 			console.error("individuals unconnected to pedigree ", uc);
-			utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+			messagesFunc("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
 			return;
 		}
 	}

@@ -31,7 +31,8 @@ export function validate_age_yob(age, yob, status) {
 	if(status === "1") {   // deceased
 		return year >= sum;
 	}
-	return Math.abs(year - sum) <= 1 && year >= sum;
+	// Phase 3.3.1: Assouplir validation pour éviter faux positifs (anniversaire non encore passé)
+	return Math.abs(year - sum) <= 2 && year >= sum;
 }
 
 // validate pedigree data

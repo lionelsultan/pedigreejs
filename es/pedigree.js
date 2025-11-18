@@ -87,6 +87,27 @@ export function build(options) {
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
 
+	// Phase 3.3.2: Indicateur visuel mode DEBUG
+	if(opts.DEBUG) {
+		svg.append("rect")
+			.attr("x", svg_dimensions.width - 120)
+			.attr("y", 5)
+			.attr("width", 110)
+			.attr("height", 25)
+			.attr("fill", "#ff9800")
+			.attr("stroke", "#f57c00")
+			.attr("stroke-width", 2)
+			.attr("rx", 3);
+		svg.append("text")
+			.attr("x", svg_dimensions.width - 65)
+			.attr("y", 22)
+			.attr("text-anchor", "middle")
+			.attr("fill", "white")
+			.attr("font-weight", "bold")
+			.attr("font-size", "12px")
+			.text("DEBUG MODE");
+	}
+
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
 		name : 'hidden_root',
