@@ -4,8 +4,17 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-
-// set two siblings as twins
+/**
+ * Mark two siblings as twins (monozygotic or dizygotic)
+ * Assigns matching twin IDs and synchronizes age/yob between twins
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} d1 - First twin person object
+ * @param {Object} d2 - Second twin person object
+ * @param {string} twin_type - Type of twin relationship: 'mztwin' or 'dztwin'
+ * @returns {boolean} True if successful, false if no twin ID available (max 10 twin pairs)
+ * @example
+ * setMzTwin(dataset, person1, person2, 'mztwin');
+ */
 export function setMzTwin(dataset, d1, d2, twin_type) {
 	if(!d1[twin_type]) {
 		d1[twin_type] = getUniqueTwinID(dataset, twin_type);
@@ -20,7 +29,13 @@ export function setMzTwin(dataset, d1, d2, twin_type) {
 	return true;
 }
 
-// get a new unique twins ID, max of 10 twins in a pedigree
+/**
+ * Get the next available unique twin ID
+ * Twin IDs are: 1-9 and 'A', supporting up to 10 twin pairs per pedigree
+ * @param {Array} dataset - Array of person objects
+ * @param {string} twin_type - Type of twin: 'mztwin' or 'dztwin'
+ * @returns {number|string|undefined} Next available twin ID (1-9 or 'A'), or undefined if all used
+ */
 export function getUniqueTwinID(dataset, twin_type) {
 	let mz = [1, 2, 3, 4, 5, 6, 7, 8, 9, "A"];
 	for(let i=0; i<dataset.length; i++) {
@@ -35,7 +50,13 @@ export function getUniqueTwinID(dataset, twin_type) {
 	return undefined;
 }
 
-// sync attributes of twins
+/**
+ * Synchronize attributes between twins after changes
+ * For monozygotic twins: syncs sex, yob, and age (if alive)
+ * For dizygotic twins: syncs yob and age (if alive) only
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} d1 - The twin whose attributes should be copied to their twin(s)
+ */
 export function syncTwins(dataset, d1) {
 	if(!d1.mztwin && !d1.dztwin)
 		return;
@@ -53,7 +74,12 @@ export function syncTwins(dataset, d1) {
 	}
 }
 
-// check integrity twin settings
+/**
+ * Validate twin relationships and remove orphaned twin markers
+ * Removes twin IDs from individuals who don't have at least one twin partner
+ * Supports multiplets (triplets, quadruplets, etc.)
+ * @param {Array} dataset - Array of person objects to validate
+ */
 export function checkTwins(dataset) {
 	let twin_types = ["mztwin", "dztwin"];
 	for(let i=0; i<dataset.length; i++) {

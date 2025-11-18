@@ -16,6 +16,8 @@ export * as pedigreejs_io from './io.js';
 export * as pedigreejs_canrisk_file from './canrisk_file.js';
 export * as pedigreejs_zooming from './zoom.js';
 export * as pedigreejs__extras from './extras.js';
+export * as pedigreejs_twins from './twins.js';
+export * as pedigreejs_dragging from './dragging.js';
 // Phase 1 refactored modules - exported for testing
 export * as pedigreejs_validation from './validation.js';
 export * as pedigreejs_dom from './dom.js';

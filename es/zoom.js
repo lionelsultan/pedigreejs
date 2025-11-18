@@ -8,7 +8,17 @@ import {getposition, setposition} from './pedcache.js';
 
 let zm;
 
-// initialise zoom and drag
+/**
+ * Initialize zoom and pan behavior on SVG element
+ * Sets up D3 zoom with configurable scale extent and source filters
+ * Restores cached position from previous session if available
+ * @param {Object} opts - Pedigree options object
+ * @param {number} opts.zoomIn - Minimum zoom scale (e.g., 0.1)
+ * @param {number} opts.zoomOut - Maximum zoom scale (e.g., 10)
+ * @param {Array} [opts.zoomSrc] - Array of zoom sources to enable ('wheel', 'button')
+ * @param {number} opts.symbol_size - Size of person symbols for positioning
+ * @param {Object} svg - D3 selection of SVG element
+ */
 export function init_zoom(opts, svg) {
 	// offsets
 	let xi = opts.symbol_size/2;
@@ -37,12 +47,30 @@ export function init_zoom(opts, svg) {
     svg.call(zm.transform, transform);
 }
 
-// scale size the pedigree
+/**
+ * Zoom in or out by a scale factor using button controls
+ * @param {Object} opts - Pedigree options object
+ * @param {string} opts.targetDiv - ID of the container div
+ * @param {number} scale - Scale factor (>1 zooms in, <1 zooms out, e.g., 1.2 or 0.8)
+ * @example
+ * btn_zoom(opts, 1.5); // Zoom in by 50%
+ * btn_zoom(opts, 0.8); // Zoom out by 20%
+ */
 export function btn_zoom(opts, scale) {
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
 	svg.transition().duration(50).call(zm.scaleBy, scale);
 }
 
+/**
+ * Scale and center the pedigree to fit within the viewport
+ * Calculates optimal scale and position to show entire pedigree
+ * Uses animated transition for smooth scaling
+ * @param {Object} opts - Pedigree options object
+ * @param {string} opts.targetDiv - ID of the container div
+ * @param {number} opts.zoomIn - Minimum zoom scale
+ * @param {number} opts.zoomOut - Maximum zoom scale
+ * @param {number} opts.symbol_size - Size of person symbols
+ */
 export function scale_to_fit(opts) {
 	let d = get_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
@@ -78,7 +106,16 @@ function get_dimensions(opts) {
 }
 
 /**
- * Get the min/max boundary of the diagram
+ * Get the bounding box coordinates of the visible pedigree
+ * Calculates min/max x and y coordinates of all visible nodes
+ * Excludes hidden nodes and hidden_root from calculations
+ * @param {Object} opts - Pedigree options object
+ * @param {string} opts.targetDiv - ID of the container div
+ * @param {number} opts.symbol_size - Size of person symbols for padding
+ * @returns {Object} Bounding box with {xmin, xmax, ymin, ymax} properties
+ * @example
+ * let bounds = get_bounds(opts);
+ * console.log(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
  */
 export function get_bounds(opts) {
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");

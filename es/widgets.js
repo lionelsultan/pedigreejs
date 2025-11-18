@@ -43,8 +43,18 @@ $(document).on('keydown keyup', function(e) {
 	}
 });
 
-//
-// Add widgets to nodes and bind events
+/**
+ * Add interactive widgets to pedigree nodes
+ * Adds UI controls for:
+ * - Adding individuals (male/female/unspecified)
+ * - Adding partners
+ * - Adding parents
+ * - Editing person details
+ * - Deleting individuals
+ * - Setting proband status
+ * @param {Object} opts - Pedigree options object
+ * @param {Object} node - D3 selection of nodes to add widgets to
+ */
 export function addWidgets(opts, node) {
 
 	// popup gender selection box

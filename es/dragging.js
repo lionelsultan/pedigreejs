@@ -1,8 +1,17 @@
 import  * as utils from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
 
-
-// initialise node dragging - SHIFT + DRAG
+/**
+ * Initialize drag-and-drop repositioning for pedigree nodes
+ * Enables SHIFT + DRAG to reorder siblings horizontally within their generation
+ * Updates dataset ordering and triggers rebuild to reflect new positions
+ * @param {Object} opts - Pedigree options object
+ * @param {Array} opts.dataset - Array of person objects
+ * @param {string} opts.targetDiv - ID of the container div
+ * @param {Object} node - D3 selection of nodes to make draggable
+ * @example
+ * // Hold SHIFT key and drag a person node left or right to reorder siblings
+ */
 export function init_dragging(opts, node) {
 	// add drag
 	node.filter(function (d) {return !d.data.hidden;})
