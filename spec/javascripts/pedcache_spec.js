@@ -164,6 +164,64 @@ describe('pedcache.js array cache fallback', function() {
 			expect(pos2[1]).toBe(40);
 			expect(pos2[2]).toBe(2.0);
 		});
+
+		it('should store and retrieve zero coordinates with zoom 1', function() {
+			var opts = createArrayOpts('test_cache_zero_pos');
+
+			pedcache.setposition(opts, 0, 0, 1);
+			var pos = pedcache.getposition(opts);
+
+			expect(pos[0]).toBe(0);
+			expect(pos[1]).toBe(0);
+			expect(pos[2]).toBe(1);
+		});
+	});
+
+	describe('Storage namespace purge', function() {
+		beforeEach(function() {
+			try { localStorage.clear(); } catch (err) {}
+			try { sessionStorage.clear(); } catch (err2) {}
+		});
+
+		it('should store zero coordinates with zoom 1 in localStorage mode', function() {
+			var opts = createArrayOpts('local_zero_pos');
+			opts.store_type = 'local';
+
+			pedcache.setposition(opts, 0, 0, 1);
+			var pos = pedcache.getposition(opts);
+
+			expect(pos[0]).toBe(0);
+			expect(pos[1]).toBe(0);
+			expect(pos[2]).toBe(1);
+		});
+
+		it('should only clear prefixed keys in localStorage', function() {
+			var opts = createArrayOpts('local_scope');
+			opts.store_type = 'local';
+
+			localStorage.setItem('UNRELATED_KEY', 'keep');
+
+			pedcache.init_cache(opts);
+			pedcache.clear(opts);
+
+			expect(localStorage.getItem('UNRELATED_KEY')).toBe('keep');
+			expect(pedcache.nstore(opts)).toBe(-1);
+		});
+
+		it('should keep other array namespaces intact when clearing one', function() {
+			var optsA = createArrayOpts('array_scope_a');
+			var optsB = createArrayOpts('array_scope_b');
+
+			pedcache.init_cache(optsA);
+			pedcache.init_cache(optsB);
+			expect(pedcache.nstore(optsA)).toBeGreaterThan(0);
+			expect(pedcache.nstore(optsB)).toBeGreaterThan(0);
+
+			pedcache.clear(optsA);
+
+			expect(pedcache.nstore(optsA)).toBe(-1);
+			expect(pedcache.nstore(optsB)).toBeGreaterThan(0);
+		});
 	});
 
 	describe('Array cache navigation (previous/next)', function() {
@@ -212,6 +270,41 @@ describe('pedcache.js array cache fallback', function() {
 			// Verify everything is cleared
 			expect(pedcache.nstore(opts)).toBe(-1);
 			expect(pedcache.getposition(opts)).toEqual([null, null]);
+		});
+	});
+
+	describe('Dataset serialization safety', function() {
+		it('should preserve nested custom objects when caching datasets', function() {
+			var opts = createArrayOpts('test_cache_nested');
+			opts.dataset[0].gene_test = {
+				type: 'panel',
+				results: [{gene: 'BRCA1', positive: true}]
+			};
+			opts.dataset[0].parent_node = {dummy: true};
+			opts.dataset[0].parent_node.self = opts.dataset[0];
+
+			pedcache.init_cache(opts);
+			var cached = pedcache.current(opts);
+
+			expect(cached[0].gene_test.results[0].gene).toBe('BRCA1');
+			expect(cached[0].gene_test).not.toBe(opts.dataset[0].gene_test);
+			expect(cached[0].parent_node).toBeUndefined();
+		});
+
+		it('should keep the insertion order when storing datasets', function() {
+			var opts = createArrayOpts('test_cache_order_verify');
+			opts.dataset = [
+				{name: 'b', id: 2, flags: {idx: 0}},
+				{name: 'a', id: 1, flags: {idx: 1}},
+				{name: 'c', id: 3, flags: {idx: 2}}
+			];
+
+			pedcache.init_cache(opts);
+			var cached = pedcache.current(opts);
+
+			expect(cached[0].name).toBe('b');
+			expect(cached[1].name).toBe('a');
+			expect(cached[2].name).toBe('c');
 		});
 	});
 

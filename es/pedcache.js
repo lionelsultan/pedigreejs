@@ -6,34 +6,15 @@
 
 //store a history of pedigree
 
+import {copy_dataset} from './utils.js';
+
 let max_limit = 25;
 let dict_cache = {};
 
-// Helper function to serialize dataset avoiding circular references
-// D3 adds circular references (parent/children) that can't be stringified directly
+// Helper function to serialize dataset by stripping transient/circular refs first
 function serialize_dataset(dataset) {
-	try {
-		// Try direct stringification first (for performance)
-		return JSON.stringify(dataset);
-	} catch (e) {
-		// If circular reference error, create a clean copy
-		// Copy only the original data properties, excluding D3-added references
-		let cleanData = dataset.map(function(person) {
-			let clean = {};
-			for (let key in person) {
-				// Skip D3-added properties and circular references
-				if (key !== 'parent' && key !== 'children' && key !== 'data' &&
-					typeof person[key] !== 'function' && typeof person[key] !== 'object') {
-					clean[key] = person[key];
-				} else if (key === 'children' && Array.isArray(person[key])) {
-					// For children array, only store names not full objects
-					clean[key] = person[key].map(c => c.name || c);
-				}
-			}
-			return clean;
-		});
-		return JSON.stringify(cleanData);
-	}
+	let cleanData = copy_dataset(dataset || []);
+	return JSON.stringify(cleanData);
 }
 
 // test if browser storage is supported
@@ -79,10 +60,16 @@ function set_browser_store(opts, name, item) {
 
 // clear all storage items
 function clear_browser_store(opts) {
-	if(opts.store_type === 'local')
-		return localStorage.clear();
-	else
-		return sessionStorage.clear();
+	let store = (opts.store_type === 'local' ? localStorage : sessionStorage);
+	let prefix = get_prefix(opts);
+	let items = [];
+	for(let i = 0; i < store.length; i++){
+		let key = store.key(i);
+		if(key && key.indexOf(prefix) === 0)
+			items.push(key);
+	}
+	for(let i = 0; i < items.length; i++)
+		store.removeItem(items[i]);
 }
 
 // remove all storage items with keys that have the pedigree history prefix
@@ -216,16 +203,35 @@ export function next(opts, next) {
 }
 
 export function clear(opts) {
-	if(has_browser_storage(opts))
-		clear_browser_store(opts);
-	dict_cache = {};
+	if(opts) {
+		if(has_browser_storage(opts))
+			clear_browser_store(opts);
+
+		let prefix = get_prefix(opts);
+		Object.keys(dict_cache).forEach(function(key){
+			if(key.indexOf(prefix) === 0)
+				delete dict_cache[key];
+		});
+	} else {
+		try {
+			localStorage.clear();
+		} catch (err) {
+			// ignore when unavailable
+		}
+		try {
+			sessionStorage.clear();
+		} catch (err2) {
+			// ignore when unavailable
+		}
+		dict_cache = {};
+	}
 }
 
 // zoom - store translation coords
 export function setposition(opts, x, y, zoom) {
 	if(has_browser_storage(opts)) {
 		let store = (opts.store_type === 'local' ? localStorage : sessionStorage);
-		if(x) {
+		if(x !== null && x !== undefined && y !== null && y !== undefined) {
 			set_browser_store(opts, get_prefix(opts)+'_X', x);
 			set_browser_store(opts, get_prefix(opts)+'_Y', y);
 		} else {
@@ -234,13 +240,13 @@ export function setposition(opts, x, y, zoom) {
 		}
 
 		let zoomName = get_prefix(opts)+'_ZOOM';
-		if(zoom)
+		if(zoom !== null && zoom !== undefined)
 			set_browser_store(opts, zoomName, zoom);
 		else
 			store.removeItem(zoomName);
 	} else {
 		// Array cache fallback for position storage
-		if(x) {
+		if(x !== null && x !== undefined && y !== null && y !== undefined) {
 			dict_cache[get_prefix(opts)+'_X'] = x;
 			dict_cache[get_prefix(opts)+'_Y'] = y;
 		} else {
@@ -249,7 +255,7 @@ export function setposition(opts, x, y, zoom) {
 		}
 
 		let zoomName = get_prefix(opts)+'_ZOOM';
-		if(zoom)
+		if(zoom !== null && zoom !== undefined)
 			dict_cache[zoomName] = zoom;
 		else
 			delete dict_cache[zoomName];

@@ -152,9 +152,10 @@ export function build(options) {
 		.attr("fill", "none");
 
 	// set a clippath
+	// FIX: Prefix clipPath IDs with targetDiv to avoid collisions when multiple pedigrees on same page
 	node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
 		.append("clipPath")
-		.attr("id", function (d) {return d.data.name;}).append("path")
+		.attr("id", function (d) {return opts.targetDiv + "_clip_" + d.data.name;}).append("path")
 		.attr("class", "node")
 		.attr("transform", function(d) {return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 		.attr("d", d3.symbol().size(function(d) {
@@ -187,7 +188,7 @@ export function build(options) {
 	pienode.selectAll("path")
 		.data(d3.pie().value(function(d) {return d.cancer;}))
 		.enter().append("path")
-			.attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
+			.attr("clip-path", function(d) {return "url(#"+opts.targetDiv+"_clip_"+d.data.id+")";}) // clip the rectangle (with prefix)
 			.attr("class", "pienode")
 			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			.attr("fill", function(d, i) {
@@ -501,12 +502,18 @@ function has_gender(sex) {
 }
 
 //adopted in/out brackets
+// FIX: Make bracket height relative to symbol_size with better scaling
+// Instead of hardcoded 1.28, use a proportional factor that works for all sizes
 function get_bracket(dx, dy, indent, opts) {
+	// Bracket height scales with symbol: small symbols = shorter brackets, large = taller
+	// Factor 1.3 gives good visual balance across sizes (was 1.28, close but now explicit)
+	let bracket_height = opts.symbol_size * 1.3;
+
 	return 	"M" + (dx+indent) + "," + dy +
 			"L" + dx + " " + dy +
-			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-			"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
+			"L" + dx + " " + (dy + bracket_height) +
+			"L" + dx + " " + (dy + bracket_height) +
+			"L" + (dx+indent) + "," + (dy + bracket_height);
 }
 
 // check for crossing of partner lines

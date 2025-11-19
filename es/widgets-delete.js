@@ -107,19 +107,26 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	checkTwins(dataset);
 
 	let uc;
+	let baselineDisconnected = [];
 	try	{
 		let newopts = $.extend({}, opts);
 		newopts.dataset = utils.copy_dataset(dataset);
 		utils.validate_pedigree(newopts);
 		uc = utils.unconnected(dataset);
+		if(opts && opts.dataset)
+			baselineDisconnected = utils.unconnected(opts.dataset);
 	} catch(err) {
 		utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
 		throw err;
 	}
+	let hadDisconnectedBefore = baselineDisconnected.length > 0;
 	if(uc.length > 0) {
-		if(utils.unconnected(opts.dataset).length === 0) {
+		if(!hadDisconnectedBefore) {
 			console.error("individuals unconnected to pedigree ", uc);
-			utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+			let confirmCallback = onDone ? function(localOpts, localDataset){
+				onDone(localOpts, localDataset);
+			} : null;
+			utils.messages("Warning", "Deleting this will split the pedigree. Continue?", confirmCallback, opts, dataset);
 			return;
 		}
 	}

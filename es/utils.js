@@ -19,22 +19,65 @@ export {
 // Global state (to be refactored later)
 export let roots = {};
 
-export function copy_dataset(dataset) {
-	if(dataset[0].id) { // sort by id
-		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});
+const globalScope = (function() {
+	try {
+		// eslint-disable-next-line no-new-func
+		return Function('return this')() || {};
+	} catch (err) {
+		return {};
 	}
+})();
+const globalStructuredClone = (typeof globalScope.structuredClone === 'function') ? globalScope.structuredClone : null;
+const canStructuredClone = typeof globalStructuredClone === 'function';
 
-	let disallowed = ["id", "parent_node"];
-	let newdataset = [];
-	for(let i=0; i<dataset.length; i++){
-		let obj = {};
-		for(let key in dataset[i]) {
-			if(disallowed.indexOf(key) === -1)
-				obj[key] = dataset[i][key];
+export function deepClone(value) {
+	if(value === null || value === undefined || typeof value !== 'object')
+		return value;
+
+	if(canStructuredClone) {
+		try {
+			return globalStructuredClone(value);
+		} catch (err) {
+			// Fallback to manual clone when structuredClone cannot handle the payload (e.g. functions).
 		}
-		newdataset.push(obj);
 	}
-	return newdataset;
+	return cloneValue(value);
+}
+
+export function copy_dataset(dataset) {
+	if(!Array.isArray(dataset) || dataset.length === 0)
+		return [];
+
+	let disallowed = new Set(["id", "parent_node"]);
+	return dataset.map(function(person){
+		if(!person || typeof person !== 'object')
+			return {};
+
+		let clone = {};
+		for(let key in person) {
+			if(!Object.prototype.hasOwnProperty.call(person, key) || disallowed.has(key))
+				continue;
+			clone[key] = deepClone(person[key]);
+		}
+		return clone;
+	});
+}
+
+function cloneValue(value) {
+	if(Array.isArray(value))
+		return value.map(deepClone);
+	if(value instanceof Date)
+		return new Date(value.getTime());
+	if(value && typeof value === 'object') {
+		let clonedObj = {};
+		for(let key in value) {
+			if(Object.prototype.hasOwnProperty.call(value, key)) {
+				clonedObj[key] = deepClone(value[key]);
+			}
+		}
+		return clonedObj;
+	}
+	return value;
 }
 
 // check if the object contains a key with a given prefix

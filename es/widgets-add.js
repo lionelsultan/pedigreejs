@@ -195,14 +195,64 @@ export function addparents(opts, dataset, name) {
 	}
 }
 
-export function addpartner(opts, dataset, name) {
+/**
+ * Add a partner to a person in the pedigree
+ *
+ * @param {Object} opts - Pedigree options
+ * @param {Array} dataset - Pedigree dataset
+ * @param {string} name - Name of person to add partner to
+ * @param {Object} config - Optional configuration
+ * @param {string} config.partner_sex - Sex of partner ('M', 'F', 'U'). Auto-detected if not provided.
+ * @param {boolean} config.create_child - Whether to create a child (default: true for D3 layout)
+ * @param {string} config.child_sex - Sex of child if created ('M', 'F', 'U'). Default: 'U'.
+ * @returns {Object} Created partner object
+ *
+ * BUGFIXES (2025-11-19):
+ * - FIX 1: Correct child index calculation (was incorrect for females)
+ * - FIX 2: Allow child gender selection (was always 'M')
+ * - FIX 3: Make child creation optional via config
+ * - FIX 4: Add validation for opposite sex (warn if same sex)
+ * - FIX 5: Unified positioning logic (females left, males right)
+ */
+export function addpartner(opts, dataset, name, config) {
+	// Default configuration
+	config = config || {};
+	let create_child = (config.create_child !== undefined) ? config.create_child : true;
+	let child_sex = config.child_sex || 'U';  // Unknown by default (was 'M')
+
 	let root = utils.roots[opts.targetDiv];
 	let flat_tree = root ? utils.flatten(root) : [];
 	let tree_node = getTreeNode(flat_tree, dataset, name);
 	if(!tree_node)
 		throw utils.create_err('Person '+name+' not found when adding partner');
 
-	let partner = {"name": utils.makeid(4), "sex": tree_node.data.sex === 'F' ? 'M' : 'F'};
+	// FIX 4: Determine partner sex with validation
+	let partner_sex;
+	if(config.partner_sex) {
+		partner_sex = config.partner_sex;
+	} else {
+		// Auto-detect opposite sex
+		if(tree_node.data.sex === 'M') {
+			partner_sex = 'F';
+		} else if(tree_node.data.sex === 'F') {
+			partner_sex = 'M';
+		} else {
+			// If person is 'U', default to 'U' for partner (user should specify)
+			partner_sex = 'U';
+			if(opts.DEBUG) {
+				console.warn('Person has unknown sex (U), partner also set to U. Consider specifying partner_sex explicitly.');
+			}
+		}
+	}
+
+	// Validation: Warn if same sex (but allow it for modern families)
+	if(partner_sex === tree_node.data.sex && tree_node.data.sex !== 'U') {
+		if(opts.DEBUG) {
+			console.warn('Partner has same sex as person (' + partner_sex + '). This is allowed but may indicate a data error.');
+		}
+	}
+
+	let partner = {"name": utils.makeid(4), "sex": partner_sex};
 	if(tree_node.data.top_level) {
 		partner.top_level = true;
 	} else {
@@ -211,18 +261,48 @@ export function addpartner(opts, dataset, name) {
 	}
 	partner.noparents = true;
 
+	// FIX 5: Unified positioning logic
+	// Convention: Females (mothers) on left, Males (fathers) on right
 	let idx = utils.getIdxByName(dataset, tree_node.data.name);
+
 	if(tree_node.data.sex === 'F') {
+		// Person is female (mother): partner (male) goes to the right (after)
+		idx++;
+	} else if(tree_node.data.sex === 'M') {
+		// Person is male (father): partner (female) goes to the left (before)
 		if(idx > 0) idx--;
 	} else {
+		// Person is unknown: default to after
 		idx++;
 	}
+
 	dataset.splice(idx, 0, partner);
 
-	let child = {"name": utils.makeid(4), "sex": "M"};
-	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
-	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
+	// FIX 2 & FIX 3: Optional child creation with configurable sex
+	if(create_child) {
+		let child = {"name": utils.makeid(4), "sex": child_sex};
 
-	let child_idx = utils.getIdxByName(dataset, tree_node.data.name)+2;
-	dataset.splice(child_idx, 0, child);
+		// Determine mother and father based on actual sex (not assumptions)
+		if(tree_node.data.sex === 'F' && partner_sex === 'M') {
+			child.mother = tree_node.data.name;
+			child.father = partner.name;
+		} else if(tree_node.data.sex === 'M' && partner_sex === 'F') {
+			child.mother = partner.name;
+			child.father = tree_node.data.name;
+		} else {
+			// Same-sex or unknown: assign arbitrarily (first = mother, second = father)
+			// User should update manually for correctness
+			child.mother = tree_node.data.name;
+			child.father = partner.name;
+			if(opts.DEBUG) {
+				console.warn('Child parents assigned arbitrarily due to non-standard sex combination. Please verify.');
+			}
+		}
+
+		// FIX 1: Correct index calculation - always after partner
+		let child_idx = utils.getIdxByName(dataset, partner.name) + 1;
+		dataset.splice(child_idx, 0, child);
+	}
+
+	return partner;
 }
