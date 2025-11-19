@@ -3320,9 +3320,7 @@ var pedigreejs = (function (exports) {
 	    name: makeid(4),
 	    sex: 'U',
 	    mother: roles.mother,
-	    father: roles.father,
-	    hidden: true,
-	    partner_placeholder: true
+	    father: roles.father
 	  };
 	}
 	function removePlaceholderChildren(dataset, motherName, fatherName) {
@@ -3556,7 +3554,18 @@ var pedigreejs = (function (exports) {
 	    "name": makeid(4),
 	    "sex": partner_sex
 	  };
-	  if (tree_node.data.top_level || !tree_node.data.mother && !tree_node.data.father) partner.top_level = true;
+	  let motherExists = tree_node.data.mother && getIdxByName(dataset, tree_node.data.mother) !== -1;
+	  let fatherExists = tree_node.data.father && getIdxByName(dataset, tree_node.data.father) !== -1;
+	  if (tree_node.data.top_level || !tree_node.data.mother && !tree_node.data.father) {
+	    partner.top_level = true;
+	  } else {
+	    // Copy existing parents so the partner is rendered at the same depth,
+	    // while still hiding the visual parent links via the noparents flag.
+	    if (motherExists) partner.mother = tree_node.data.mother;
+	    if (fatherExists) partner.father = tree_node.data.father;
+	    // If parents are missing in the dataset, fall back to top_level to keep the partner visible
+	    if (!partner.mother && !partner.father) partner.top_level = true;
+	  }
 	  partner.noparents = true;
 
 	  // FIX 5: Unified positioning logic
