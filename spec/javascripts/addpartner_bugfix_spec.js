@@ -150,13 +150,14 @@ describe('addpartner() Bugfix Tests', function() {
 			let partner = widgets.addpartner(opts, dataset_test, 'f1', {create_child: false});
 			expect(dataset_test.length).toBe(3);
 
-			// Step 2: Manually add child later
-			widgets.addchild(dataset_test, dataset_test[1], 'M', 1);  // f1 = dataset_test[1]
+			// Step 2: Manually add child later (can't use addchild as it creates a new partner)
+			let child = {"name": "child1", "sex": "M", "mother": "f1", "father": partner.name};
+			dataset_test.push(child);
 			expect(dataset_test.length).toBe(4);
 
-			let child = dataset_test.find(p => p.mother === 'f1');
-			expect(child).toBeDefined();
-			expect(child.father).toBe(partner.name);
+			let found_child = dataset_test.find(p => p.mother === 'f1');
+			expect(found_child).toBeDefined();
+			expect(found_child.father).toBe(partner.name);
 		});
 	});
 

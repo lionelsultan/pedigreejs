@@ -19,7 +19,8 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(killall:*)",
-      "Bash(timeout 3 npm run server:*)"
+      "Bash(timeout 3 npm run server:*)",
+      "Bash(npx jasmine-browser-runner:*)"
     ],
     "deny": [],
     "ask": []

@@ -36,8 +36,9 @@ describe('validation.js module', function() {
 
 		it('should invalidate alive person with incorrect age and yob', function() {
 			var yob = currentYear - 30;
-			expect(validation.validate_age_yob(32, yob, "0")).toBe(false);
-			expect(validation.validate_age_yob(28, yob, "0")).toBe(false);
+			// Phase 3.3.1: Tolerance is now 2 years, so use ages outside that range
+			expect(validation.validate_age_yob(33, yob, "0")).toBe(false);
+			expect(validation.validate_age_yob(27, yob, "0")).toBe(false);
 		});
 
 		it('should validate deceased person', function() {

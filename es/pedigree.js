@@ -516,26 +516,29 @@ export function build(options) {
 	let probandIdx  = utils.getProbandIndex(opts.dataset);
 	if(typeof probandIdx !== 'undefined') {
 		let probandNode = utils.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-		let triid = "triangle"+utils.makeid(3);
-		ped.append("svg:defs").append("svg:marker")	// arrow head
-			.attr("id", triid)
-			.attr("refX", 6)
-			.attr("refY", 6)
-			.attr("markerWidth", 20)
-			.attr("markerHeight", 20)
-			.attr("orient", "auto")
-			.append("path")
-			.attr("d", "M 0 0 12 6 0 12 3 6")
-			.attr("fill", "black");
+		// Check if probandNode exists (may be undefined if tree not fully built)
+		if(probandNode) {
+			let triid = "triangle"+utils.makeid(3);
+			ped.append("svg:defs").append("svg:marker")	// arrow head
+				.attr("id", triid)
+				.attr("refX", 6)
+				.attr("refY", 6)
+				.attr("markerWidth", 20)
+				.attr("markerHeight", 20)
+				.attr("orient", "auto")
+				.append("path")
+				.attr("d", "M 0 0 12 6 0 12 3 6")
+				.attr("fill", "black");
 
-		ped.append("line")
-			.attr("x1", probandNode.x-(opts.symbol_size/0.7))
-			.attr("y1", probandNode.y+(opts.symbol_size/1.4))
-			.attr("x2", probandNode.x-(opts.symbol_size/1.4))
-			.attr("y2", probandNode.y+(opts.symbol_size/4))
-			.attr("stroke-width", 1)
-			.attr("stroke", "black")
-			.attr("marker-end", "url(#"+triid+")");
+			ped.append("line")
+				.attr("x1", probandNode.x-(opts.symbol_size/0.7))
+				.attr("y1", probandNode.y+(opts.symbol_size/1.4))
+				.attr("x2", probandNode.x-(opts.symbol_size/1.4))
+				.attr("y2", probandNode.y+(opts.symbol_size/4))
+				.attr("stroke-width", 1)
+				.attr("stroke", "black")
+				.attr("marker-end", "url(#"+triid+")");
+		}
 	}
 
 	// drag and zoom

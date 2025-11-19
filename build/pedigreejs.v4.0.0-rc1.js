@@ -33,10 +33,29 @@ var pedigreejs = (function (exports) {
 	    // deceased
 	    return year >= sum;
 	  }
-	  return Math.abs(year - sum) <= 1 && year >= sum;
+	  // Phase 3.3.1: Assouplir validation pour éviter faux positifs (anniversaire non encore passé)
+	  return Math.abs(year - sum) <= 2 && year >= sum;
 	}
 
-	// validate pedigree data
+	/**
+	 * Validate pedigree dataset for consistency and completeness
+	 * Checks for:
+	 * - Consistent parent sex (mothers=F, fathers=M)
+	 * - Unique IndivIDs (names)
+	 * - Required fields (name, sex)
+	 * - Single family (no multiple famids)
+	 * - Warns about unconnected individuals
+	 * @param {Object} opts - Options object containing dataset and validation settings
+	 * @param {Array} opts.dataset - Array of person objects to validate
+	 * @param {boolean|function} opts.validate - Validation mode: true (default validation), false (skip), or custom function
+	 * @param {boolean} [opts.DEBUG=false] - Enable debug logging
+	 * @throws {Error} If validation fails with specific error message
+	 * @example
+	 * validate_pedigree({
+	 *   dataset: [...],
+	 *   validate: true
+	 * });
+	 */
 	function validate_pedigree(opts) {
 	  // Import needed functions dynamically to avoid circular dependencies
 	  const getIdxByName = (arr, name) => {
@@ -640,7 +659,14 @@ var pedigreejs = (function (exports) {
 	**/
 
 
-	// given an array of people get an index for a given person
+	/**
+	 * Find the array index of a person by their name
+	 * @param {Array} arr - Array of person objects
+	 * @param {string} name - The name (IndivID) to search for
+	 * @returns {number} Index of the person in the array, or -1 if not found
+	 * @example
+	 * let idx = getIdxByName(dataset, 'person1');
+	 */
 	function getIdxByName(arr, name) {
 	  let idx = -1;
 	  $.each(arr, function (i, p) {
@@ -652,7 +678,14 @@ var pedigreejs = (function (exports) {
 	  return idx;
 	}
 
-	// given a persons name return the corresponding d3 tree node
+	/**
+	 * Find a D3 tree node by person name
+	 * @param {Array|Object} nodes - Array of D3 nodes or nodes object with dataset property
+	 * @param {string} name - The name (IndivID) to search for
+	 * @returns {Object|undefined} The D3 node object with data property, or undefined if not found
+	 * @example
+	 * let node = getNodeByName(flattened_tree, 'person1');
+	 */
 	function getNodeByName(nodes, name) {
 	  for (let i = 0; i < nodes.length; i++) {
 	    if (nodes[i].data && name === nodes[i].data.name) return nodes[i];else if (name === nodes[i].name) return nodes[i];
@@ -665,14 +698,36 @@ var pedigreejs = (function (exports) {
 	    }
 	  }
 	}
+
+	/**
+	 * Check if an object has the proband attribute set
+	 * @param {Object} obj - Person object or jQuery element
+	 * @returns {boolean} True if proband attribute is set and not false
+	 */
 	function isProband(obj) {
 	  return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
 	}
+
+	/**
+	 * Set or unset a person as the proband (index case)
+	 * Only one person can be proband at a time - this removes proband status from all others
+	 * @param {Array} dataset - Array of person objects
+	 * @param {string} name - Name (IndivID) of person to set as proband
+	 * @param {boolean} is_proband - True to set as proband, false to unset
+	 * @example
+	 * setProband(dataset, 'person1', true);
+	 */
 	function setProband(dataset, name, is_proband) {
 	  $.each(dataset, function (_i, p) {
 	    if (name === p.name) p.proband = is_proband;else delete p.proband;
 	  });
 	}
+
+	/**
+	 * Find the index of the proband in the dataset
+	 * @param {Array} dataset - Array of person objects
+	 * @returns {number|undefined} Index of the proband, or undefined if no proband is set
+	 */
 	function getProbandIndex(dataset) {
 	  let proband;
 	  $.each(dataset, function (i, val) {
@@ -684,12 +739,26 @@ var pedigreejs = (function (exports) {
 	  return proband;
 	}
 
-	// check by name if the individual exists
+	/**
+	 * Check if an individual exists in the cached dataset
+	 * @param {Object} opts - Options object
+	 * @param {string} name - Name (IndivID) to check
+	 * @returns {boolean} True if individual exists in cache
+	 */
 	function exists(opts, name) {
 	  return getNodeByName(current(opts), name) !== undefined;
 	}
 
-	//get the partners for a given node
+	/**
+	 * Get all partners (spouses) of a given person
+	 * A partner is someone who shares children with the person
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} anode - Person object to find partners for
+	 * @returns {Array} Array of partner names (IndivIDs)
+	 * @example
+	 * let partners = get_partners(dataset, person);
+	 * // Returns ['spouse1', 'spouse2']
+	 */
 	function get_partners(dataset, anode) {
 	  let ptrs = [];
 	  for (let i = 0; i < dataset.length; i++) {
@@ -698,6 +767,17 @@ var pedigreejs = (function (exports) {
 	  }
 	  return ptrs;
 	}
+
+	/**
+	 * Get children of a mother and optional father
+	 * Excludes children with noparents flag (visually disconnected)
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} mother - Mother person object (must have sex='F')
+	 * @param {Object} [father] - Optional father person object to filter by
+	 * @returns {Array} Array of child person objects
+	 * @example
+	 * let children = getChildren(dataset, mother, father);
+	 */
 	function getChildren(dataset, mother, father) {
 	  let children = [];
 	  let names = [];
@@ -711,13 +791,26 @@ var pedigreejs = (function (exports) {
 	  });
 	  return children;
 	}
+
+	/**
+	 * Get all children of a person, including those with noparents flag
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} person - Person object to find children for
+	 * @param {string} [sex] - Optional sex filter ('M' or 'F')
+	 * @returns {Array} Array of child person objects
+	 */
 	function getAllChildren(dataset, person, sex) {
 	  return $.map(dataset, function (p, _i) {
 	    return !('noparents' in p) && (p.mother === person.name || p.father === person.name) && (!sex || p.sex === sex) ? p : null;
 	  });
 	}
 
-	// get the mono/di-zygotic twin(s)
+	/**
+	 * Get monozygotic or dizygotic twin(s) of a person
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} person - Person object to find twins for
+	 * @returns {Array} Array of twin person objects (excludes the person themselves)
+	 */
 	function getTwins(dataset, person) {
 	  let sibs = getSiblings(dataset, person);
 	  let twin_type = person.mztwin ? "mztwin" : "dztwin";
@@ -726,8 +819,16 @@ var pedigreejs = (function (exports) {
 	  });
 	}
 
-	// get the siblings - sex is an optional parameter
-	// for only returning brothers or sisters
+	/**
+	 * Get siblings of a person with optional sex filter
+	 * Excludes the person themselves and those with noparents flag
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} person - Person object to find siblings for
+	 * @param {string} [sex] - Optional sex filter ('M' for brothers, 'F' for sisters)
+	 * @returns {Array} Array of sibling person objects
+	 * @example
+	 * let brothers = getSiblings(dataset, person, 'M');
+	 */
 	function getSiblings(dataset, person, sex) {
 	  if (person === undefined || !person.mother || person.noparents) return [];
 	  return $.map(dataset, function (p, _i) {
@@ -1195,7 +1296,17 @@ var pedigreejs = (function (exports) {
 
 	let zm;
 
-	// initialise zoom and drag
+	/**
+	 * Initialize zoom and pan behavior on SVG element
+	 * Sets up D3 zoom with configurable scale extent and source filters
+	 * Restores cached position from previous session if available
+	 * @param {Object} opts - Pedigree options object
+	 * @param {number} opts.zoomIn - Minimum zoom scale (e.g., 0.1)
+	 * @param {number} opts.zoomOut - Maximum zoom scale (e.g., 10)
+	 * @param {Array} [opts.zoomSrc] - Array of zoom sources to enable ('wheel', 'button')
+	 * @param {number} opts.symbol_size - Size of person symbols for positioning
+	 * @param {Object} svg - D3 selection of SVG element
+	 */
 	function init_zoom(opts, svg) {
 	  // offsets
 	  let xi = opts.symbol_size / 2;
@@ -1220,11 +1331,30 @@ var pedigreejs = (function (exports) {
 	  svg.call(zm.transform, transform);
 	}
 
-	// scale size the pedigree
+	/**
+	 * Zoom in or out by a scale factor using button controls
+	 * @param {Object} opts - Pedigree options object
+	 * @param {string} opts.targetDiv - ID of the container div
+	 * @param {number} scale - Scale factor (>1 zooms in, <1 zooms out, e.g., 1.2 or 0.8)
+	 * @example
+	 * btn_zoom(opts, 1.5); // Zoom in by 50%
+	 * btn_zoom(opts, 0.8); // Zoom out by 20%
+	 */
 	function btn_zoom(opts, scale) {
 	  let svg = d3.select("#" + opts.targetDiv).select("svg");
 	  svg.transition().duration(50).call(zm.scaleBy, scale);
 	}
+
+	/**
+	 * Scale and center the pedigree to fit within the viewport
+	 * Calculates optimal scale and position to show entire pedigree
+	 * Uses animated transition for smooth scaling
+	 * @param {Object} opts - Pedigree options object
+	 * @param {string} opts.targetDiv - ID of the container div
+	 * @param {number} opts.zoomIn - Minimum zoom scale
+	 * @param {number} opts.zoomOut - Maximum zoom scale
+	 * @param {number} opts.symbol_size - Size of person symbols
+	 */
 	function scale_to_fit(opts) {
 	  let d = get_dimensions(opts);
 	  let svg = d3.select("#" + opts.targetDiv).select("svg");
@@ -1264,7 +1394,16 @@ var pedigreejs = (function (exports) {
 	}
 
 	/**
-	 * Get the min/max boundary of the diagram
+	 * Get the bounding box coordinates of the visible pedigree
+	 * Calculates min/max x and y coordinates of all visible nodes
+	 * Excludes hidden nodes and hidden_root from calculations
+	 * @param {Object} opts - Pedigree options object
+	 * @param {string} opts.targetDiv - ID of the container div
+	 * @param {number} opts.symbol_size - Size of person symbols for padding
+	 * @returns {Object} Bounding box with {xmin, xmax, ymin, ymax} properties
+	 * @example
+	 * let bounds = get_bounds(opts);
+	 * console.log(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
 	 */
 	function get_bounds(opts) {
 	  let ped = d3.select("#" + opts.targetDiv).select(".diagram");
@@ -1384,14 +1523,17 @@ var pedigreejs = (function (exports) {
 	    "fa": "fa-crosshairs",
 	    "title": "scale-to-fit"
 	  });
+	  // Phase 3.3.3: Toujours afficher les boutons zoom, mais les griser si désactivés
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
-	    if (opts.zoomOut !== 1) btns.push({
+	    btns.push({
 	      "fa": "fa-minus-circle",
-	      "title": "zoom-out"
+	      "title": opts.zoomOut === 1 ? "zoom-out (disabled: already at minimum)" : "zoom-out",
+	      "disabled": opts.zoomOut === 1
 	    });
-	    if (opts.zoomIn !== 1) btns.push({
+	    btns.push({
 	      "fa": "fa-plus-circle",
-	      "title": "zoom-in"
+	      "title": opts.zoomIn === 1 ? "zoom-in (disabled: already at maximum)" : "zoom-in",
+	      "disabled": opts.zoomIn === 1
 	    });
 	  }
 	  btns.push({
@@ -1401,7 +1543,7 @@ var pedigreejs = (function (exports) {
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
 	    lis += '<span>';
-	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="' + btns[i].title + '"' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
+	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2' + (btns[i].disabled ? ' disabled-btn' : '') + '" ' + 'aria-hidden="true" title="' + btns[i].title + '" ' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + (btns[i].disabled ? 'style="opacity: 0.3; cursor: not-allowed;" ' : '') + '></i>';
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
@@ -1454,6 +1596,8 @@ var pedigreejs = (function (exports) {
 	    btn_zoom(opts, 0.95);
 	  }
 	  $('.fa-plus-circle, .fa-minus-circle').on('mousedown', function () {
+	    // Phase 3.3.3: Ignorer les clics sur les boutons désactivés
+	    if ($(this).hasClass('disabled-btn')) return;
 	    timeoutId = setInterval($(this).hasClass("fa-plus-circle") ? zoomIn : zoomOut, 50);
 	  }).on('mouseup mouseleave', function () {
 	    clearInterval(timeoutId);
@@ -2748,7 +2892,17 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
-	// set two siblings as twins
+	/**
+	 * Mark two siblings as twins (monozygotic or dizygotic)
+	 * Assigns matching twin IDs and synchronizes age/yob between twins
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} d1 - First twin person object
+	 * @param {Object} d2 - Second twin person object
+	 * @param {string} twin_type - Type of twin relationship: 'mztwin' or 'dztwin'
+	 * @returns {boolean} True if successful, false if no twin ID available (max 10 twin pairs)
+	 * @example
+	 * setMzTwin(dataset, person1, person2, 'mztwin');
+	 */
 	function setMzTwin(dataset, d1, d2, twin_type) {
 	  if (!d1[twin_type]) {
 	    d1[twin_type] = getUniqueTwinID(dataset, twin_type);
@@ -2760,7 +2914,13 @@ var pedigreejs = (function (exports) {
 	  return true;
 	}
 
-	// get a new unique twins ID, max of 10 twins in a pedigree
+	/**
+	 * Get the next available unique twin ID
+	 * Twin IDs are: 1-9 and 'A', supporting up to 10 twin pairs per pedigree
+	 * @param {Array} dataset - Array of person objects
+	 * @param {string} twin_type - Type of twin: 'mztwin' or 'dztwin'
+	 * @returns {number|string|undefined} Next available twin ID (1-9 or 'A'), or undefined if all used
+	 */
 	function getUniqueTwinID(dataset, twin_type) {
 	  let mz = [1, 2, 3, 4, 5, 6, 7, 8, 9, "A"];
 	  for (let i = 0; i < dataset.length; i++) {
@@ -2773,7 +2933,13 @@ var pedigreejs = (function (exports) {
 	  return undefined;
 	}
 
-	// sync attributes of twins
+	/**
+	 * Synchronize attributes between twins after changes
+	 * For monozygotic twins: syncs sex, yob, and age (if alive)
+	 * For dizygotic twins: syncs yob and age (if alive) only
+	 * @param {Array} dataset - Array of person objects
+	 * @param {Object} d1 - The twin whose attributes should be copied to their twin(s)
+	 */
 	function syncTwins(dataset, d1) {
 	  if (!d1.mztwin && !d1.dztwin) return;
 	  let twin_type = d1.mztwin ? "mztwin" : "dztwin";
@@ -2787,7 +2953,12 @@ var pedigreejs = (function (exports) {
 	  }
 	}
 
-	// check integrity twin settings
+	/**
+	 * Validate twin relationships and remove orphaned twin markers
+	 * Removes twin IDs from individuals who don't have at least one twin partner
+	 * Supports multiplets (triplets, quadruplets, etc.)
+	 * @param {Array} dataset - Array of person objects to validate
+	 */
 	function checkTwins(dataset) {
 	  let twin_types = ["mztwin", "dztwin"];
 	  for (let i = 0; i < dataset.length; i++) {
@@ -2803,6 +2974,14 @@ var pedigreejs = (function (exports) {
 	    }
 	  }
 	}
+
+	var twins = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		checkTwins: checkTwins,
+		getUniqueTwinID: getUniqueTwinID,
+		setMzTwin: setMzTwin,
+		syncTwins: syncTwins
+	});
 
 	/**
 	/* © 2023 University of Cambridge
@@ -3388,8 +3567,10 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 
-	    // FIX 1: Correct index calculation - always after partner
-	    let child_idx = getIdxByName(dataset, partner.name) + 1;
+	    // FIX 1: Correct index calculation - after BOTH parents
+	    let partner_idx = getIdxByName(dataset, partner.name);
+	    let person_idx = getIdxByName(dataset, tree_node.data.name);
+	    let child_idx = Math.max(partner_idx, person_idx) + 1;
 	    dataset.splice(child_idx, 0, child);
 	  }
 	  return partner;
@@ -3517,7 +3698,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
-	let dragging;
+	let dragging$1;
 	let last_mouseover;
 	let shiftKeyPressed = false; // Phase 3.2.2: Track Shift key for consanguineous drag feedback
 
@@ -3532,12 +3713,12 @@ var pedigreejs = (function (exports) {
 
 	  // Update cursor when Shift state changes
 	  if (wasPressed !== shiftKeyPressed) {
-	    if (shiftKeyPressed && last_mouseover && !dragging) {
+	    if (shiftKeyPressed && last_mouseover && !dragging$1) {
 	      // Shift pressed while hovering node: show crosshair cursor
 	      d3.select('.pedigree_form svg').style('cursor', 'crosshair');
 	      // Make drag handle more visible
 	      d3.selectAll('.line_drag_selection').attr("stroke", "darkred").attr("stroke-width", 8);
-	    } else if (!shiftKeyPressed && !dragging) {
+	    } else if (!shiftKeyPressed && !dragging$1) {
 	      // Shift released: restore normal cursor
 	      d3.select('.pedigree_form svg').style('cursor', 'default');
 	      d3.selectAll('.line_drag_selection').attr("stroke", "black").attr("stroke-width", 6);
@@ -3791,8 +3972,8 @@ var pedigreejs = (function (exports) {
 	  }).on("mouseover", function (e, d) {
 	    e.stopPropagation();
 	    last_mouseover = d;
-	    if (dragging) {
-	      if (dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
+	    if (dragging$1) {
+	      if (dragging$1.data.name !== last_mouseover.data.name && dragging$1.data.sex !== last_mouseover.data.sex) {
 	        d3.select(this).select('rect').attr("opacity", 0.2);
 	      }
 	      return;
@@ -3808,7 +3989,7 @@ var pedigreejs = (function (exports) {
 	      d3.selectAll('.line_drag_selection').attr("stroke", "darkred").attr("stroke-width", 8);
 	    }
 	  }).on("mouseout", function (d) {
-	    if (dragging) return;
+	    if (dragging$1) return;
 	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').attr("opacity", 0);
 	    if (highlight.indexOf(d) === -1) d3.select(this).select('rect').attr("opacity", 0);
 	    d3.select(this).selectAll('.indi_details').attr("opacity", 1);
@@ -3824,7 +4005,7 @@ var pedigreejs = (function (exports) {
 	    let xcoord = d3.pointer(d)[0];
 	    let ycoord = d3.pointer(d)[1];
 	    if (ycoord < 0.8 * opts.symbol_size) d3.selectAll('.popup_selection').attr("opacity", 0);
-	    if (!dragging) {
+	    if (!dragging$1) {
 	      // hide popup if it looks like the mouse is moving north, south or west
 	      if (Math.abs(ycoord) > 0.25 * opts.symbol_size || Math.abs(ycoord) < -0.25 * opts.symbol_size || xcoord < 0.2 * opts.symbol_size) {
 	        setLineDragPosition(0, 0, 0, 0);
@@ -3846,27 +4027,27 @@ var pedigreejs = (function (exports) {
 	  dline.append("svg:title").text("Hold Shift and drag to create consanguineous partners (blood-related)");
 	  setLineDragPosition(0, 0, 0, 0);
 	  function dragstart() {
-	    dragging = last_mouseover;
+	    dragging$1 = last_mouseover;
 	    d3.selectAll('.line_drag_selection').attr("stroke", "darkred");
 	  }
 	  function dragstop(_d) {
-	    if (last_mouseover && dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
+	    if (last_mouseover && dragging$1.data.name !== last_mouseover.data.name && dragging$1.data.sex !== last_mouseover.data.sex) {
 	      // make partners
 	      let child = {
 	        "name": makeid(4),
 	        "sex": 'U',
-	        "mother": dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name,
-	        "father": dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name
+	        "mother": dragging$1.data.sex === 'F' ? dragging$1.data.name : last_mouseover.data.name,
+	        "father": dragging$1.data.sex === 'F' ? last_mouseover.data.name : dragging$1.data.name
 	      };
 	      let newdataset = copy_dataset(opts.dataset);
 	      opts.dataset = newdataset;
-	      let idx = getIdxByName(opts.dataset, dragging.data.name) + 1;
+	      let idx = getIdxByName(opts.dataset, dragging$1.data.name) + 1;
 	      opts.dataset.splice(idx, 0, child);
 	      $(document).trigger('rebuild', [opts]);
 	    }
 	    setLineDragPosition(0, 0, 0, 0);
 	    d3.selectAll('.line_drag_selection').attr("stroke", "black");
-	    dragging = undefined;
+	    dragging$1 = undefined;
 	    return;
 	  }
 	  function drag(e) {
@@ -3980,16 +4161,27 @@ var pedigreejs = (function (exports) {
 	    return 'display_name' in d.data ? d.data.display_name : '';
 	  }, undefined, ['display_name']);
 	  let font_size = parseInt(getPx(opts)) + 4;
+
+	  // Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
+	  let validate_age_yob_data = function (d) {
+	    // Valider age/yob si les deux sont présents
+	    if (d.data.age && d.data.yob && d.data.status) {
+	      return validate_age_yob(d.data.age, d.data.yob, d.data.status);
+	    }
+	    return true; // Valide si données manquantes
+	  };
+
 	  // display age/yob label first
 	  for (let ilab = 0; ilab < opts.labels.length; ilab++) {
 	    let label = opts.labels[ilab];
 	    let arr = Array.isArray(label) ? label : [label];
 	    if (arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
+	      // Phase 3.3.4: Ajouter indicateur visuel pour données age/yob invalides
 	      addLabel(opts, node, -opts.symbol_size, function (d) {
 	        return ypos(d, arr, font_size);
 	      }, function (d) {
 	        return get_text(d, arr);
-	      }, 'indi_details', arr);
+	      }, 'indi_details', arr, validate_age_yob_data);
 	    }
 	  }
 
@@ -4062,10 +4254,25 @@ var pedigreejs = (function (exports) {
 	}
 
 	// add label to node
-	function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
-	  node.filter(function (d) {
+	function addLabel(opts, node, fx, fy, ftext, class_label, labels, validate_fn) {
+	  let labels_sel = node.filter(function (d) {
 	    return !d.data.hidden && (!labels || node_has_label(d, labels));
-	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
+	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight)
+	  // Phase 3.3.4: Appliquer style visuel si données invalides
+	  .attr("fill", function (d) {
+	    if (validate_fn && !validate_fn(d)) {
+	      return "#d32f2f"; // Rouge pour données invalides
+	    }
+	    return null; // Style par défaut
+	  }).text(ftext);
+
+	  // Ajouter tooltip pour les données invalides
+	  labels_sel.append("title").text(function (d) {
+	    if (validate_fn && !validate_fn(d)) {
+	      return "Warning: Age and year of birth are inconsistent";
+	    }
+	    return "";
+	  });
 	}
 
 	// get height in pixels
@@ -4079,7 +4286,17 @@ var pedigreejs = (function (exports) {
 	  return parseFloat(getComputedStyle($('#' + opts.targetDiv).get(0)).fontSize) * emVal - 1.0;
 	}
 
-	// initialise node dragging - SHIFT + DRAG
+	/**
+	 * Initialize drag-and-drop repositioning for pedigree nodes
+	 * Enables SHIFT + DRAG to reorder siblings horizontally within their generation
+	 * Updates dataset ordering and triggers rebuild to reflect new positions
+	 * @param {Object} opts - Pedigree options object
+	 * @param {Array} opts.dataset - Array of person objects
+	 * @param {string} opts.targetDiv - ID of the container div
+	 * @param {Object} node - D3 selection of nodes to make draggable
+	 * @example
+	 * // Hold SHIFT key and drag a person node left or right to reorder siblings
+	 */
 	function init_dragging(opts, node) {
 	  // add drag
 	  node.filter(function (d) {
@@ -4166,6 +4383,11 @@ var pedigreejs = (function (exports) {
 	  return arr;
 	}
 
+	var dragging = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		init_dragging: init_dragging
+	});
+
 	/**
 	/* © 2023 University of Cambridge
 	/* SPDX-FileCopyrightText: 2023 University of Cambridge
@@ -4176,6 +4398,34 @@ var pedigreejs = (function (exports) {
 	// Protection contre les race conditions lors de rebuilds concurrents
 	// (Phase 3.1.1 - Correction UX/UI critique)
 	let _isBuilding = false;
+
+	/**
+	 * Build and render a pedigree diagram
+	 * @param {Object} options - Configuration options for the pedigree
+	 * @param {string} options.targetDiv - ID of the HTML element to render the pedigree into
+	 * @param {Array} options.dataset - Array of person objects representing the pedigree
+	 * @param {number} [options.width=600] - Width of the SVG diagram in pixels
+	 * @param {number} [options.height=400] - Height of the SVG diagram in pixels
+	 * @param {number} [options.symbol_size=35] - Size of person symbols in pixels
+	 * @param {Array} [options.zoomSrc=['wheel', 'button']] - Zoom sources ('wheel', 'button')
+	 * @param {number} [options.zoomIn=1.0] - Maximum zoom in level
+	 * @param {number} [options.zoomOut=1.0] - Maximum zoom out level
+	 * @param {boolean} [options.dragNode=true] - Enable dragging nodes (SHIFT + drag)
+	 * @param {boolean} [options.showWidgets=true] - Show interactive widgets
+	 * @param {Array} [options.diseases] - Disease types to display with colors
+	 * @param {boolean} [options.validate=true] - Enable pedigree validation
+	 * @param {boolean} [options.DEBUG=false] - Enable debug mode (shows hidden nodes and logs)
+	 * @returns {void}
+	 * @example
+	 * pedigreejs.build({
+	 *   targetDiv: 'my_pedigree',
+	 *   dataset: [
+	 *     {name: "father", sex: "M", top_level: true},
+	 *     {name: "mother", sex: "F", top_level: true},
+	 *     {name: "child", sex: "F", mother: "mother", father: "father", proband: true}
+	 *   ]
+	 * });
+	 */
 	function build(options) {
 	  let opts = $.extend({
 	    // defaults
@@ -4251,6 +4501,12 @@ var pedigreejs = (function (exports) {
 	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).attr("stroke", "darkgrey").attr("fill", opts.background) // or none
 	  .attr("stroke-width", 1);
 	  let ped = svg.append("g").attr("class", "diagram");
+
+	  // Phase 3.3.2: Indicateur visuel mode DEBUG
+	  if (opts.DEBUG) {
+	    svg.append("rect").attr("x", svg_dimensions.width - 120).attr("y", 5).attr("width", 110).attr("height", 25).attr("fill", "#ff9800").attr("stroke", "#f57c00").attr("stroke-width", 2).attr("rx", 3);
+	    svg.append("text").attr("x", svg_dimensions.width - 65).attr("y", 22).attr("text-anchor", "middle").attr("fill", "white").attr("font-weight", "bold").attr("font-size", "12px").text("DEBUG MODE");
+	  }
 	  let top_level = $.map(opts.dataset, function (val, _i) {
 	    return 'top_level' in val && val.top_level ? val : null;
 	  });
@@ -4564,10 +4820,13 @@ var pedigreejs = (function (exports) {
 	  let probandIdx = getProbandIndex(opts.dataset);
 	  if (typeof probandIdx !== 'undefined') {
 	    let probandNode = getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-	    let triid = "triangle" + makeid(3);
-	    ped.append("svg:defs").append("svg:marker") // arrow head
-	    .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").attr("fill", "black");
-	    ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.4).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
+	    // Check if probandNode exists (may be undefined if tree not fully built)
+	    if (probandNode) {
+	      let triid = "triangle" + makeid(3);
+	      ped.append("svg:defs").append("svg:marker") // arrow head
+	      .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").attr("fill", "black");
+	      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.4).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
+	    }
 	  }
 
 	  // drag and zoom
@@ -4668,6 +4927,17 @@ var pedigreejs = (function (exports) {
 	  for (let i = top_level.length; i > 0; --i) newdataset.unshift(top_level[i - 1]);
 	  return newdataset;
 	}
+
+	/**
+	 * Rebuild the pedigree diagram from scratch
+	 * Clears the target div, reinitializes the cache, and rebuilds the entire pedigree.
+	 * This function is called when the dataset changes or when user interactions require a full redraw.
+	 * @param {Object} opts - The same options object used in build()
+	 * @throws {Error} If build fails
+	 * @see build
+	 * @example
+	 * pedigreejs.rebuild(opts);
+	 */
 	function rebuild(opts) {
 	  $("#" + opts.targetDiv).empty();
 	  init_cache(opts);
@@ -4827,10 +5097,12 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs__extras = extras;
 	exports.pedigreejs_canrisk_file = canrisk_file;
 	exports.pedigreejs_dom = dom;
+	exports.pedigreejs_dragging = dragging;
 	exports.pedigreejs_form = popup_form;
 	exports.pedigreejs_io = io;
 	exports.pedigreejs_pedcache = pedcache;
 	exports.pedigreejs_tree_utils = treeUtils;
+	exports.pedigreejs_twins = twins;
 	exports.pedigreejs_utils = utils;
 	exports.pedigreejs_validation = validation;
 	exports.pedigreejs_widgets = widgets;

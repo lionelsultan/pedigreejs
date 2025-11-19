@@ -299,8 +299,10 @@ export function addpartner(opts, dataset, name, config) {
 			}
 		}
 
-		// FIX 1: Correct index calculation - always after partner
-		let child_idx = utils.getIdxByName(dataset, partner.name) + 1;
+		// FIX 1: Correct index calculation - after BOTH parents
+		let partner_idx = utils.getIdxByName(dataset, partner.name);
+		let person_idx = utils.getIdxByName(dataset, tree_node.data.name);
+		let child_idx = Math.max(partner_idx, person_idx) + 1;
 		dataset.splice(child_idx, 0, child);
 	}
 
