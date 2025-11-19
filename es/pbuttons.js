@@ -21,19 +21,20 @@ export function addButtons(options) {
 				{"fa": "fa-refresh", "title": "reset"}];
 
 	btns.push({"fa": "fa-crosshairs", "title": "scale-to-fit"});
+	// Phase 3.3.3: Toujours afficher les boutons zoom, mais les griser si désactivés
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
-		if(opts.zoomOut !== 1)
-			btns.push({"fa": "fa-minus-circle", "title": "zoom-out"});
-		if(opts.zoomIn !== 1)
-			btns.push({"fa": "fa-plus-circle", "title": "zoom-in"});
+		btns.push({"fa": "fa-minus-circle", "title": opts.zoomOut === 1 ? "zoom-out (disabled: already at minimum)" : "zoom-out", "disabled": opts.zoomOut === 1});
+		btns.push({"fa": "fa-plus-circle", "title": opts.zoomIn === 1 ? "zoom-in (disabled: already at maximum)" : "zoom-in", "disabled": opts.zoomIn === 1});
 	}
 	btns.push({"fa": "fa-arrows-alt", "title": "fullscreen"});
 
 	let lis = "";
 	for(let i=0; i<btns.length; i++) {
 		lis += '<span>';
-		lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="'+ btns[i].title + '"' +
+		lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2' + (btns[i].disabled ? ' disabled-btn' : '') + '" ' +
+		'aria-hidden="true" title="'+ btns[i].title + '" ' +
 		(btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
+		(btns[i].disabled ? 'style="opacity: 0.3; cursor: not-allowed;" ' : '') +
 		'></i>';
 
 		lis += '</span>';
@@ -86,6 +87,8 @@ function addPbuttonEvents(opts) {
 	function zoomIn() {btn_zoom(opts, 1.05);}
 	function zoomOut() {btn_zoom(opts, 0.95);}
 	$('.fa-plus-circle, .fa-minus-circle').on('mousedown', function() {
+		// Phase 3.3.3: Ignorer les clics sur les boutons désactivés
+		if($(this).hasClass('disabled-btn')) return;
 	    timeoutId = setInterval(($( this ).hasClass( "fa-plus-circle" ) ? zoomIn : zoomOut), 50);
 	}).on('mouseup mouseleave', function() {
 	    clearInterval(timeoutId);

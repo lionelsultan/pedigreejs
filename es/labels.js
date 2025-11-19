@@ -5,6 +5,7 @@
 **/
 
 import {prefixInObj} from './utils.js';
+import {validate_age_yob} from './validation.js';
 
 export function addLabels(opts, node) {
 	// names of individuals
@@ -15,14 +16,26 @@ export function addLabels(opts, node) {
 				return 'display_name' in d.data ? d.data.display_name : '';}, undefined, ['display_name']);
 
 	let font_size = parseInt(getPx(opts)) + 4;
+
+	// Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
+	let validate_age_yob_data = function(d) {
+		// Valider age/yob si les deux sont présents
+		if(d.data.age && d.data.yob && d.data.status) {
+			return validate_age_yob(d.data.age, d.data.yob, d.data.status);
+		}
+		return true; // Valide si données manquantes
+	};
+
 	// display age/yob label first
 	for(let ilab=0; ilab<opts.labels.length; ilab++) {
 		let label = opts.labels[ilab];
 		let arr = (Array.isArray(label) ? label : [label]);
 		if(arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
+			// Phase 3.3.4: Ajouter indicateur visuel pour données age/yob invalides
 			addLabel(opts, node, -opts.symbol_size,
 				function(d) { return ypos(d, arr, font_size); },
-				function(d) { return get_text(d, arr); }, 'indi_details', arr);
+				function(d) { return get_text(d, arr); }, 'indi_details', arr,
+				validate_age_yob_data);
 		}
 	}
 
@@ -96,8 +109,8 @@ function node_has_label(d, labels) {
 }
 
 // add label to node
-function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
-	node.filter(function (d) {
+function addLabel(opts, node, fx, fy, ftext, class_label, labels, validate_fn) {
+	let labels_sel = node.filter(function (d) {
 		return !d.data.hidden && (!labels || node_has_label(d, labels));
 	}).append("text")
 	.attr("class", (class_label ? class_label + ' ped_label' : 'ped_label'))
@@ -106,7 +119,23 @@ function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
 	.attr("font-family", opts.font_family)
 	.attr("font-size", opts.font_size)
 	.attr("font-weight", opts.font_weight)
+	// Phase 3.3.4: Appliquer style visuel si données invalides
+	.attr("fill", function(d) {
+		if(validate_fn && !validate_fn(d)) {
+			return "#d32f2f"; // Rouge pour données invalides
+		}
+		return null; // Style par défaut
+	})
 	.text(ftext);
+
+	// Ajouter tooltip pour les données invalides
+	labels_sel.append("title")
+	.text(function(d) {
+		if(validate_fn && !validate_fn(d)) {
+			return "Warning: Age and year of birth are inconsistent";
+		}
+		return "";
+	});
 }
 
 // get height in pixels

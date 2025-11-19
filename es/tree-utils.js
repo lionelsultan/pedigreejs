@@ -7,7 +7,14 @@
 // Tree navigation, construction, and geometry functions
 import * as pedcache from './pedcache.js';
 
-// given an array of people get an index for a given person
+/**
+ * Find the array index of a person by their name
+ * @param {Array} arr - Array of person objects
+ * @param {string} name - The name (IndivID) to search for
+ * @returns {number} Index of the person in the array, or -1 if not found
+ * @example
+ * let idx = getIdxByName(dataset, 'person1');
+ */
 export function getIdxByName(arr, name) {
 	let idx = -1;
 	$.each(arr, function(i, p) {
@@ -19,7 +26,14 @@ export function getIdxByName(arr, name) {
 	return idx;
 }
 
-// given a persons name return the corresponding d3 tree node
+/**
+ * Find a D3 tree node by person name
+ * @param {Array|Object} nodes - Array of D3 nodes or nodes object with dataset property
+ * @param {string} name - The name (IndivID) to search for
+ * @returns {Object|undefined} The D3 node object with data property, or undefined if not found
+ * @example
+ * let node = getNodeByName(flattened_tree, 'person1');
+ */
 export function getNodeByName(nodes, name) {
 	for (let i = 0; i < nodes.length; i++) {
 		if(nodes[i].data && name === nodes[i].data.name)
@@ -35,10 +49,24 @@ export function getNodeByName(nodes, name) {
 	}
 }
 
+/**
+ * Check if an object has the proband attribute set
+ * @param {Object} obj - Person object or jQuery element
+ * @returns {boolean} True if proband attribute is set and not false
+ */
 export function isProband(obj) {
 	return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
 }
 
+/**
+ * Set or unset a person as the proband (index case)
+ * Only one person can be proband at a time - this removes proband status from all others
+ * @param {Array} dataset - Array of person objects
+ * @param {string} name - Name (IndivID) of person to set as proband
+ * @param {boolean} is_proband - True to set as proband, false to unset
+ * @example
+ * setProband(dataset, 'person1', true);
+ */
 export function setProband(dataset, name, is_proband) {
 	$.each(dataset, function(_i, p) {
 		if (name === p.name)
@@ -48,6 +76,11 @@ export function setProband(dataset, name, is_proband) {
 	});
 }
 
+/**
+ * Find the index of the proband in the dataset
+ * @param {Array} dataset - Array of person objects
+ * @returns {number|undefined} Index of the proband, or undefined if no proband is set
+ */
 export function getProbandIndex(dataset) {
 	let proband;
 	$.each(dataset, function(i, val) {
@@ -59,12 +92,26 @@ export function getProbandIndex(dataset) {
 	return proband;
 }
 
-// check by name if the individual exists
+/**
+ * Check if an individual exists in the cached dataset
+ * @param {Object} opts - Options object
+ * @param {string} name - Name (IndivID) to check
+ * @returns {boolean} True if individual exists in cache
+ */
 export function exists(opts, name){
 	return getNodeByName(pedcache.current(opts), name) !== undefined;
 }
 
-//get the partners for a given node
+/**
+ * Get all partners (spouses) of a given person
+ * A partner is someone who shares children with the person
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} anode - Person object to find partners for
+ * @returns {Array} Array of partner names (IndivIDs)
+ * @example
+ * let partners = get_partners(dataset, person);
+ * // Returns ['spouse1', 'spouse2']
+ */
 export function get_partners(dataset, anode) {
 	let ptrs = [];
 	for(let i=0; i<dataset.length; i++) {
@@ -77,6 +124,16 @@ export function get_partners(dataset, anode) {
 	return ptrs;
 }
 
+/**
+ * Get children of a mother and optional father
+ * Excludes children with noparents flag (visually disconnected)
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} mother - Mother person object (must have sex='F')
+ * @param {Object} [father] - Optional father person object to filter by
+ * @returns {Array} Array of child person objects
+ * @example
+ * let children = getChildren(dataset, mother, father);
+ */
 export function getChildren(dataset, mother, father) {
 	let children = [];
 	let names = [];
@@ -93,6 +150,13 @@ export function getChildren(dataset, mother, father) {
 	return children;
 }
 
+/**
+ * Get all children of a person, including those with noparents flag
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} person - Person object to find children for
+ * @param {string} [sex] - Optional sex filter ('M' or 'F')
+ * @returns {Array} Array of child person objects
+ */
 export function getAllChildren(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return !('noparents' in p) &&
@@ -101,7 +165,12 @@ export function getAllChildren(dataset, person, sex) {
 	});
 }
 
-// get the mono/di-zygotic twin(s)
+/**
+ * Get monozygotic or dizygotic twin(s) of a person
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} person - Person object to find twins for
+ * @returns {Array} Array of twin person objects (excludes the person themselves)
+ */
 export function getTwins(dataset, person) {
 	let sibs = getSiblings(dataset, person);
 	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
@@ -110,8 +179,16 @@ export function getTwins(dataset, person) {
 	});
 }
 
-// get the siblings - sex is an optional parameter
-// for only returning brothers or sisters
+/**
+ * Get siblings of a person with optional sex filter
+ * Excludes the person themselves and those with noparents flag
+ * @param {Array} dataset - Array of person objects
+ * @param {Object} person - Person object to find siblings for
+ * @param {string} [sex] - Optional sex filter ('M' for brothers, 'F' for sisters)
+ * @returns {Array} Array of sibling person objects
+ * @example
+ * let brothers = getSiblings(dataset, person, 'M');
+ */
 export function getSiblings(dataset, person, sex) {
 	if(person === undefined || !person.mother || person.noparents)
 		return [];

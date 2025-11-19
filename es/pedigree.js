@@ -18,6 +18,33 @@ import {init_dragging} from './dragging.js';
 // (Phase 3.1.1 - Correction UX/UI critique)
 let _isBuilding = false;
 
+/**
+ * Build and render a pedigree diagram
+ * @param {Object} options - Configuration options for the pedigree
+ * @param {string} options.targetDiv - ID of the HTML element to render the pedigree into
+ * @param {Array} options.dataset - Array of person objects representing the pedigree
+ * @param {number} [options.width=600] - Width of the SVG diagram in pixels
+ * @param {number} [options.height=400] - Height of the SVG diagram in pixels
+ * @param {number} [options.symbol_size=35] - Size of person symbols in pixels
+ * @param {Array} [options.zoomSrc=['wheel', 'button']] - Zoom sources ('wheel', 'button')
+ * @param {number} [options.zoomIn=1.0] - Maximum zoom in level
+ * @param {number} [options.zoomOut=1.0] - Maximum zoom out level
+ * @param {boolean} [options.dragNode=true] - Enable dragging nodes (SHIFT + drag)
+ * @param {boolean} [options.showWidgets=true] - Show interactive widgets
+ * @param {Array} [options.diseases] - Disease types to display with colors
+ * @param {boolean} [options.validate=true] - Enable pedigree validation
+ * @param {boolean} [options.DEBUG=false] - Enable debug mode (shows hidden nodes and logs)
+ * @returns {void}
+ * @example
+ * pedigreejs.build({
+ *   targetDiv: 'my_pedigree',
+ *   dataset: [
+ *     {name: "father", sex: "M", top_level: true},
+ *     {name: "mother", sex: "F", top_level: true},
+ *     {name: "child", sex: "F", mother: "mother", father: "father", proband: true}
+ *   ]
+ * });
+ */
 export function build(options) {
 	let opts = $.extend({ // defaults
 		targetDiv: 'pedigree_edit',
@@ -86,6 +113,27 @@ export function build(options) {
 
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
+
+	// Phase 3.3.2: Indicateur visuel mode DEBUG
+	if(opts.DEBUG) {
+		svg.append("rect")
+			.attr("x", svg_dimensions.width - 120)
+			.attr("y", 5)
+			.attr("width", 110)
+			.attr("height", 25)
+			.attr("fill", "#ff9800")
+			.attr("stroke", "#f57c00")
+			.attr("stroke-width", 2)
+			.attr("rx", 3);
+		svg.append("text")
+			.attr("x", svg_dimensions.width - 65)
+			.attr("y", 22)
+			.attr("text-anchor", "middle")
+			.attr("fill", "white")
+			.attr("font-weight", "bold")
+			.attr("font-size", "12px")
+			.text("DEBUG MODE");
+	}
 
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
@@ -603,6 +651,16 @@ function group_top_level(dataset) {
 	return newdataset;
 }
 
+/**
+ * Rebuild the pedigree diagram from scratch
+ * Clears the target div, reinitializes the cache, and rebuilds the entire pedigree.
+ * This function is called when the dataset changes or when user interactions require a full redraw.
+ * @param {Object} opts - The same options object used in build()
+ * @throws {Error} If build fails
+ * @see build
+ * @example
+ * pedigreejs.rebuild(opts);
+ */
 export function rebuild(opts) {
 	$("#"+opts.targetDiv).empty();
 	pedcache.init_cache(opts);

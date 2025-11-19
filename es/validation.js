@@ -31,10 +31,29 @@ export function validate_age_yob(age, yob, status) {
 	if(status === "1") {   // deceased
 		return year >= sum;
 	}
-	return Math.abs(year - sum) <= 1 && year >= sum;
+	// Phase 3.3.1: Assouplir validation pour éviter faux positifs (anniversaire non encore passé)
+	return Math.abs(year - sum) <= 2 && year >= sum;
 }
 
-// validate pedigree data
+/**
+ * Validate pedigree dataset for consistency and completeness
+ * Checks for:
+ * - Consistent parent sex (mothers=F, fathers=M)
+ * - Unique IndivIDs (names)
+ * - Required fields (name, sex)
+ * - Single family (no multiple famids)
+ * - Warns about unconnected individuals
+ * @param {Object} opts - Options object containing dataset and validation settings
+ * @param {Array} opts.dataset - Array of person objects to validate
+ * @param {boolean|function} opts.validate - Validation mode: true (default validation), false (skip), or custom function
+ * @param {boolean} [opts.DEBUG=false] - Enable debug logging
+ * @throws {Error} If validation fails with specific error message
+ * @example
+ * validate_pedigree({
+ *   dataset: [...],
+ *   validate: true
+ * });
+ */
 export function validate_pedigree(opts){
 	// Import needed functions dynamically to avoid circular dependencies
 	const getIdxByName = (arr, name) => {
