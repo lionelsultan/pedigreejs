@@ -358,7 +358,7 @@ export function build(options) {
 		.append("g");
 
 	const pieInnerRadius = (typeof RC.PIE_INNER_RADIUS === 'number' ? RC.PIE_INNER_RADIUS : 0);
-	const pieOuterRadius = opts.symbol_size * (RC.PIE_OUTER_RADIUS_FACTOR || 1);
+	const pieOuterRadius = opts.symbol_size * (typeof RC.PIE_OUTER_RADIUS_FACTOR === 'number' ? RC.PIE_OUTER_RADIUS_FACTOR : 0.5);
 
 	pienode.selectAll("path")
 		.data(d3.pie().value(function(d) {return d.cancer;}))
@@ -421,8 +421,10 @@ export function build(options) {
 
 	// get path looping over node(s)
 	let draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+		// Extend consecutive clash indices to merge nearby clashes
+		// Note: Distance check disabled - merges all consecutive clashes regardless of proximity
 		let extend = function(i, l) {
-			if(i+1 < l)   // && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+			if(i+1 < l)
 				return extend(++i);
 			return i;
 		};
@@ -663,11 +665,9 @@ export function build(options) {
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
-						//let xmax = d.target.x;
 						for(let t=0; t<twins.length; t++) {
 							let thisx = utils.getNodeByName(flattenNodes, twins[t].name).x;
 							if(xmin > thisx) xmin = thisx;
-							//if(xmax < thisx) xmax = thisx;
 							twinx += thisx;
 						}
 

@@ -4906,7 +4906,7 @@ var pedigreejs = (function (exports) {
 	    })];
 	  }).enter().append("g");
 	  const pieInnerRadius = RENDERING_CONSTANTS.PIE_INNER_RADIUS ;
-	  const pieOuterRadius = opts.symbol_size * (RENDERING_CONSTANTS.PIE_OUTER_RADIUS_FACTOR);
+	  const pieOuterRadius = opts.symbol_size * (RENDERING_CONSTANTS.PIE_OUTER_RADIUS_FACTOR );
 	  pienode.selectAll("path").data(d3.pie().value(function (d) {
 	    return d.cancer;
 	  })).enter().append("path").attr("clip-path", function (d) {
@@ -4966,10 +4966,10 @@ var pedigreejs = (function (exports) {
 
 	  // get path looping over node(s)
 	  let draw_path = function (clash, dx, dy1, dy2, parent_node, cshift) {
+	    // Extend consecutive clash indices to merge nearby clashes
+	    // Note: Distance check disabled - merges all consecutive clashes regardless of proximity
 	    let extend = function (i, l) {
-	      if (i + 1 < l)
-	        // && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
-	        return extend(++i);
+	      if (i + 1 < l) return extend(++i);
 	      return i;
 	    };
 	    let path = "";
@@ -5130,11 +5130,9 @@ var pedigreejs = (function (exports) {
 	      if (twins.length >= 1) {
 	        let twinx = 0;
 	        let xmin = d.target.x;
-	        //let xmax = d.target.x;
 	        for (let t = 0; t < twins.length; t++) {
 	          let thisx = getNodeByName(flattenNodes, twins[t].name).x;
 	          if (xmin > thisx) xmin = thisx;
-	          //if(xmax < thisx) xmax = thisx;
 	          twinx += thisx;
 	        }
 	        let xmid = (d.target.x + twinx) / (twins.length + 1);
