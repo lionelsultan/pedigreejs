@@ -8,6 +8,18 @@
 import * as utils from './utils.js';
 import {checkTwins} from './twins.js';
 
+function purgePlaceholderChildren(dataset) {
+	for(let i = dataset.length - 1; i >= 0; i--) {
+		let node = dataset[i];
+		if(node && node.partner_placeholder) {
+			let motherExists = !!utils.getNodeByName(dataset, node.mother);
+			let fatherExists = !!utils.getNodeByName(dataset, node.father);
+			if(!motherExists || !fatherExists)
+				dataset.splice(i, 1);
+		}
+	}
+}
+
 function adjacent_nodes(root, node, excludes) {
 	let dnodes = utils.getNodesAtDepth(utils.flatten(root), node.depth, excludes);
 	let lhs_node, rhs_node;
@@ -105,6 +117,7 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		}
 	}
 	checkTwins(dataset);
+	purgePlaceholderChildren(dataset);
 
 	let uc;
 	let baselineDisconnected = [];

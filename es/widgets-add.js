@@ -8,6 +8,40 @@
 import * as utils from './utils.js';
 import {getUniqueTwinID, setMzTwin} from './twins.js';
 
+function determineParentRoles(personA, personB) {
+	let motherName, fatherName;
+	if(personA.sex === 'F') motherName = personA.name;
+	if(personA.sex === 'M') fatherName = personA.name;
+	if(!motherName && personB.sex === 'F') motherName = personB.name;
+	if(!fatherName && personB.sex === 'M') fatherName = personB.name;
+	if(!motherName) motherName = personA.name;
+	if(!fatherName) fatherName = personB.name === motherName ? personA.name : personB.name;
+	return {mother: motherName, father: fatherName};
+}
+
+function createPartnerPlaceholderChild(person, partner) {
+	let roles = determineParentRoles(person, partner);
+	return {
+		name: utils.makeid(4),
+		sex: 'U',
+		mother: roles.mother,
+		father: roles.father,
+		hidden: true,
+		partner_placeholder: true
+	};
+}
+
+function removePlaceholderChildren(dataset, motherName, fatherName) {
+	for(let i = dataset.length - 1; i >= 0; i--) {
+		let child = dataset[i];
+		if(child.partner_placeholder &&
+		   child.mother === motherName &&
+		   child.father === fatherName) {
+			dataset.splice(i, 1);
+		}
+	}
+}
+
 function getTreeNode(flat_tree, dataset, name) {
 	if(!name)
 		return undefined;
@@ -57,6 +91,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		if(twin_type)
 			child[twin_type] = twin_id;
 		newchildren.push(child);
+		removePlaceholderChildren(dataset, child.mother, child.father);
 	}
 	return newchildren;
 }
@@ -253,12 +288,8 @@ export function addpartner(opts, dataset, name, config) {
 	}
 
 	let partner = {"name": utils.makeid(4), "sex": partner_sex};
-	if(tree_node.data.top_level) {
+	if(tree_node.data.top_level || (!tree_node.data.mother && !tree_node.data.father))
 		partner.top_level = true;
-	} else {
-		partner.mother = tree_node.data.mother;
-		partner.father = tree_node.data.father;
-	}
 	partner.noparents = true;
 
 	// FIX 5: Unified positioning logic
@@ -280,24 +311,8 @@ export function addpartner(opts, dataset, name, config) {
 
 	// FIX 2 & FIX 3: Optional child creation with configurable sex
 	if(create_child) {
-		let child = {"name": utils.makeid(4), "sex": child_sex};
-
-		// Determine mother and father based on actual sex (not assumptions)
-		if(tree_node.data.sex === 'F' && partner_sex === 'M') {
-			child.mother = tree_node.data.name;
-			child.father = partner.name;
-		} else if(tree_node.data.sex === 'M' && partner_sex === 'F') {
-			child.mother = partner.name;
-			child.father = tree_node.data.name;
-		} else {
-			// Same-sex or unknown: assign arbitrarily (first = mother, second = father)
-			// User should update manually for correctness
-			child.mother = tree_node.data.name;
-			child.father = partner.name;
-			if(opts.DEBUG) {
-				console.warn('Child parents assigned arbitrarily due to non-standard sex combination. Please verify.');
-			}
-		}
+		let child = createPartnerPlaceholderChild(tree_node.data, partner);
+		child.sex = child_sex;
 
 		// FIX 1: Correct index calculation - after BOTH parents
 		let partner_idx = utils.getIdxByName(dataset, partner.name);

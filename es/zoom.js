@@ -92,6 +92,9 @@ function zooming(e, opts) {
 	setposition(opts, t.x, t.y, k);
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
 	ped.attr('transform', 'translate(' + t.x + ',' + t.y + ')' + (k ? ' scale(' + k + ')' : ''));
+	if(typeof opts._updateWarningOverlay === 'function') {
+		opts._updateWarningOverlay(t);
+	}
 }
 
 function get_pedigree_center(opts) {

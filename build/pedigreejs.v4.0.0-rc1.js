@@ -1375,6 +1375,9 @@ var pedigreejs = (function (exports) {
 	  setposition(opts, t.x, t.y, k);
 	  let ped = d3.select("#" + opts.targetDiv).select(".diagram");
 	  ped.attr('transform', 'translate(' + t.x + ',' + t.y + ')' + (k ? ' scale(' + k + ')' : ''));
+	  if (typeof opts._updateWarningOverlay === 'function') {
+	    opts._updateWarningOverlay(t);
+	  }
 	}
 	function get_pedigree_center(opts) {
 	  let b = get_bounds(opts);
@@ -3298,6 +3301,38 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+	function determineParentRoles(personA, personB) {
+	  let motherName, fatherName;
+	  if (personA.sex === 'F') motherName = personA.name;
+	  if (personA.sex === 'M') fatherName = personA.name;
+	  if (!motherName && personB.sex === 'F') motherName = personB.name;
+	  if (!fatherName && personB.sex === 'M') fatherName = personB.name;
+	  if (!motherName) motherName = personA.name;
+	  if (!fatherName) fatherName = personB.name === motherName ? personA.name : personB.name;
+	  return {
+	    mother: motherName,
+	    father: fatherName
+	  };
+	}
+	function createPartnerPlaceholderChild(person, partner) {
+	  let roles = determineParentRoles(person, partner);
+	  return {
+	    name: makeid(4),
+	    sex: 'U',
+	    mother: roles.mother,
+	    father: roles.father,
+	    hidden: true,
+	    partner_placeholder: true
+	  };
+	}
+	function removePlaceholderChildren(dataset, motherName, fatherName) {
+	  for (let i = dataset.length - 1; i >= 0; i--) {
+	    let child = dataset[i];
+	    if (child.partner_placeholder && child.mother === motherName && child.father === fatherName) {
+	      dataset.splice(i, 1);
+	    }
+	  }
+	}
 	function getTreeNode(flat_tree, dataset, name) {
 	  if (!name) return undefined;
 	  let node = flat_tree && flat_tree.length ? getNodeByName(flat_tree, name) : undefined;
@@ -3338,6 +3373,7 @@ var pedigreejs = (function (exports) {
 	    dataset.splice(idx, 0, child);
 	    if (twin_type) child[twin_type] = twin_id;
 	    newchildren.push(child);
+	    removePlaceholderChildren(dataset, child.mother, child.father);
 	  }
 	  return newchildren;
 	}
@@ -3520,12 +3556,7 @@ var pedigreejs = (function (exports) {
 	    "name": makeid(4),
 	    "sex": partner_sex
 	  };
-	  if (tree_node.data.top_level) {
-	    partner.top_level = true;
-	  } else {
-	    partner.mother = tree_node.data.mother;
-	    partner.father = tree_node.data.father;
-	  }
+	  if (tree_node.data.top_level || !tree_node.data.mother && !tree_node.data.father) partner.top_level = true;
 	  partner.noparents = true;
 
 	  // FIX 5: Unified positioning logic
@@ -3545,27 +3576,8 @@ var pedigreejs = (function (exports) {
 
 	  // FIX 2 & FIX 3: Optional child creation with configurable sex
 	  if (create_child) {
-	    let child = {
-	      "name": makeid(4),
-	      "sex": child_sex
-	    };
-
-	    // Determine mother and father based on actual sex (not assumptions)
-	    if (tree_node.data.sex === 'F' && partner_sex === 'M') {
-	      child.mother = tree_node.data.name;
-	      child.father = partner.name;
-	    } else if (tree_node.data.sex === 'M' && partner_sex === 'F') {
-	      child.mother = partner.name;
-	      child.father = tree_node.data.name;
-	    } else {
-	      // Same-sex or unknown: assign arbitrarily (first = mother, second = father)
-	      // User should update manually for correctness
-	      child.mother = tree_node.data.name;
-	      child.father = partner.name;
-	      if (opts.DEBUG) {
-	        console.warn('Child parents assigned arbitrarily due to non-standard sex combination. Please verify.');
-	      }
-	    }
+	    let child = createPartnerPlaceholderChild(tree_node.data, partner);
+	    child.sex = child_sex;
 
 	    // FIX 1: Correct index calculation - after BOTH parents
 	    let partner_idx = getIdxByName(dataset, partner.name);
@@ -3582,6 +3594,16 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+	function purgePlaceholderChildren(dataset) {
+	  for (let i = dataset.length - 1; i >= 0; i--) {
+	    let node = dataset[i];
+	    if (node && node.partner_placeholder) {
+	      let motherExists = !!getNodeByName(dataset, node.mother);
+	      let fatherExists = !!getNodeByName(dataset, node.father);
+	      if (!motherExists || !fatherExists) dataset.splice(i, 1);
+	    }
+	  }
+	}
 	function adjacent_nodes(root, node, excludes) {
 	  let dnodes = getNodesAtDepth(flatten(root), node.depth, excludes);
 	  let lhs_node, rhs_node;
@@ -3663,6 +3685,7 @@ var pedigreejs = (function (exports) {
 	    }
 	  }
 	  checkTwins(dataset);
+	  purgePlaceholderChildren(dataset);
 	  let uc;
 	  let baselineDisconnected = [];
 	  try {
@@ -4149,6 +4172,162 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
+	 * Rendering Constants for PedigreeJS SVG Generation
+	 *
+	 * This module centralizes all "magic numbers" used in SVG rendering to improve
+	 * code maintainability and allow easier customization.
+	 *
+	 * @module rendering-constants
+	 * @version 4.0.0-rc1
+	 * @date 2025-11-19
+	 */
+
+	/**
+	 * SVG rendering constants
+	 * All factors and offsets used in pedigree.js for calculating positions, sizes, and styling
+	 */
+	const RENDERING_CONSTANTS = {
+	  // ========================================
+	  // NODE SEPARATION (tree layout)
+	  // ========================================
+
+	  /**
+	   * Separation factor for siblings with same parents
+	   * Used in D3 tree layout to space nodes horizontally
+	   */
+	  SEPARATION_SAME_PARENT: 1.2,
+	  /**
+	   * Separation factor for siblings with different parents
+	   * Larger spacing for half-siblings or nodes from different families
+	   */
+	  SEPARATION_DIFFERENT: 2.2,
+	  // ========================================
+	  // SYMBOL SIZING
+	  // ========================================
+
+	  /**
+	   * Extra size added to symbol border path
+	   * Ensures border is slightly larger than symbol for visual clarity
+	   */
+	  SYMBOL_BORDER_EXTRA: 2,
+	  /**
+	   * Size reduction factor for hidden nodes (1/5th of normal size)
+	   * Hidden nodes are structural only, shown in DEBUG mode
+	   */
+	  HIDDEN_NODE_SIZE_FACTOR: 0.2,
+	  // ========================================
+	  // ADOPTED BRACKETS (adopted_in/adopted_out)
+	  // ========================================
+
+	  /**
+	   * Horizontal offset for bracket start position
+	   * Bracket X position = -(symbol_size * this factor)
+	   * Value 0.66 positions bracket 2/3 of symbol width from center
+	   */
+	  BRACKET_X_OFFSET_FACTOR: 0.66,
+	  /**
+	   * Vertical offset for bracket start position
+	   * Bracket Y position = -(symbol_size * this factor)
+	   * Value 0.64 positions bracket slightly above center
+	   */
+	  BRACKET_Y_OFFSET_FACTOR: 0.64,
+	  /**
+	   * Bracket indent (horizontal depth)
+	   * Indent = symbol_size / this value
+	   * Value 4 = bracket indent is 1/4 of symbol width
+	   */
+	  BRACKET_INDENT_DIVISOR: 4,
+	  /**
+	   * Bracket height scaling factor
+	   * Height = symbol_size * this factor
+	   * Value 1.3 gives good visual proportion across all symbol sizes
+	   * (Previously was hardcoded 1.28, now explicit for clarity)
+	   */
+	  BRACKET_HEIGHT_FACTOR: 1.3,
+	  // ========================================
+	  // DECEASED STATUS LINE (diagonal stroke)
+	  // ========================================
+
+	  /**
+	   * Dead status line size factor
+	   * Line length = symbol_size * this factor
+	   * Value 0.6 = line is 60% of symbol width
+	   */
+	  DEAD_LINE_SIZE_FACTOR: 0.6,
+	  // ========================================
+	  // PARTNER LINKS (relationship lines)
+	  // ========================================
+
+	  /**
+	   * Vertical offset for consanguinity double line
+	   * Offset in pixels between the two parallel lines
+	   */
+	  CONSANGUINITY_LINE_OFFSET: 3,
+	  /**
+	   * Length factor for twin horizontal bar (MZ twins)
+	   * Bar length = opts.symbol_size / (this value / 3)
+	   * Cryptic calculation: for symbol_size=35, bar_length = 35/(6/3) = 17.5
+	   */
+	  TWIN_BAR_LENGTH_DIVISOR: 6,
+	  // ========================================
+	  // PROBAND ARROW (indicator arrow)
+	  // ========================================
+
+	  /**
+	   * Proband arrow horizontal position factor
+	   * Arrow X offset = symbol_size / this factor
+	   * Value 0.7 positions arrow ~1.4x symbol width from center
+	   */
+	  ARROW_X_DIVISOR: 0.7,
+	  /**
+	   * Proband arrow vertical position factor
+	   * Arrow Y offset = symbol_size / this factor
+	   * Value 1.4 positions arrow ~0.7x symbol height from center
+	   */
+	  ARROW_Y_DIVISOR: 1.4,
+	  /**
+	   * Proband arrow head size factor
+	   * Arrow head size = symbol_size / this value
+	   * Value 6 = arrow head is 1/6th of symbol size
+	   */
+	  ARROW_HEAD_SIZE_DIVISOR: 6,
+	  // ========================================
+	  // TEXT LABELS (age, yob, monozygotic indicator)
+	  // ========================================
+
+	  /**
+	   * Vertical offset for age/yob label below symbol
+	   * Offset = symbol_size * this factor
+	   * Value 1.6 positions label below the symbol with spacing
+	   */
+	  LABEL_Y_OFFSET_FACTOR: 1.6,
+	  /**
+	   * Font size for age/yob labels
+	   * Font size as CSS em value (relative to base font)
+	   */
+	  LABEL_FONT_SIZE: '0.9em',
+	  /**
+	   * Font size for monozygotic twin indicator ("MZ")
+	   * Font size as CSS em value
+	   */
+	  MZ_LABEL_FONT_SIZE: '0.8em',
+	  // ========================================
+	  // PIE CHARTS (disease status)
+	  // ========================================
+
+	  /**
+	   * Inner radius for pie chart arcs
+	   * Value 0 = filled pie, no donut hole
+	   */
+	  PIE_INNER_RADIUS: 0,
+	  /**
+	   * Outer radius multiplier for pie chart
+	   * Radius = symbol_size * this factor
+	   */
+	  PIE_OUTER_RADIUS_FACTOR: 0.5
+	};
+
+	/**
 	/* © 2023 University of Cambridge
 	/* SPDX-FileCopyrightText: 2023 University of Cambridge
 	/* SPDX-License-Identifier: GPL-3.0-or-later
@@ -4160,7 +4339,11 @@ var pedigreejs = (function (exports) {
 	    if (opts.DEBUG) return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 	    return 'display_name' in d.data ? d.data.display_name : '';
 	  }, undefined, ['display_name']);
-	  let font_size = parseInt(getPx(opts)) + 4;
+	  let baseFontPx = parseFloat(getPx(opts)) || 0;
+	  let labelFontSize = RENDERING_CONSTANTS.LABEL_FONT_SIZE;
+	  let labelFontPx = fontStringToPx(labelFontSize, baseFontPx);
+	  let lineSpacing = labelFontPx || baseFontPx || 12;
+	  let initialOffset = opts.symbol_size * (RENDERING_CONSTANTS.LABEL_Y_OFFSET_FACTOR);
 
 	  // Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
 	  let validate_age_yob_data = function (d) {
@@ -4178,7 +4361,7 @@ var pedigreejs = (function (exports) {
 	    if (arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
 	      // Phase 3.3.4: Ajouter indicateur visuel pour données age/yob invalides
 	      addLabel(opts, node, -opts.symbol_size, function (d) {
-	        return ypos(d, arr, font_size);
+	        return ypos(d, arr, lineSpacing, initialOffset);
 	      }, function (d) {
 	        return get_text(d, arr);
 	      }, 'indi_details', arr, validate_age_yob_data);
@@ -4189,7 +4372,7 @@ var pedigreejs = (function (exports) {
 	  for (let i = 0; i < opts.diseases.length; i++) {
 	    let disease = opts.diseases[i].type;
 	    addLabel(opts, node, -opts.symbol_size, function (d) {
-	      return ypos(d, [disease], font_size);
+	      return ypos(d, [disease], lineSpacing, initialOffset);
 	    }, function (d) {
 	      let dis = disease.replace('_', ' ').replace('cancer', 'ca.');
 	      return disease + '_diagnosis_age' in d.data ? dis + ": " + d.data[disease + '_diagnosis_age'] : '';
@@ -4202,12 +4385,17 @@ var pedigreejs = (function (exports) {
 	    let arr = Array.isArray(label) ? label : [label];
 	    if (arr.indexOf('age') === -1 && arr.indexOf('yob') === -1) {
 	      addLabel(opts, node, -opts.symbol_size, function (d) {
-	        return ypos(d, arr, font_size);
+	        return ypos(d, arr, lineSpacing, initialOffset);
 	      }, function (d) {
 	        return get_text(d, arr);
 	      }, 'indi_details', arr);
 	    }
 	  }
+
+	  // Monozygote indicator label
+	  node.filter(function (d) {
+	    return !d.data.hidden && d.data.mztwin;
+	  }).append("text").attr("class", "ped_label mz-indicator").attr("x", opts.symbol_size * 0.7).attr("y", -(opts.symbol_size * 0.6)).attr("font-family", opts.font_family).attr("font-size", RENDERING_CONSTANTS.MZ_LABEL_FONT_SIZE).attr("font-weight", opts.font_weight).text("MZ");
 	}
 	function get_text(d, arr) {
 	  let txt = "";
@@ -4241,9 +4429,9 @@ var pedigreejs = (function (exports) {
 	  }
 	  if (txt !== "") return txt;
 	}
-	function ypos(d, arr, font_size) {
+	function ypos(d, arr, spacing, initialOffset) {
 	  if (!node_has_label(d, arr)) return;
-	  d.y_offset = !d.y_offset ? font_size * 2.35 : d.y_offset + font_size;
+	  d.y_offset = !d.y_offset ? initialOffset : d.y_offset + spacing;
 	  return d.y_offset;
 	}
 	function node_has_label(d, labels) {
@@ -4257,7 +4445,7 @@ var pedigreejs = (function (exports) {
 	function addLabel(opts, node, fx, fy, ftext, class_label, labels, validate_fn) {
 	  let labels_sel = node.filter(function (d) {
 	    return !d.data.hidden && (!labels || node_has_label(d, labels));
-	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight)
+	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", RENDERING_CONSTANTS.LABEL_FONT_SIZE).attr("font-weight", opts.font_weight)
 	  // Phase 3.3.4: Appliquer style visuel si données invalides
 	  .attr("fill", function (d) {
 	    if (validate_fn && !validate_fn(d)) {
@@ -4284,6 +4472,13 @@ var pedigreejs = (function (exports) {
 	  if (emVal.indexOf("px") > -1) return emVal.replace('px', '');else if (emVal.indexOf("em") === -1) return emVal;
 	  emVal = parseFloat(emVal.replace('em', ''));
 	  return parseFloat(getComputedStyle($('#' + opts.targetDiv).get(0)).fontSize) * emVal - 1.0;
+	}
+	function fontStringToPx(fontSize, basePx) {
+	  let size = String(fontSize).trim();
+	  if (size.endsWith('px')) return parseFloat(size);
+	  if (size.endsWith('em')) return parseFloat(size) * basePx;
+	  if (!isNaN(parseFloat(size))) return parseFloat(size);
+	  return basePx;
 	}
 
 	/**
@@ -4387,116 +4582,6 @@ var pedigreejs = (function (exports) {
 		__proto__: null,
 		init_dragging: init_dragging
 	});
-
-	/**
-	 * Rendering Constants for PedigreeJS SVG Generation
-	 *
-	 * This module centralizes all "magic numbers" used in SVG rendering to improve
-	 * code maintainability and allow easier customization.
-	 *
-	 * @module rendering-constants
-	 * @version 4.0.0-rc1
-	 * @date 2025-11-19
-	 */
-
-	/**
-	 * SVG rendering constants
-	 * All factors and offsets used in pedigree.js for calculating positions, sizes, and styling
-	 */
-	const RENDERING_CONSTANTS = {
-	  // ========================================
-	  // NODE SEPARATION (tree layout)
-	  // ========================================
-
-	  /**
-	   * Separation factor for siblings with same parents
-	   * Used in D3 tree layout to space nodes horizontally
-	   */
-	  SEPARATION_SAME_PARENT: 1.2,
-	  /**
-	   * Separation factor for siblings with different parents
-	   * Larger spacing for half-siblings or nodes from different families
-	   */
-	  SEPARATION_DIFFERENT: 2.2,
-	  // ========================================
-	  // SYMBOL SIZING
-	  // ========================================
-
-	  /**
-	   * Extra size added to symbol border path
-	   * Ensures border is slightly larger than symbol for visual clarity
-	   */
-	  SYMBOL_BORDER_EXTRA: 2,
-	  // ========================================
-	  // ADOPTED BRACKETS (adopted_in/adopted_out)
-	  // ========================================
-
-	  /**
-	   * Horizontal offset for bracket start position
-	   * Bracket X position = -(symbol_size * this factor)
-	   * Value 0.66 positions bracket 2/3 of symbol width from center
-	   */
-	  BRACKET_X_OFFSET_FACTOR: 0.66,
-	  /**
-	   * Vertical offset for bracket start position
-	   * Bracket Y position = -(symbol_size * this factor)
-	   * Value 0.64 positions bracket slightly above center
-	   */
-	  BRACKET_Y_OFFSET_FACTOR: 0.64,
-	  /**
-	   * Bracket indent (horizontal depth)
-	   * Indent = symbol_size / this value
-	   * Value 4 = bracket indent is 1/4 of symbol width
-	   */
-	  BRACKET_INDENT_DIVISOR: 4,
-	  /**
-	   * Bracket height scaling factor
-	   * Height = symbol_size * this factor
-	   * Value 1.3 gives good visual proportion across all symbol sizes
-	   * (Previously was hardcoded 1.28, now explicit for clarity)
-	   */
-	  BRACKET_HEIGHT_FACTOR: 1.3,
-	  // ========================================
-	  // DECEASED STATUS LINE (diagonal stroke)
-	  // ========================================
-
-	  /**
-	   * Dead status line size factor
-	   * Line length = symbol_size * this factor
-	   * Value 0.6 = line is 60% of symbol width
-	   */
-	  DEAD_LINE_SIZE_FACTOR: 0.6,
-	  // ========================================
-	  // PARTNER LINKS (relationship lines)
-	  // ========================================
-
-	  /**
-	   * Vertical offset for consanguinity double line
-	   * Offset in pixels between the two parallel lines
-	   */
-	  CONSANGUINITY_LINE_OFFSET: 3,
-	  // ========================================
-	  // PROBAND ARROW (indicator arrow)
-	  // ========================================
-
-	  /**
-	   * Proband arrow horizontal position factor
-	   * Arrow X offset = symbol_size / this factor
-	   * Value 0.7 positions arrow ~1.4x symbol width from center
-	   */
-	  ARROW_X_DIVISOR: 0.7,
-	  /**
-	   * Proband arrow vertical position factor
-	   * Arrow Y offset = symbol_size / this factor
-	   * Value 1.4 positions arrow ~0.7x symbol height from center
-	   */
-	  ARROW_Y_DIVISOR: 1.4,
-	  /**
-	   * Proband arrow head size factor
-	   * Arrow head size = symbol_size / this value
-	   * Value 6 = arrow head is 1/6th of symbol size
-	   */
-	  ARROW_HEAD_SIZE_DIVISOR: 6};
 
 	/**
 	/* © 2023 University of Cambridge
@@ -4661,10 +4746,13 @@ var pedigreejs = (function (exports) {
 	  let flattenNodes = nodes.descendants();
 
 	  // check the number of visible nodes equals the size of the pedigree dataset
-	  let vis_nodes = $.map(opts.dataset, function (p, _i) {
-	    return p.hidden ? null : p;
+	  let hidden_nodes = $.map(opts.dataset, function (p, _i) {
+	    return is_hidden_data(p) ? p : null;
 	  });
-	  if (vis_nodes.length !== opts.dataset.length) {
+	  let invalid_hidden = hidden_nodes.filter(function (p) {
+	    return !p.partner_placeholder;
+	  });
+	  if (invalid_hidden.length > 0) {
 	    throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	  }
 	  adjust_coords(opts, nodes, flattenNodes);
@@ -4672,10 +4760,10 @@ var pedigreejs = (function (exports) {
 	  let clashes = check_ptr_links(opts, ptrLinkNodes); // check for crossing of partner lines (Phase 3.1.2)
 
 	  let node = ped.selectAll(".node").data(nodes.descendants()).enter().append("g").attr("class", function (d) {
-	    let classes = ["node"];
+	    let classes = ["node", "person"];
 	    if (d.data.sex === 'M') classes.push("male");else if (d.data.sex === 'F') classes.push("female");else classes.push("unknown-sex");
 	    if (d.data.proband) classes.push("proband");
-	    if (d.data.hidden) classes.push("hidden");
+	    if (is_hidden_data(d.data)) classes.push("hidden");
 	    if (d.data.affected) classes.push("affected");
 	    if (d.data.adopted_in || d.data.adopted_out) classes.push("adopted");
 	    if (d.data.status === "1" || d.data.status === 1) classes.push("deceased");
@@ -4685,11 +4773,11 @@ var pedigreejs = (function (exports) {
 	  })
 	  // FIX: Accessibilité - ARIA attributes pour navigation clavier
 	  .attr("role", function (d) {
-	    return d.data.hidden ? null : "button";
+	    return is_hidden_data(d.data) ? null : "button";
 	  }).attr("tabindex", function (d) {
-	    return d.data.hidden ? null : "0";
+	    return is_hidden_data(d.data) ? null : "0";
 	  }).attr("aria-label", function (d) {
-	    if (d.data.hidden) return null;
+	    if (is_hidden_data(d.data)) return null;
 	    let label = d.data.display_name || d.data.name;
 	    label += ", " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Sexe inconnu');
 	    if (d.data.age) label += ", Âge " + d.data.age + " ans";
@@ -4698,11 +4786,22 @@ var pedigreejs = (function (exports) {
 	    if (d.data.affected) label += ", Affecté";
 	    if (d.data.proband) label += ", Proband";
 	    return label;
+	  }).each(function (d) {
+	    let sel = d3.select(this);
+	    sel.attr("data-affected", d.data.affected ? "true" : null);
+	    if (Array.isArray(opts.diseases)) {
+	      opts.diseases.forEach(function (dis) {
+	        if (!dis || !dis.type) return;
+	        let attrName = "data-" + dis.type.replace(/_/g, "-");
+	        let hasDisease = prefixInObj(dis.type, d.data);
+	        sel.attr(attrName, hasDisease ? "true" : null);
+	      });
+	    }
 	  });
 
 	  // FIX: Tooltips title pour accessibilité et UX
 	  node.filter(function (d) {
-	    return !d.data.hidden;
+	    return !is_hidden_data(d.data);
 	  }).append("title").text(function (d) {
 	    let text = d.data.display_name || d.data.name;
 	    if (d.data.sex) text += "\nSexe: " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Inconnu');
@@ -4716,7 +4815,7 @@ var pedigreejs = (function (exports) {
 
 	  // FIX: Interactive feedback - hover states et cursor
 	  node.filter(function (d) {
-	    return !d.data.hidden;
+	    return !is_hidden_data(d.data);
 	  }).style("cursor", "pointer").on("mouseover", function (_event, _d) {
 	    d3.select(this).select("path").filter(function () {
 	      // Sélectionner seulement le path border, pas les brackets ou pie
@@ -4741,8 +4840,8 @@ var pedigreejs = (function (exports) {
 
 	  // provide a border to the node
 	  node.filter(function (d) {
-	    return !d.data.hidden;
-	  }).append("path").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
+	    return !is_hidden_data(d.data);
+	  }).append("path").attr("class", "person-shape").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
 	    return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
 	  }).attr("d", d3.symbol().size(function (_d) {
 	    return opts.symbol_size * opts.symbol_size + RENDERING_CONSTANTS.SYMBOL_BORDER_EXTRA;
@@ -4762,15 +4861,16 @@ var pedigreejs = (function (exports) {
 	  // set a clippath
 	  // FIX: Prefix clipPath IDs with targetDiv to avoid collisions when multiple pedigrees on same page
 	  node.filter(function (d) {
-	    return !(d.data.hidden && !opts.DEBUG);
+	    return !(is_hidden_data(d.data) && !opts.DEBUG);
 	  }).append("clipPath").attr("id", function (d) {
-	    return opts.targetDiv + "_clip_" + d.data.name;
+	    return getClipPathId(opts, d.data);
 	  }).append("path").attr("class", "clippath-shape").attr("transform", function (d) {
 	    return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
 	  }).attr("d", d3.symbol().size(function (d) {
-	    // Hidden nodes get smaller clipPath (1/5th size) for compact DEBUG rendering
+	    // Hidden nodes get smaller clipPath (scaled) for compact DEBUG rendering
+	    let hiddenScale = RENDERING_CONSTANTS.HIDDEN_NODE_SIZE_FACTOR;
 	    // Note: Hidden nodes should not have diseases/pie charts, so this is primarily for structure
-	    if (d.data.hidden) return opts.symbol_size * opts.symbol_size / 5;
+	    if (is_hidden_data(d.data)) return opts.symbol_size * opts.symbol_size * hiddenScale;
 	    return opts.symbol_size * opts.symbol_size;
 	  }).type(function (d) {
 	    if (d.data.miscarriage || d.data.termination) return d3.symbolTriangle;
@@ -4779,7 +4879,7 @@ var pedigreejs = (function (exports) {
 
 	  // pie plots for disease colours
 	  let pienode = node.filter(function (d) {
-	    return !(d.data.hidden && !opts.DEBUG);
+	    return !(is_hidden_data(d.data) && !opts.DEBUG);
 	  }).selectAll("pienode").data(function (d) {
 	    // set the disease data for the pie plot
 	    let ncancers = 0;
@@ -4790,6 +4890,7 @@ var pedigreejs = (function (exports) {
 	      } else return 0;
 	    });
 	    if (ncancers === 0) cancers = [1];
+	    let clipId = getClipPathId(opts, d.data);
 	    return [$.map(cancers, function (val, _i) {
 	      return {
 	        'cancer': val,
@@ -4799,16 +4900,19 @@ var pedigreejs = (function (exports) {
 	        'proband': d.data.proband,
 	        'hidden': d.data.hidden,
 	        'affected': d.data.affected,
-	        'exclude': d.data.exclude
+	        'exclude': d.data.exclude,
+	        'clipId': clipId
 	      };
 	    })];
 	  }).enter().append("g");
+	  const pieInnerRadius = RENDERING_CONSTANTS.PIE_INNER_RADIUS ;
+	  const pieOuterRadius = opts.symbol_size * (RENDERING_CONSTANTS.PIE_OUTER_RADIUS_FACTOR);
 	  pienode.selectAll("path").data(d3.pie().value(function (d) {
 	    return d.cancer;
 	  })).enter().append("path").attr("clip-path", function (d) {
-	    return "url(#" + opts.targetDiv + "_clip_" + d.data.id + ")";
+	    return "url(#" + d.data.clipId + ")";
 	  }) // clip the rectangle (with prefix)
-	  .attr("class", "pienode").attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size)).attr("fill", function (d, i) {
+	  .attr("class", "pienode").attr("d", d3.arc().innerRadius(pieInnerRadius).outerRadius(pieOuterRadius)).attr("fill", function (d, i) {
 	    if (d.data.exclude) return opts.exclude_fill_color; // FIX: Configurable exclude color
 	    if (d.data.ncancers === 0) {
 	      if (d.data.affected) return opts.affected_fill_color;
@@ -4819,7 +4923,7 @@ var pedigreejs = (function (exports) {
 
 	  // adopted in/out brackets
 	  node.filter(function (d) {
-	    return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);
+	    return !is_hidden_data(d.data) && (d.data.adopted_in || d.data.adopted_out);
 	  }).append("path").attr("d", function (_d) {
 	    let dx = -(opts.symbol_size * RENDERING_CONSTANTS.BRACKET_X_OFFSET_FACTOR);
 	    let dy = -(opts.symbol_size * RENDERING_CONSTANTS.BRACKET_Y_OFFSET_FACTOR);
@@ -4954,19 +5058,40 @@ var pedigreejs = (function (exports) {
 	      }
 	    });
 
-	    // FIX: Framework compatibility - Use D3 foreignObject instead of jQuery DOM manipulation
-	    // Ajouter un message d'avertissement global si clashes détectés
+	    // FIX: Framework compatibility - Use native SVG rather than foreignObject
 	    if (!opts.DEBUG) {
-	      // Enlever l'ancien warning s'il existe
-	      svg.select('.pedigree-warning-container').remove();
-
-	      // Ajouter le nouveau warning via foreignObject (compatible React/Vue)
-	      let warningContainer = svg.append("foreignObject").attr("class", "pedigree-warning-container").attr("x", 10).attr("y", 10).attr("width", svg_dimensions.width - 20).attr("height", 60);
-	      warningContainer.append("xhtml:div").attr("class", "pedigree-warning").style("background", "#FFF3CD").style("border", "1px solid #FFC107").style("padding", "10px").style("border-radius", "4px").style("font-size", "14px").html('<strong>⚠️ Avertissement :</strong> ' + clashes.length + ' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.');
+	      svg.selectAll('.pedigree-warning-container').remove();
+	      let warningWidth = Math.min(svg_dimensions.width - 20, 420);
+	      let warningHeight = 54;
+	      let warningGroup = svg.append("g").attr("class", "pedigree-warning-container").attr("pointer-events", "none");
+	      warningGroup.append("rect").attr("width", warningWidth).attr("height", warningHeight).attr("rx", 6).attr("ry", 6).attr("fill", "#FFF3CD").attr("stroke", "#FFC107").attr("stroke-width", 1.2);
+	      warningGroup.append("text").attr("x", 16).attr("y", 22).attr("fill", "#5f3b00").attr("font-size", "13px").attr("font-weight", "600").text("⚠️ Avertissement : " + clashes.length + " lien(s) se croisent.");
+	      warningGroup.append("text").attr("x", 16).attr("y", 40).attr("fill", "#5f3b00").attr("font-size", "12px").text("Les liens en rouge pointillé ont été ajustés pour éviter les chevauchements.");
+	      let updateWarningOverlay = function (transform) {
+	        let targetSvg = d3.select("#" + opts.targetDiv).select("svg");
+	        let warning = targetSvg.selectAll(".pedigree-warning-container");
+	        if (warning.empty()) return;
+	        let svgWidth = targetSvg.node() ? targetSvg.node().clientWidth : svg_dimensions.width;
+	        let width = Math.min(svgWidth - 20, 420);
+	        warning.select("rect").attr("width", width);
+	        let tx = 10;
+	        let ty = 10;
+	        if (transform) {
+	          let scale = transform.k || 1;
+	          let x = (tx - transform.x) / scale;
+	          let y = (ty - transform.y) / scale;
+	          warning.attr("transform", "translate(" + x + "," + y + ") scale(" + 1 / scale + ")");
+	        } else {
+	          warning.attr("transform", "translate(" + tx + "," + ty + ")");
+	        }
+	      };
+	      opts._updateWarningOverlay = updateWarningOverlay;
+	      updateWarningOverlay();
 	    }
 	  } else {
 	    // Pas de clashes, enlever le warning s'il existe
-	    svg.select('.pedigree-warning-container').remove();
+	    svg.selectAll('.pedigree-warning-container').remove();
+	    opts._updateWarningOverlay = null;
 	  }
 
 	  // links to children
@@ -4998,6 +5123,7 @@ var pedigreejs = (function (exports) {
 	    if (d.target.data.mztwin || d.target.data.dztwin) return "geometricPrecision";
 	    return "auto";
 	  }).attr("d", function (d, _i) {
+	    let forkOffset = 0;
 	    if (d.target.data.mztwin || d.target.data.dztwin) {
 	      // get twin position
 	      let twins = getTwins(opts.dataset, d.target.data);
@@ -5012,13 +5138,15 @@ var pedigreejs = (function (exports) {
 	          twinx += thisx;
 	        }
 	        let xmid = (d.target.x + twinx) / (twins.length + 1);
-	        let ymid = (d.source.y + d.target.y) / 2;
+	        let ymid = (d.source.y + d.target.y) / 2 + forkOffset;
 	        let xhbar = "";
 	        if (xmin === d.target.x && d.target.data.mztwin) {
 	          // horizontal bar for mztwins
-	          let xx = (xmid + d.target.x) / 2;
 	          let yy = (ymid + (d.target.y - opts.symbol_size / 2)) / 2;
-	          xhbar = "M" + xx + "," + yy + "L" + (xmid + (xmid - xx)) + " " + yy;
+	          let half = opts.symbol_size / (RENDERING_CONSTANTS.TWIN_BAR_LENGTH_DIVISOR);
+	          let start = xmid - half;
+	          let end = xmid + half;
+	          xhbar = "M" + start + "," + yy + "L" + end + "," + yy;
 	        }
 	        return "M" + d.source.x + "," + d.source.y + "V" + ymid + "H" + xmid + "L" + d.target.x + " " + (d.target.y - opts.symbol_size / 2) + xhbar;
 	      }
@@ -5031,11 +5159,13 @@ var pedigreejs = (function (exports) {
 	        let ma = getNodeByName(flattenNodes, motherName);
 	        let pa = getNodeByName(flattenNodes, fatherName);
 	        if (ma && pa && ma.depth !== pa.depth) {
-	          return "M" + d.source.x + "," + (ma.y + pa.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	          let forkY = (ma.y + pa.y) / 2 + forkOffset;
+	          return "M" + d.source.x + "," + forkY + "H" + d.target.x + "V" + d.target.y;
 	        }
 	      }
 	    }
-	    return "M" + d.source.x + "," + d.source.y + "V" + (d.source.y + d.target.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	    let forkY = (d.source.y + d.target.y) / 2 + forkOffset;
+	    return "M" + d.source.x + "," + d.source.y + "V" + forkY + "H" + d.target.x + "V" + d.target.y;
 	  });
 
 	  // draw proband arrow
@@ -5062,6 +5192,38 @@ var pedigreejs = (function (exports) {
 	}
 	function has_gender(sex) {
 	  return sex === "M" || sex === "F";
+	}
+	function is_hidden_data(data) {
+	  return data && (data.hidden || data.partner_placeholder);
+	}
+	function sanitizeIdFragment(value) {
+	  let fragment = (value === undefined || value === null ? "" : String(value)).trim();
+	  if (fragment === "") fragment = "id";
+	  fragment = fragment.replace(/[^A-Za-z0-9_-]/g, "-").replace(/-+/g, "-").replace(/^-+/, "");
+	  if (fragment === "" || !/^[A-Za-z_]/.test(fragment)) fragment = "id-" + fragment;
+	  return fragment;
+	}
+	function setHiddenMetadata(obj, key, value) {
+	  try {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      configurable: true,
+	      enumerable: false,
+	      writable: true
+	    });
+	  } catch (_err) {
+	    obj[key] = value;
+	  }
+	}
+	function getClipPathId(opts, person) {
+	  if (!person) return opts.targetDiv + "_clip_id-" + makeid(4);
+	  if (person.__clipId && person.__clipSource === person.name) return person.__clipId;
+	  let fragment = sanitizeIdFragment(person.name);
+	  fragment += "-" + makeid(3);
+	  let clipId = opts.targetDiv + "_clip_" + fragment;
+	  setHiddenMetadata(person, "__clipSource", person.name);
+	  setHiddenMetadata(person, "__clipId", clipId);
+	  return clipId;
 	}
 
 	//adopted in/out brackets

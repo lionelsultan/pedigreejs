@@ -186,8 +186,9 @@ export function build(options) {
 	let flattenNodes = nodes.descendants();
 
 	// check the number of visible nodes equals the size of the pedigree dataset
-	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
-	if(vis_nodes.length !== opts.dataset.length) {
+	let hidden_nodes = $.map(opts.dataset, function(p, _i){return is_hidden_data(p) ? p : null;});
+	let invalid_hidden = hidden_nodes.filter(function(p){return !p.partner_placeholder;});
+	if(invalid_hidden.length > 0) {
 		throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
 
@@ -201,13 +202,13 @@ export function build(options) {
 				  .enter()
 				  .append("g")
 					.attr("class", function(d) {
-						let classes = ["node"];
+						let classes = ["node", "person"];
 						if(d.data.sex === 'M') classes.push("male");
 						else if(d.data.sex === 'F') classes.push("female");
 						else classes.push("unknown-sex");
 
 						if(d.data.proband) classes.push("proband");
-						if(d.data.hidden) classes.push("hidden");
+						if(is_hidden_data(d.data)) classes.push("hidden");
 						if(d.data.affected) classes.push("affected");
 						if(d.data.adopted_in || d.data.adopted_out) classes.push("adopted");
 						if(d.data.status === "1" || d.data.status === 1) classes.push("deceased");
@@ -219,25 +220,37 @@ export function build(options) {
 					})
 				// FIX: Accessibilité - ARIA attributes pour navigation clavier
 				.attr("role", function(d) {
-					return d.data.hidden ? null : "button";
+					return is_hidden_data(d.data) ? null : "button";
 				})
 				.attr("tabindex", function(d) {
-					return d.data.hidden ? null : "0";
+					return is_hidden_data(d.data) ? null : "0";
 				})
-				.attr("aria-label", function(d) {
-					if(d.data.hidden) return null;
-					let label = d.data.display_name || d.data.name;
-					label += ", " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Sexe inconnu');
-					if(d.data.age) label += ", Âge " + d.data.age + " ans";
-					if(d.data.yob) label += ", Né en " + d.data.yob;
-					if(d.data.status === "1" || d.data.status === 1) label += ", Décédé";
-					if(d.data.affected) label += ", Affecté";
-					if(d.data.proband) label += ", Proband";
-					return label;
-				});
+					.attr("aria-label", function(d) {
+						if(is_hidden_data(d.data)) return null;
+						let label = d.data.display_name || d.data.name;
+						label += ", " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Sexe inconnu');
+						if(d.data.age) label += ", Âge " + d.data.age + " ans";
+						if(d.data.yob) label += ", Né en " + d.data.yob;
+						if(d.data.status === "1" || d.data.status === 1) label += ", Décédé";
+						if(d.data.affected) label += ", Affecté";
+						if(d.data.proband) label += ", Proband";
+						return label;
+					})
+					.each(function(d) {
+						let sel = d3.select(this);
+						sel.attr("data-affected", d.data.affected ? "true" : null);
+						if(Array.isArray(opts.diseases)) {
+							opts.diseases.forEach(function(dis) {
+								if(!dis || !dis.type) return;
+								let attrName = "data-" + dis.type.replace(/_/g, "-");
+								let hasDisease = utils.prefixInObj(dis.type, d.data);
+								sel.attr(attrName, hasDisease ? "true" : null);
+							});
+						}
+					});
 
 	// FIX: Tooltips title pour accessibilité et UX
-	node.filter(function(d) {return !d.data.hidden;})
+	node.filter(function(d) {return !is_hidden_data(d.data);})
 		.append("title")
 		.text(function(d) {
 			let text = d.data.display_name || d.data.name;
@@ -251,7 +264,7 @@ export function build(options) {
 		});
 
 	// FIX: Interactive feedback - hover states et cursor
-	node.filter(function(d) {return !d.data.hidden;})
+	node.filter(function(d) {return !is_hidden_data(d.data);})
 		.style("cursor", "pointer")
 		.on("mouseover", function(_event, _d) {
 			d3.select(this).select("path").filter(function() {
@@ -284,8 +297,9 @@ export function build(options) {
 		});
 
 	// provide a border to the node
-	node.filter(function (d) {return !d.data.hidden;})
+	node.filter(function (d) {return !is_hidden_data(d.data);})
 		.append("path")
+		.attr("class", "person-shape")
 		.attr("shape-rendering", "geometricPrecision")
 		.attr("transform", function(d) {return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 		.attr("d", d3.symbol().size(function(_d) { return (opts.symbol_size * opts.symbol_size) + RC.SYMBOL_BORDER_EXTRA;})
@@ -306,16 +320,17 @@ export function build(options) {
 
 	// set a clippath
 	// FIX: Prefix clipPath IDs with targetDiv to avoid collisions when multiple pedigrees on same page
-	node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
+	node.filter(function (d) {return !(is_hidden_data(d.data) && !opts.DEBUG);})
 		.append("clipPath")
-		.attr("id", function (d) {return opts.targetDiv + "_clip_" + d.data.name;}).append("path")
+		.attr("id", function (d) {return getClipPathId(opts, d.data);}).append("path")
 		.attr("class", "clippath-shape")
 		.attr("transform", function(d) {return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
-		.attr("d", d3.symbol().size(function(d) {
-				// Hidden nodes get smaller clipPath (1/5th size) for compact DEBUG rendering
+			.attr("d", d3.symbol().size(function(d) {
+				// Hidden nodes get smaller clipPath (scaled) for compact DEBUG rendering
+				let hiddenScale = RC.HIDDEN_NODE_SIZE_FACTOR || 0.2;
 				// Note: Hidden nodes should not have diseases/pie charts, so this is primarily for structure
-				if (d.data.hidden)
-					return opts.symbol_size * opts.symbol_size / 5;
+				if (is_hidden_data(d.data))
+					return opts.symbol_size * opts.symbol_size * hiddenScale;
 				return opts.symbol_size * opts.symbol_size;
 			})
 			.type(function(d) {
@@ -324,28 +339,33 @@ export function build(options) {
 				return d.data.sex === "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 	// pie plots for disease colours
-	let pienode = node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);}).selectAll("pienode")
+	let pienode = node.filter(function (d) {return !(is_hidden_data(d.data) && !opts.DEBUG);}).selectAll("pienode")
 	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
 		   let cancers = $.map(opts.diseases, function(_val, i){
 			   if(utils.prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 		   });
 		   if(ncancers === 0) cancers = [1];
+		   let clipId = getClipPathId(opts, d.data);
 		   return [$.map(cancers, function(val, _i){
 			   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
 						'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
 						'affected': d.data.affected,
-						'exclude': d.data.exclude};})];
+						'exclude': d.data.exclude,
+						'clipId': clipId};})];
 	   })
 	   .enter()
 		.append("g");
 
+	const pieInnerRadius = (typeof RC.PIE_INNER_RADIUS === 'number' ? RC.PIE_INNER_RADIUS : 0);
+	const pieOuterRadius = opts.symbol_size * (RC.PIE_OUTER_RADIUS_FACTOR || 1);
+
 	pienode.selectAll("path")
 		.data(d3.pie().value(function(d) {return d.cancer;}))
 		.enter().append("path")
-			.attr("clip-path", function(d) {return "url(#"+opts.targetDiv+"_clip_"+d.data.id+")";}) // clip the rectangle (with prefix)
+			.attr("clip-path", function(d) {return "url(#"+d.data.clipId+")";}) // clip the rectangle (with prefix)
 			.attr("class", "pienode")
-			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
+			.attr("d", d3.arc().innerRadius(pieInnerRadius).outerRadius(pieOuterRadius))
 			.attr("fill", function(d, i) {
 				if(d.data.exclude)
 					return opts.exclude_fill_color; // FIX: Configurable exclude color
@@ -358,7 +378,7 @@ export function build(options) {
 			});
 
 	// adopted in/out brackets
-	node.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
+	node.filter(function (d) {return !is_hidden_data(d.data) && (d.data.adopted_in || d.data.adopted_out);})
 		.append("path")
 		.attr("d", function(_d) {
 			let dx = -(opts.symbol_size * RC.BRACKET_X_OFFSET_FACTOR);
@@ -529,33 +549,65 @@ export function build(options) {
 			}
 		});
 
-		// FIX: Framework compatibility - Use D3 foreignObject instead of jQuery DOM manipulation
-		// Ajouter un message d'avertissement global si clashes détectés
+		// FIX: Framework compatibility - Use native SVG rather than foreignObject
 		if(!opts.DEBUG) {
-			// Enlever l'ancien warning s'il existe
-			svg.select('.pedigree-warning-container').remove();
+			svg.selectAll('.pedigree-warning-container').remove();
 
-			// Ajouter le nouveau warning via foreignObject (compatible React/Vue)
-			let warningContainer = svg.append("foreignObject")
+			let warningWidth = Math.min(svg_dimensions.width - 20, 420);
+			let warningHeight = 54;
+			let warningGroup = svg.append("g")
 				.attr("class", "pedigree-warning-container")
-				.attr("x", 10)
-				.attr("y", 10)
-				.attr("width", svg_dimensions.width - 20)
-				.attr("height", 60);
+				.attr("pointer-events", "none");
 
-			warningContainer.append("xhtml:div")
-				.attr("class", "pedigree-warning")
-				.style("background", "#FFF3CD")
-				.style("border", "1px solid #FFC107")
-				.style("padding", "10px")
-				.style("border-radius", "4px")
-				.style("font-size", "14px")
-				.html('<strong>⚠️ Avertissement :</strong> ' + clashes.length +
-					  ' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.');
+			warningGroup.append("rect")
+				.attr("width", warningWidth)
+				.attr("height", warningHeight)
+				.attr("rx", 6)
+				.attr("ry", 6)
+				.attr("fill", "#FFF3CD")
+				.attr("stroke", "#FFC107")
+				.attr("stroke-width", 1.2);
+
+			warningGroup.append("text")
+				.attr("x", 16)
+				.attr("y", 22)
+				.attr("fill", "#5f3b00")
+				.attr("font-size", "13px")
+				.attr("font-weight", "600")
+				.text("⚠️ Avertissement : " + clashes.length + " lien(s) se croisent.");
+
+			warningGroup.append("text")
+				.attr("x", 16)
+				.attr("y", 40)
+				.attr("fill", "#5f3b00")
+				.attr("font-size", "12px")
+				.text("Les liens en rouge pointillé ont été ajustés pour éviter les chevauchements.");
+
+			let updateWarningOverlay = function(transform) {
+				let targetSvg = d3.select("#"+opts.targetDiv).select("svg");
+				let warning = targetSvg.selectAll(".pedigree-warning-container");
+				if(warning.empty()) return;
+				let svgWidth = targetSvg.node() ? targetSvg.node().clientWidth : svg_dimensions.width;
+				let width = Math.min(svgWidth - 20, 420);
+				warning.select("rect").attr("width", width);
+				let tx = 10;
+				let ty = 10;
+				if(transform) {
+					let scale = transform.k || 1;
+					let x = (tx - transform.x) / scale;
+					let y = (ty - transform.y) / scale;
+					warning.attr("transform", "translate("+x+","+y+") scale("+ (1/scale) +")");
+				} else {
+					warning.attr("transform", "translate("+tx+","+ty+")");
+				}
+			};
+			opts._updateWarningOverlay = updateWarningOverlay;
+			updateWarningOverlay();
 		}
 	} else {
 		// Pas de clashes, enlever le warning s'il existe
-		svg.select('.pedigree-warning-container').remove();
+		svg.selectAll('.pedigree-warning-container').remove();
+		opts._updateWarningOverlay = null;
 	}
 
 	// links to children
@@ -604,6 +656,7 @@ export function build(options) {
 				return "auto";
 			})
 			.attr("d", function(d, _i) {
+				let forkOffset = RC.CHILD_LINK_FORK_OFFSET || 0;
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
 					let twins = utils.getTwins(opts.dataset, d.target.data);
@@ -619,15 +672,16 @@ export function build(options) {
 						}
 
 						let xmid = ((d.target.x + twinx) / (twins.length+1));
-						let ymid = ((d.source.y + d.target.y) / 2);
+						let ymid = ((d.source.y + d.target.y) / 2) + forkOffset;
 
 						let xhbar = "";
 						if(xmin === d.target.x && d.target.data.mztwin) {
 							// horizontal bar for mztwins
-							let xx = (xmid + d.target.x)/2;
 							let yy = (ymid + (d.target.y-(opts.symbol_size/2)))/2;
-							xhbar = "M" + xx + "," + yy +
-									"L" + (xmid + (xmid-xx)) + " " + yy;
+							let half = opts.symbol_size / (RC.TWIN_BAR_LENGTH_DIVISOR || 6);
+							let start = xmid - half;
+							let end = xmid + half;
+							xhbar = "M" + start + "," + yy + "L" + end + "," + yy;
 						}
 
 						return "M" + (d.source.x) + "," + (d.source.y ) +
@@ -646,15 +700,17 @@ export function build(options) {
 					let pa = utils.getNodeByName(flattenNodes, fatherName);
 
 					if(ma && pa && ma.depth !== pa.depth) {
-						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
+						let forkY = ((ma.y + pa.y) / 2) + forkOffset;
+						return "M" + (d.source.x) + "," + forkY +
 						   "H" + (d.target.x) +
 						   "V" + (d.target.y);
 					}
 				}
 			}
 
+				let forkY = ((d.source.y + d.target.y) / 2) + forkOffset;
 				return "M" + (d.source.x) + "," + (d.source.y ) +
-					   "V" + ((d.source.y + d.target.y) / 2) +
+					   "V" + forkY +
 					   "H" + (d.target.x) +
 					   "V" + (d.target.y);
 			});
@@ -701,6 +757,48 @@ export function build(options) {
 
 function has_gender(sex) {
 	return sex === "M" || sex === "F";
+}
+
+function is_hidden_data(data) {
+	return data && (data.hidden || data.partner_placeholder);
+}
+
+function sanitizeIdFragment(value) {
+	let fragment = (value === undefined || value === null ? "" : String(value)).trim();
+	if(fragment === "")
+		fragment = "id";
+	fragment = fragment.replace(/[^A-Za-z0-9_-]/g, "-")
+					   .replace(/-+/g, "-")
+					   .replace(/^-+/, "");
+	if(fragment === "" || !/^[A-Za-z_]/.test(fragment))
+		fragment = "id-" + fragment;
+	return fragment;
+}
+
+function setHiddenMetadata(obj, key, value) {
+	try {
+		Object.defineProperty(obj, key, {
+			value: value,
+			configurable: true,
+			enumerable: false,
+			writable: true
+		});
+	} catch(_err) {
+		obj[key] = value;
+	}
+}
+
+function getClipPathId(opts, person) {
+	if(!person)
+		return opts.targetDiv + "_clip_id-" + utils.makeid(4);
+	if(person.__clipId && person.__clipSource === person.name)
+		return person.__clipId;
+	let fragment = sanitizeIdFragment(person.name);
+	fragment += "-" + utils.makeid(3);
+	let clipId = opts.targetDiv + "_clip_" + fragment;
+	setHiddenMetadata(person, "__clipSource", person.name);
+	setHiddenMetadata(person, "__clipId", clipId);
+	return clipId;
 }
 
 //adopted in/out brackets

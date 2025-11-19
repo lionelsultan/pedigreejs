@@ -1,6 +1,30 @@
 'use strict';
 
 (function initPedigreeDemo() {
+	function cloneSvgWithInlineStyles(svg) {
+		const clone = svg.cloneNode(true);
+		const sourceElements = svg.querySelectorAll('*');
+		const clonedElements = clone.querySelectorAll('*');
+		const props = [
+			'font-family', 'font-size', 'font-weight', 'font-style',
+			'fill', 'stroke', 'stroke-width', 'stroke-dasharray',
+			'opacity', 'text-anchor', 'shape-rendering'
+		];
+
+		sourceElements.forEach((sourceEl, index) => {
+			const cloneEl = clonedElements[index];
+			if(!cloneEl) return;
+			const computed = window.getComputedStyle(sourceEl);
+			let styleText = props.map(prop => {
+				let value = computed.getPropertyValue(prop);
+				return value ? `${prop}:${value}` : '';
+			}).filter(Boolean).join(';');
+			if(styleText)
+				cloneEl.setAttribute('style', styleText);
+		});
+		return clone;
+	}
+
 	function boot() {
 		if (pedigreejs.pedigreejs_utils.isIE()) {
 			const script = document.createElement('script');
@@ -251,21 +275,28 @@
 			if (svgElement) {
 				const canvas = document.createElement('canvas');
 				const ctx = canvas.getContext('2d');
-				const svgData = new XMLSerializer().serializeToString(svgElement);
-				const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-				const img = new Image();
-				const url = URL.createObjectURL(svgBlob);
-				
-				img.onload = function() {
-					canvas.width = img.width;
-					canvas.height = img.height;
-					ctx.drawImage(img, 0, 0);
-					
-					canvas.toBlob(function(blob) {
-						const link = document.createElement('a');
-						const pngUrl = URL.createObjectURL(blob);
-						link.href = pngUrl;
-						link.download = 'pedigree.png';
+				const svgClone = cloneSvgWithInlineStyles(svgElement);
+				const svgData = new XMLSerializer().serializeToString(svgClone);
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const img = new Image();
+                const url = URL.createObjectURL(svgBlob);
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    canvas.toBlob(function(blob) {
+                        if (!blob) {
+                            showToast('PNG export blocked (CORS/security). Try hosting assets locally.', 'Export error');
+                            window.URL.revokeObjectURL(url);
+                            return;
+                        }
+                        const link = document.createElement('a');
+                        const pngUrl = URL.createObjectURL(blob);
+                        link.href = pngUrl;
+                        link.download = 'pedigree.png';
 						document.body.appendChild(link);
 						link.click();
 						setTimeout(function() {

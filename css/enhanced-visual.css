@@ -129,39 +129,35 @@ header {
   cursor: pointer;
 }
 
-.person:hover {
+.person:hover .person-shape {
   filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4));
-  transform: scale(1.05);
 }
 
-.person rect,
-.person circle {
-  stroke-width: 2.5;
-  stroke: var(--pedigree-primary);
-  fill: white;
+.person .person-shape {
   transition: all var(--animation-duration) var(--animation-ease);
 }
 
-.person:hover rect,
-.person:hover circle {
-  stroke: var(--pedigree-primary-light);
-  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
-}
-
 /* Disease Status Colors with Gradients */
-.person[data-breast-cancer="true"] rect,
-.person[data-breast-cancer="true"] circle {
+.person[data-breast-cancer="true"] .person-shape,
+.person[data-breast-cancer="true"] .pienode,
+.person[data-breast-cancer2="true"] .person-shape,
+.person[data-breast-cancer2="true"] .pienode {
   fill: url(#breastCancerGradient);
 }
 
-.person[data-ovarian-cancer="true"] rect,
-.person[data-ovarian-cancer="true"] circle {
+.person[data-ovarian-cancer="true"] .person-shape,
+.person[data-ovarian-cancer="true"] .pienode {
   fill: url(#ovarianCancerGradient);
 }
 
-.person[data-prostate-cancer="true"] rect,
-.person[data-prostate-cancer="true"] circle {
+.person[data-prostate-cancer="true"] .person-shape,
+.person[data-prostate-cancer="true"] .pienode {
   fill: url(#prostateCancerGradient);
+}
+
+.person[data-pancreatic-cancer="true"] .person-shape,
+.person[data-pancreatic-cancer="true"] .pienode {
+  fill: url(#pancreaticCancerGradient);
 }
 
 /* Enhanced Buttons */
