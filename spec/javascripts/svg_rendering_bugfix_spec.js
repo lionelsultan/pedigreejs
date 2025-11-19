@@ -19,10 +19,10 @@ describe('SVG Rendering Bugfix Tests', function() {
 		$('body').append("<div id='pedigree_a'></div>");
 		$('body').append("<div id='pedigree_b'></div>");
 
-		// Simple dataset
+		// Simple dataset with diseases (for clipPath generation)
 		dataset = [
-			{"name": "m1", "sex": "M", "top_level": true},
-			{"name": "f1", "sex": "F", "top_level": true},
+			{"name": "m1", "sex": "M", "top_level": true, "affected": true},
+			{"name": "f1", "sex": "F", "top_level": true, "breast_cancer": true},
 			{"name": "ch1", "sex": "F", "mother": "f1", "father": "m1", "proband": true}
 		];
 
@@ -133,7 +133,7 @@ describe('SVG Rendering Bugfix Tests', function() {
 			let dataset_adopted = [
 				{"name": "m1", "sex": "M", "top_level": true},
 				{"name": "f1", "sex": "F", "top_level": true},
-				{"name": "adopted", "sex": "M", "mother": "f1", "father": "m1", "noparents": true}
+				{"name": "adopted", "sex": "M", "mother": "f1", "father": "m1", "adopted_in": true}
 			];
 
 			// Build with small symbol_size
@@ -172,7 +172,7 @@ describe('SVG Rendering Bugfix Tests', function() {
 			let dataset_adopted = [
 				{"name": "m1", "sex": "M", "top_level": true},
 				{"name": "f1", "sex": "F", "top_level": true},
-				{"name": "adopted", "sex": "M", "mother": "f1", "father": "m1", "noparents": true}
+				{"name": "adopted", "sex": "M", "mother": "f1", "father": "m1", "adopted_in": true}
 			];
 
 			opts1.dataset = dataset_adopted;
@@ -183,9 +183,9 @@ describe('SVG Rendering Bugfix Tests', function() {
 				pedigree.build(opts1);
 			}).not.toThrow();
 
-			// Adopted brackets should be rendered
-			let links = $('#pedigree_a svg .ped_link');
-			expect(links.length).toBeGreaterThan(0);
+			// Adopted brackets should be rendered (brackets are paths on nodes, not links)
+			let nodes = $('#pedigree_a svg .node.adopted');
+			expect(nodes.length).toBeGreaterThan(0);
 		});
 
 		it('should maintain correct bracket proportions across different symbol sizes', function() {
@@ -199,7 +199,7 @@ describe('SVG Rendering Bugfix Tests', function() {
 					dataset: [
 						{"name": "m", "sex": "M", "top_level": true},
 						{"name": "f", "sex": "F", "top_level": true},
-						{"name": "a", "sex": "M", "mother": "f", "father": "m", "noparents": true}
+						{"name": "a", "sex": "M", "mother": "f", "father": "m", "adopted_in": true}
 					],
 					width: 400,
 					height: 300,
@@ -234,8 +234,8 @@ describe('SVG Rendering Bugfix Tests', function() {
 			expect($('#pedigree_b svg').length).toBe(1);
 
 			// Both should have correct number of nodes
-			expect($('#pedigree_a svg g.person').length).toBe(3);  // m1, f1, ch1
-			expect($('#pedigree_b svg g.person').length).toBe(3);
+			expect($('#pedigree_a svg .node:not(.hidden)').length).toBe(3);  // m1, f1, ch1
+			expect($('#pedigree_b svg .node:not(.hidden)').length).toBe(3);
 
 			// Check clipPath uniqueness (critical!)
 			let allIds = [];
@@ -277,7 +277,7 @@ describe('SVG Rendering Bugfix Tests', function() {
 			pedigree.build(opts1);
 
 			expect($('#pedigree_a svg').length).toBe(1);
-			expect($('#pedigree_a svg g.person').length).toBe(3);
+			expect($('#pedigree_a svg .node:not(.hidden)').length).toBe(3);
 
 			// ClipPaths should exist (even with new prefix system)
 			expect($('#pedigree_a svg clipPath').length).toBeGreaterThan(0);

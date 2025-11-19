@@ -4389,6 +4389,116 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
+	 * Rendering Constants for PedigreeJS SVG Generation
+	 *
+	 * This module centralizes all "magic numbers" used in SVG rendering to improve
+	 * code maintainability and allow easier customization.
+	 *
+	 * @module rendering-constants
+	 * @version 4.0.0-rc1
+	 * @date 2025-11-19
+	 */
+
+	/**
+	 * SVG rendering constants
+	 * All factors and offsets used in pedigree.js for calculating positions, sizes, and styling
+	 */
+	const RENDERING_CONSTANTS = {
+	  // ========================================
+	  // NODE SEPARATION (tree layout)
+	  // ========================================
+
+	  /**
+	   * Separation factor for siblings with same parents
+	   * Used in D3 tree layout to space nodes horizontally
+	   */
+	  SEPARATION_SAME_PARENT: 1.2,
+	  /**
+	   * Separation factor for siblings with different parents
+	   * Larger spacing for half-siblings or nodes from different families
+	   */
+	  SEPARATION_DIFFERENT: 2.2,
+	  // ========================================
+	  // SYMBOL SIZING
+	  // ========================================
+
+	  /**
+	   * Extra size added to symbol border path
+	   * Ensures border is slightly larger than symbol for visual clarity
+	   */
+	  SYMBOL_BORDER_EXTRA: 2,
+	  // ========================================
+	  // ADOPTED BRACKETS (adopted_in/adopted_out)
+	  // ========================================
+
+	  /**
+	   * Horizontal offset for bracket start position
+	   * Bracket X position = -(symbol_size * this factor)
+	   * Value 0.66 positions bracket 2/3 of symbol width from center
+	   */
+	  BRACKET_X_OFFSET_FACTOR: 0.66,
+	  /**
+	   * Vertical offset for bracket start position
+	   * Bracket Y position = -(symbol_size * this factor)
+	   * Value 0.64 positions bracket slightly above center
+	   */
+	  BRACKET_Y_OFFSET_FACTOR: 0.64,
+	  /**
+	   * Bracket indent (horizontal depth)
+	   * Indent = symbol_size / this value
+	   * Value 4 = bracket indent is 1/4 of symbol width
+	   */
+	  BRACKET_INDENT_DIVISOR: 4,
+	  /**
+	   * Bracket height scaling factor
+	   * Height = symbol_size * this factor
+	   * Value 1.3 gives good visual proportion across all symbol sizes
+	   * (Previously was hardcoded 1.28, now explicit for clarity)
+	   */
+	  BRACKET_HEIGHT_FACTOR: 1.3,
+	  // ========================================
+	  // DECEASED STATUS LINE (diagonal stroke)
+	  // ========================================
+
+	  /**
+	   * Dead status line size factor
+	   * Line length = symbol_size * this factor
+	   * Value 0.6 = line is 60% of symbol width
+	   */
+	  DEAD_LINE_SIZE_FACTOR: 0.6,
+	  // ========================================
+	  // PARTNER LINKS (relationship lines)
+	  // ========================================
+
+	  /**
+	   * Vertical offset for consanguinity double line
+	   * Offset in pixels between the two parallel lines
+	   */
+	  CONSANGUINITY_LINE_OFFSET: 3,
+	  // ========================================
+	  // PROBAND ARROW (indicator arrow)
+	  // ========================================
+
+	  /**
+	   * Proband arrow horizontal position factor
+	   * Arrow X offset = symbol_size / this factor
+	   * Value 0.7 positions arrow ~1.4x symbol width from center
+	   */
+	  ARROW_X_DIVISOR: 0.7,
+	  /**
+	   * Proband arrow vertical position factor
+	   * Arrow Y offset = symbol_size / this factor
+	   * Value 1.4 positions arrow ~0.7x symbol height from center
+	   */
+	  ARROW_Y_DIVISOR: 1.4,
+	  /**
+	   * Proband arrow head size factor
+	   * Arrow head size = symbol_size / this value
+	   * Value 6 = arrow head is 1/6th of symbol size
+	   */
+	  ARROW_HEAD_SIZE_DIVISOR: 6};
+
+	/**
 	/* © 2023 University of Cambridge
 	/* SPDX-FileCopyrightText: 2023 University of Cambridge
 	/* SPDX-License-Identifier: GPL-3.0-or-later
@@ -4479,6 +4589,19 @@ var pedigreejs = (function (exports) {
 	    font_weight: 700,
 	    background: "#FAFAFA",
 	    node_background: '#fdfdfd',
+	    // Color options (Phase 3: Couleurs Configurables)
+	    node_border_color: 'darkgrey',
+	    node_border_color_with_data: '#303030',
+	    node_border_color_no_data: 'grey',
+	    link_color: '#000',
+	    link_debug_color: 'pink',
+	    affected_fill_color: 'darkgrey',
+	    clash_indicator_color: '#D5494A',
+	    dead_line_color: 'black',
+	    // FIX: Interactive feedback colors
+	    hover_color: '#FF5722',
+	    // FIX: Exclude fill color configurable (Phase 4 Critical Fix #5)
+	    exclude_fill_color: 'lightgrey',
 	    validate: true,
 	    DEBUG: false,
 	    VERBOSE: false
@@ -4497,9 +4620,14 @@ var pedigreejs = (function (exports) {
 	  opts.dataset = group_top_level(opts.dataset);
 	  if (opts.VERBOSE) print_opts(opts);
 	  let svg_dimensions = get_svg_dimensions(opts);
-	  let svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height);
-	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).attr("stroke", "darkgrey").attr("fill", opts.background) // or none
+	  let svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height)
+	  // FIX: Accessibilité ARIA (WCAG 2.1 conformité)
+	  .attr("role", "img").attr("aria-label", "Diagramme de pedigree familial avec " + opts.dataset.length + " personne" + (opts.dataset.length > 1 ? "s" : "")).attr("aria-describedby", opts.targetDiv + "_desc");
+	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).attr("stroke", opts.node_border_color).attr("fill", opts.background) // or none
 	  .attr("stroke-width", 1);
+
+	  // FIX: Description pour lecteurs d'écran
+	  svg.append("desc").attr("id", opts.targetDiv + "_desc").text("Arbre généalogique interactif montrant les relations familiales, les statuts de santé et les informations génétiques. " + "Utilisez la souris ou les touches Tab/Entrée pour naviguer entre les personnes.");
 	  let ped = svg.append("g").attr("class", "diagram");
 
 	  // Phase 3.3.2: Indicateur visuel mode DEBUG
@@ -4521,11 +4649,11 @@ var pedigreejs = (function (exports) {
 	  root._dataset = opts.dataset;
 	  roots[opts.targetDiv] = root;
 
-	  // / get score at each depth used to adjust node separation
+	  // get score at each depth used to adjust node separation
 	  let tree_dimensions = get_tree_dimensions(opts);
 	  if (opts.DEBUG) console.log('opts.width=' + svg_dimensions.width + ' width=' + tree_dimensions.width + ' opts.height=' + svg_dimensions.height + ' height=' + tree_dimensions.height);
 	  let treemap = d3.tree().separation(function (a, b) {
-	    return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
+	    return a.parent === b.parent || a.data.hidden || b.data.hidden ? RENDERING_CONSTANTS.SEPARATION_SAME_PARENT : RENDERING_CONSTANTS.SEPARATION_DIFFERENT;
 	  }).size([tree_dimensions.width, tree_dimensions.height]);
 	  let nodes = treemap(root.sort(function (a, b) {
 	    return a.data.id - b.data.id;
@@ -4543,8 +4671,72 @@ var pedigreejs = (function (exports) {
 	  let ptrLinkNodes = linkNodes(flattenNodes, partners);
 	  let clashes = check_ptr_links(opts, ptrLinkNodes); // check for crossing of partner lines (Phase 3.1.2)
 
-	  let node = ped.selectAll(".node").data(nodes.descendants()).enter().append("g").attr("transform", function (d, _i) {
+	  let node = ped.selectAll(".node").data(nodes.descendants()).enter().append("g").attr("class", function (d) {
+	    let classes = ["node"];
+	    if (d.data.sex === 'M') classes.push("male");else if (d.data.sex === 'F') classes.push("female");else classes.push("unknown-sex");
+	    if (d.data.proband) classes.push("proband");
+	    if (d.data.hidden) classes.push("hidden");
+	    if (d.data.affected) classes.push("affected");
+	    if (d.data.adopted_in || d.data.adopted_out) classes.push("adopted");
+	    if (d.data.status === "1" || d.data.status === 1) classes.push("deceased");
+	    return classes.join(" ");
+	  }).attr("transform", function (d, _i) {
 	    return "translate(" + d.x + "," + d.y + ")";
+	  })
+	  // FIX: Accessibilité - ARIA attributes pour navigation clavier
+	  .attr("role", function (d) {
+	    return d.data.hidden ? null : "button";
+	  }).attr("tabindex", function (d) {
+	    return d.data.hidden ? null : "0";
+	  }).attr("aria-label", function (d) {
+	    if (d.data.hidden) return null;
+	    let label = d.data.display_name || d.data.name;
+	    label += ", " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Sexe inconnu');
+	    if (d.data.age) label += ", Âge " + d.data.age + " ans";
+	    if (d.data.yob) label += ", Né en " + d.data.yob;
+	    if (d.data.status === "1" || d.data.status === 1) label += ", Décédé";
+	    if (d.data.affected) label += ", Affecté";
+	    if (d.data.proband) label += ", Proband";
+	    return label;
+	  });
+
+	  // FIX: Tooltips title pour accessibilité et UX
+	  node.filter(function (d) {
+	    return !d.data.hidden;
+	  }).append("title").text(function (d) {
+	    let text = d.data.display_name || d.data.name;
+	    if (d.data.sex) text += "\nSexe: " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Inconnu');
+	    if (d.data.age) text += "\nÂge: " + d.data.age + " ans";
+	    if (d.data.yob) text += "\nNé(e) en: " + d.data.yob;
+	    if (d.data.status === "1" || d.data.status === 1) text += "\nStatut: Décédé";
+	    if (d.data.affected) text += "\nAffecté: Oui";
+	    if (d.data.proband) text += "\n★ Proband";
+	    return text;
+	  });
+
+	  // FIX: Interactive feedback - hover states et cursor
+	  node.filter(function (d) {
+	    return !d.data.hidden;
+	  }).style("cursor", "pointer").on("mouseover", function (_event, _d) {
+	    d3.select(this).select("path").filter(function () {
+	      // Sélectionner seulement le path border, pas les brackets ou pie
+	      return !d3.select(this).attr("clip-path") && d3.select(this).attr("shape-rendering");
+	    }).attr("stroke", opts.hover_color).attr("stroke-width", function () {
+	      // FIX: Hover width = 2x thicker than with-data border (consistent scaling)
+	      let baseWidth = opts.symbol_size * 0.05;
+	      let withDataWidth = baseWidth * 1.5;
+	      return withDataWidth * 2; // 2x for emphasis (= symbol_size * 0.15)
+	    });
+	  }).on("mouseout", function (event, d) {
+	    d3.select(this).select("path").filter(function () {
+	      return !d3.select(this).attr("clip-path") && d3.select(this).attr("shape-rendering");
+	    }).attr("stroke", function () {
+	      return d.data.age && d.data.yob && !d.data.exclude ? opts.node_border_color_with_data : opts.node_border_color_no_data;
+	    }).attr("stroke-width", function () {
+	      // FIX: Use symbol_size-based scaling (same as initial border)
+	      let baseWidth = opts.symbol_size * 0.05;
+	      return d.data.age && d.data.yob && !d.data.exclude ? baseWidth * 1.5 : baseWidth;
+	    });
 	  });
 
 	  // provide a border to the node
@@ -4553,14 +4745,16 @@ var pedigreejs = (function (exports) {
 	  }).append("path").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
 	    return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
 	  }).attr("d", d3.symbol().size(function (_d) {
-	    return opts.symbol_size * opts.symbol_size + 2;
+	    return opts.symbol_size * opts.symbol_size + RENDERING_CONSTANTS.SYMBOL_BORDER_EXTRA;
 	  }).type(function (d) {
 	    if (d.data.miscarriage || d.data.termination) return d3.symbolTriangle;
 	    return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;
 	  })).attr("stroke", function (d) {
-	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+	    return d.data.age && d.data.yob && !d.data.exclude ? opts.node_border_color_with_data : opts.node_border_color_no_data;
 	  }).attr("stroke-width", function (d) {
-	    return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
+	    // FIX: Use symbol_size-based scaling instead of em units (Phase 4 Critical Fix #3)
+	    let baseWidth = opts.symbol_size * 0.05; // 5% of symbol_size
+	    return d.data.age && d.data.yob && !d.data.exclude ? baseWidth * 1.5 : baseWidth;
 	  }).attr("stroke-dasharray", function (d) {
 	    return !d.data.exclude ? null : "3, 3";
 	  }).attr("fill", "none");
@@ -4571,9 +4765,11 @@ var pedigreejs = (function (exports) {
 	    return !(d.data.hidden && !opts.DEBUG);
 	  }).append("clipPath").attr("id", function (d) {
 	    return opts.targetDiv + "_clip_" + d.data.name;
-	  }).append("path").attr("class", "node").attr("transform", function (d) {
+	  }).append("path").attr("class", "clippath-shape").attr("transform", function (d) {
 	    return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
 	  }).attr("d", d3.symbol().size(function (d) {
+	    // Hidden nodes get smaller clipPath (1/5th size) for compact DEBUG rendering
+	    // Note: Hidden nodes should not have diseases/pie charts, so this is primarily for structure
 	    if (d.data.hidden) return opts.symbol_size * opts.symbol_size / 5;
 	    return opts.symbol_size * opts.symbol_size;
 	  }).type(function (d) {
@@ -4613,9 +4809,9 @@ var pedigreejs = (function (exports) {
 	    return "url(#" + opts.targetDiv + "_clip_" + d.data.id + ")";
 	  }) // clip the rectangle (with prefix)
 	  .attr("class", "pienode").attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size)).attr("fill", function (d, i) {
-	    if (d.data.exclude) return 'lightgrey';
+	    if (d.data.exclude) return opts.exclude_fill_color; // FIX: Configurable exclude color
 	    if (d.data.ncancers === 0) {
-	      if (d.data.affected) return 'darkgrey';
+	      if (d.data.affected) return opts.affected_fill_color;
 	      return opts.node_background;
 	    }
 	    return opts.diseases[i].colour;
@@ -4625,14 +4821,15 @@ var pedigreejs = (function (exports) {
 	  node.filter(function (d) {
 	    return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);
 	  }).append("path").attr("d", function (_d) {
-	    let dx = -(opts.symbol_size * 0.66);
-	    let dy = -(opts.symbol_size * 0.64);
-	    let indent = opts.symbol_size / 4;
+	    let dx = -(opts.symbol_size * RENDERING_CONSTANTS.BRACKET_X_OFFSET_FACTOR);
+	    let dy = -(opts.symbol_size * RENDERING_CONSTANTS.BRACKET_Y_OFFSET_FACTOR);
+	    let indent = opts.symbol_size / RENDERING_CONSTANTS.BRACKET_INDENT_DIVISOR;
 	    return get_bracket(dx, dy, indent, opts) + get_bracket(-dx, dy, -indent, opts);
 	  }).attr("stroke", function (d) {
-	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+	    return d.data.age && d.data.yob && !d.data.exclude ? opts.node_border_color_with_data : opts.node_border_color_no_data;
 	  }).attr("stroke-width", function (_d) {
-	    return ".1em";
+	    // FIX: Use symbol_size-based scaling for brackets (same base as thin border)
+	    return opts.symbol_size * 0.05;
 	  }).attr("stroke-dasharray", function (d) {
 	    return !d.data.exclude ? null : "3, 3";
 	  }).attr("fill", "none");
@@ -4640,12 +4837,12 @@ var pedigreejs = (function (exports) {
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
 	    return d.data.status === "1" || d.data.status === 1;
-	  }).append('line').attr("stroke", "black").attr("x1", function (_d, _i) {
+	  }).append('line').attr("stroke", opts.dead_line_color).attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {
-	    return 0.6 * opts.symbol_size;
+	    return RENDERING_CONSTANTS.DEAD_LINE_SIZE_FACTOR * opts.symbol_size;
 	  }).attr("x2", function (_d, _i) {
-	    return 0.6 * opts.symbol_size;
+	    return RENDERING_CONSTANTS.DEAD_LINE_SIZE_FACTOR * opts.symbol_size;
 	  }).attr("y2", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  });
@@ -4682,7 +4879,17 @@ var pedigreejs = (function (exports) {
 	    }
 	    return path;
 	  };
-	  partners = ped.selectAll(".partner").data(ptrLinkNodes).enter().insert("path", "g").attr("fill", "none").attr("stroke", "#000").attr("shape-rendering", "auto").attr('d', function (d, _i) {
+	  partners = ped.selectAll(".partner").data(ptrLinkNodes).enter().insert("path", "g").attr("class", function (d) {
+	    let classes = ["partner", "partner-link"];
+	    let node1 = getNodeByName(flattenNodes, d.mother.data.name);
+	    let node2 = getNodeByName(flattenNodes, d.father.data.name);
+	    let consanguity$1 = consanguity(node1, node2, opts);
+	    let divorced = d.mother.data.divorced && d.mother.data.divorced === d.father.data.name;
+	    if (consanguity$1) classes.push("consanguineous");
+	    if (divorced) classes.push("divorced");
+	    if (d.mother.data.sex === d.father.data.sex && d.mother.data.sex !== 'U') classes.push("same-sex");
+	    return classes.join(" ");
+	  }).attr("fill", "none").attr("stroke", opts.link_color).attr("shape-rendering", "auto").attr('d', function (d, _i) {
 	    let node1 = getNodeByName(flattenNodes, d.mother.data.name);
 	    let node2 = getNodeByName(flattenNodes, d.father.data.name);
 	    let consanguity$1 = consanguity(node1, node2, opts);
@@ -4713,12 +4920,17 @@ var pedigreejs = (function (exports) {
 	      path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
 	    }
 	    let divorce_path = "";
-	    if (divorced && !clash) divorce_path = "M" + (x1 + (x2 - x1) * .66 + 6) + "," + (dy1 - 6) + "L" + (x1 + (x2 - x1) * .66 - 6) + "," + (dy1 + 6) + "M" + (x1 + (x2 - x1) * .66 + 10) + "," + (dy1 - 6) + "L" + (x1 + (x2 - x1) * .66 - 2) + "," + (dy1 + 6);
+	    if (divorced) {
+	      // FIX: Draw divorce symbol even with clash (Phase 4.1)
+	      // Adjust Y position when clash to avoid overlap
+	      let divorce_y_offset = clash ? 8 : 0;
+	      divorce_path = "M" + (x1 + (x2 - x1) * .66 + 6) + "," + (dy1 - 6 - divorce_y_offset) + "L" + (x1 + (x2 - x1) * .66 - 6) + "," + (dy1 + 6 - divorce_y_offset) + "M" + (x1 + (x2 - x1) * .66 + 10) + "," + (dy1 - 6 - divorce_y_offset) + "L" + (x1 + (x2 - x1) * .66 - 2) + "," + (dy1 + 6 - divorce_y_offset);
+	    }
 	    if (consanguity$1) {
 	      // consanguinous, draw double line between partners
 	      dy1 = d.mother.x < d.father.x ? d.mother.y : d.father.y;
 	      dy2 = d.mother.x < d.father.x ? d.father.y : d.mother.y;
-	      let cshift = 3;
+	      let cshift = RENDERING_CONSTANTS.CONSANGUINITY_LINE_OFFSET;
 	      if (Math.abs(dy1 - dy2) > 0.1) {
 	        // DIFFERENT LEVEL
 	        return "M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 + "M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
@@ -4737,33 +4949,43 @@ var pedigreejs = (function (exports) {
 	      // Vérifier si ce lien a un clash
 	      let hasClash = clashes.some(c => c.node.mother.data.name === d.mother.data.name && c.node.father.data.name === d.father.data.name);
 	      if (hasClash) {
-	        d3.select(this).attr('stroke', '#D5494A') // Rouge
+	        d3.select(this).attr('stroke', opts.clash_indicator_color) // Rouge
 	        .attr('stroke-width', 2.5).attr('stroke-dasharray', '5,5').append('title').text('⚠️ Avertissement : Ce lien croise d\'autres liens de partenaires. Le tracé a été ajusté pour éviter les chevauchements.');
 	      }
 	    });
 
+	    // FIX: Framework compatibility - Use D3 foreignObject instead of jQuery DOM manipulation
 	    // Ajouter un message d'avertissement global si clashes détectés
 	    if (!opts.DEBUG) {
 	      // Enlever l'ancien warning s'il existe
-	      $('#' + opts.targetDiv).parent().find('.pedigree-warning').remove();
-	      // Ajouter le nouveau warning
-	      $('#' + opts.targetDiv).parent().prepend('<div class="pedigree-warning" style="background:#FFF3CD;border:1px solid #FFC107;padding:10px;margin-bottom:10px;border-radius:4px;font-size:14px;">' + '<strong>⚠️ Avertissement :</strong> ' + clashes.length + ' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.' + '</div>');
+	      svg.select('.pedigree-warning-container').remove();
+
+	      // Ajouter le nouveau warning via foreignObject (compatible React/Vue)
+	      let warningContainer = svg.append("foreignObject").attr("class", "pedigree-warning-container").attr("x", 10).attr("y", 10).attr("width", svg_dimensions.width - 20).attr("height", 60);
+	      warningContainer.append("xhtml:div").attr("class", "pedigree-warning").style("background", "#FFF3CD").style("border", "1px solid #FFC107").style("padding", "10px").style("border-radius", "4px").style("font-size", "14px").html('<strong>⚠️ Avertissement :</strong> ' + clashes.length + ' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.');
 	    }
 	  } else {
 	    // Pas de clashes, enlever le warning s'il existe
-	    $('#' + opts.targetDiv).parent().find('.pedigree-warning').remove();
+	    svg.select('.pedigree-warning-container').remove();
 	  }
 
 	  // links to children
 	  ped.selectAll(".link").data(root.links(nodes.descendants())).enter().filter(function (d) {
 	    // filter unless debug is set
 	    return opts.DEBUG || d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden;
-	  }).insert("path", "g").attr("fill", "none").attr("stroke-width", function (d, _i) {
+	  }).insert("path", "g").attr("class", function (d) {
+	    let classes = ["link", "child-link"];
+	    if (d.target.data.adopted_in) classes.push("adopted-link");
+	    if (d.target.data.mztwin) classes.push("mz-twin-link");
+	    if (d.target.data.dztwin) classes.push("dz-twin-link");
+	    if (d.target.data.noparents || d.source.parent === null || d.target.data.hidden) classes.push("debug-link");
+	    return classes.join(" ");
+	  }).attr("fill", "none").attr("stroke-width", function (d, _i) {
 	    if (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden) return 1;
 	    return opts.DEBUG ? 2 : 1;
 	  }).attr("stroke", function (d, _i) {
-	    if (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden) return 'pink';
-	    return "#000";
+	    if (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden) return opts.link_debug_color;
+	    return opts.link_color;
 	  }).attr("stroke-dasharray", function (d, _i) {
 	    if (!d.target.data.adopted_in) return null;
 	    let dash_len = Math.abs(d.source.y - (d.source.y + d.target.y) / 2);
@@ -4823,9 +5045,12 @@ var pedigreejs = (function (exports) {
 	    // Check if probandNode exists (may be undefined if tree not fully built)
 	    if (probandNode) {
 	      let triid = "triangle" + makeid(3);
+	      // FIX: Scale arrow head with symbol_size (Phase 4.4)
+	      let arrowHeadSize = Math.max(opts.symbol_size / RENDERING_CONSTANTS.ARROW_HEAD_SIZE_DIVISOR, 6);
+	      let arrowRefPoint = arrowHeadSize / 2;
 	      ped.append("svg:defs").append("svg:marker") // arrow head
-	      .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").attr("fill", "black");
-	      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.4).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
+	      .attr("id", triid).attr("refX", arrowRefPoint).attr("refY", arrowRefPoint).attr("markerWidth", arrowHeadSize * 2).attr("markerHeight", arrowHeadSize * 2).attr("orient", "auto").append("path").attr("d", "M 0 0 " + arrowHeadSize + " " + arrowRefPoint + " 0 " + arrowHeadSize + " " + arrowHeadSize / 4 + " " + arrowRefPoint).attr("fill", "black");
+	      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / RENDERING_CONSTANTS.ARROW_X_DIVISOR).attr("y1", probandNode.y + opts.symbol_size / RENDERING_CONSTANTS.ARROW_Y_DIVISOR).attr("x2", probandNode.x - opts.symbol_size / RENDERING_CONSTANTS.ARROW_Y_DIVISOR).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
 	    }
 	  }
 
@@ -4844,9 +5069,9 @@ var pedigreejs = (function (exports) {
 	// Instead of hardcoded 1.28, use a proportional factor that works for all sizes
 	function get_bracket(dx, dy, indent, opts) {
 	  // Bracket height scales with symbol: small symbols = shorter brackets, large = taller
-	  // Factor 1.3 gives good visual balance across sizes (was 1.28, close but now explicit)
-	  let bracket_height = opts.symbol_size * 1.3;
-	  return "M" + (dx + indent) + "," + dy + "L" + dx + " " + dy + "L" + dx + " " + (dy + bracket_height) + "L" + dx + " " + (dy + bracket_height) + "L" + (dx + indent) + "," + (dy + bracket_height);
+	  // Factor defined in RENDERING_CONSTANTS gives good visual balance across sizes
+	  let bracket_height = opts.symbol_size * RENDERING_CONSTANTS.BRACKET_HEIGHT_FACTOR;
+	  return "M" + (dx + indent) + "," + dy + "L" + dx + " " + dy + "L" + dx + " " + (dy + bracket_height) + "L" + (dx + indent) + "," + (dy + bracket_height);
 	}
 
 	// check for crossing of partner lines
