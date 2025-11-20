@@ -220,10 +220,11 @@ describe('validation.js module', function() {
 			expect(unconnected).toContain("p2");
 		});
 
-		it('should throw error for empty dataset', function() {
+		it('should handle empty dataset without error', function() {
 			expect(function() {
-				validation.unconnected([]);
-			}).toThrowError("empty pedigree data set");
+				let unconnected = validation.unconnected([]);
+				expect(unconnected.length).toBe(0);
+			}).not.toThrow();
 		});
 
 		it('should handle complex family connections', function() {

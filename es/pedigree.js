@@ -172,8 +172,12 @@ export function build(options) {
 	let ptrLinkNodes = utils.linkNodes(flattenNodes, partners);
 	let clashes = check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines (Phase 3.1.2)
 
+	let visibleNodes = flattenNodes.filter(function(d) {
+		return !d.data.hidden || d.data.name === 'hidden_root';
+	});
+
 	let node = ped.selectAll(".node")
-				  .data(nodes.descendants())
+				  .data(visibleNodes)
 				  .enter()
 				  .append("g")
 					.attr("transform", function(d, _i) {

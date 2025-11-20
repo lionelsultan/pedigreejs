@@ -14,13 +14,24 @@ describe('Zoom Module', function() {
 		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "proband": true}
 	];
 
+	function rebuildZoomFixture(overrides, datasetOverride) {
+		$('#zoom_test').empty();
+		let next = $.extend({}, opts, overrides);
+		let source = (datasetOverride !== undefined ? datasetOverride : ds1);
+		next.dataset = pedigree_util.copy_dataset(source);
+		pedigreejs.build(next);
+		opts = next;
+		return next;
+	}
+
 	beforeEach(function() {
 		$('body').append("<div id='zoom_test'></div>");
 		opts = {
 			targetDiv: 'zoom_test',
+			btn_target: 'zoom_history',
 			width: 600,
 			height: 500,
-			dataset: ds1,
+			dataset: pedigree_util.copy_dataset(ds1),
 			symbol_size: 35,
 			zoomIn: 1,
 			zoomOut: 10,
@@ -50,14 +61,9 @@ describe('Zoom Module', function() {
 		});
 
 		it('should handle empty pedigree', function() {
-			var emptyOpts = $.extend({}, opts);
-			emptyOpts.dataset = [];
-			$('#zoom_test').empty();
-
-			// Should not throw
 			expect(function() {
-				pedigreejs.build(emptyOpts);
-				zoom.get_bounds(emptyOpts);
+				rebuildZoomFixture({}, []);
+				zoom.get_bounds(opts);
 			}).not.toThrow();
 		});
 	});
@@ -99,10 +105,7 @@ describe('Zoom Module', function() {
 		});
 
 		it('should work with different viewport sizes', function() {
-			opts.width = 400;
-			opts.height = 300;
-			$('#zoom_test').empty();
-			pedigreejs.build(opts);
+			rebuildZoomFixture({width: 400, height: 300});
 
 			expect(function() {
 				zoom.scale_to_fit(opts);
@@ -120,10 +123,7 @@ describe('Zoom Module', function() {
 		});
 
 		it('should respect zoom extent options', function() {
-			opts.zoomIn = 0.5;
-			opts.zoomOut = 5;
-			$('#zoom_test').empty();
-			pedigreejs.build(opts);
+			rebuildZoomFixture({zoomIn: 0.5, zoomOut: 5});
 			var svg = d3.select("#zoom_test").select("svg");
 
 			expect(function() {
@@ -132,10 +132,7 @@ describe('Zoom Module', function() {
 		});
 
 		it('should filter zoom sources correctly', function() {
-			// Test with wheel disabled
-			opts.zoomSrc = ['button'];
-			$('#zoom_test').empty();
-			pedigreejs.build(opts);
+			rebuildZoomFixture({zoomSrc: ['button']});
 			var svg = d3.select("#zoom_test").select("svg");
 
 			expect(function() {

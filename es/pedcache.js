@@ -12,28 +12,20 @@ let dict_cache = {};
 // Helper function to serialize dataset avoiding circular references
 // D3 adds circular references (parent/children) that can't be stringified directly
 function serialize_dataset(dataset) {
-	try {
-		// Try direct stringification first (for performance)
-		return JSON.stringify(dataset);
-	} catch (e) {
-		// If circular reference error, create a clean copy
-		// Copy only the original data properties, excluding D3-added references
-		let cleanData = dataset.map(function(person) {
-			let clean = {};
-			for (let key in person) {
-				// Skip D3-added properties and circular references
-				if (key !== 'parent' && key !== 'children' && key !== 'data' &&
-					typeof person[key] !== 'function' && typeof person[key] !== 'object') {
-					clean[key] = person[key];
-				} else if (key === 'children' && Array.isArray(person[key])) {
-					// For children array, only store names not full objects
-					clean[key] = person[key].map(c => c.name || c);
-				}
+	const circularKeys = new Set(['parent', 'children', 'data', 'parent_node', 'ancestors']);
+	const seen = new WeakSet();
+	return JSON.stringify(dataset, function replacer(key, value) {
+		if (circularKeys.has(key)) {
+			return undefined;
+		}
+		if (typeof value === 'object' && value !== null) {
+			if (seen.has(value)) {
+				return undefined;
 			}
-			return clean;
-		});
-		return JSON.stringify(cleanData);
-	}
+			seen.add(value);
+		}
+		return value;
+	});
 }
 
 // test if browser storage is supported
@@ -77,12 +69,9 @@ function set_browser_store(opts, name, item) {
 		return sessionStorage.setItem(name, item);
 }
 
-// clear all storage items
+// clear all storage items related to this pedigree instance
 function clear_browser_store(opts) {
-	if(opts.store_type === 'local')
-		return localStorage.clear();
-	else
-		return sessionStorage.clear();
+	clear_pedigree_data(opts);
 }
 
 // remove all storage items with keys that have the pedigree history prefix

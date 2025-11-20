@@ -147,21 +147,17 @@ describe('Dragging Module', function() {
 	});
 
 	describe('rebuild after drag', function() {
-		it('should trigger rebuild event', function(done) {
+		it('should trigger rebuild event', function() {
 			var rebuildTriggered = false;
-
-			$(document).on('rebuild.draggingTest', function() {
+			spyOn(pedigreejs, 'rebuild').and.callFake(function() {
 				rebuildTriggered = true;
 			});
 
+			opts.dataset = pedigree_util.copy_dataset(ds_siblings);
 			// Simulate a rebuild (drag would trigger this)
 			$(document).trigger('rebuild', [opts]);
 
-			setTimeout(function() {
-				expect(rebuildTriggered).toBe(true);
-				$(document).off('rebuild.draggingTest');
-				done();
-			}, 100);
+			expect(rebuildTriggered).toBe(true);
 		});
 	});
 });

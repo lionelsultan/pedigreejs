@@ -33,8 +33,7 @@ var pedigreejs = (function (exports) {
 	    // deceased
 	    return year >= sum;
 	  }
-	  // Phase 3.3.1: Assouplir validation pour éviter faux positifs (anniversaire non encore passé)
-	  return Math.abs(year - sum) <= 2 && year >= sum;
+	  return Math.abs(year - sum) <= 1 && year >= sum;
 	}
 
 	/**
@@ -176,7 +175,7 @@ var pedigreejs = (function (exports) {
 	  if (!target) {
 	    console.warn("No target defined");
 	    if (dataset.length === 0) {
-	      throw new Error("empty pedigree data set");
+	      return [];
 	    }
 	    target = dataset[0];
 	  }
@@ -446,27 +445,20 @@ var pedigreejs = (function (exports) {
 	// Helper function to serialize dataset avoiding circular references
 	// D3 adds circular references (parent/children) that can't be stringified directly
 	function serialize_dataset(dataset) {
-	  try {
-	    // Try direct stringification first (for performance)
-	    return JSON.stringify(dataset);
-	  } catch (e) {
-	    // If circular reference error, create a clean copy
-	    // Copy only the original data properties, excluding D3-added references
-	    let cleanData = dataset.map(function (person) {
-	      let clean = {};
-	      for (let key in person) {
-	        // Skip D3-added properties and circular references
-	        if (key !== 'parent' && key !== 'children' && key !== 'data' && typeof person[key] !== 'function' && typeof person[key] !== 'object') {
-	          clean[key] = person[key];
-	        } else if (key === 'children' && Array.isArray(person[key])) {
-	          // For children array, only store names not full objects
-	          clean[key] = person[key].map(c => c.name || c);
-	        }
+	  const circularKeys = new Set(['parent', 'children', 'data', 'parent_node', 'ancestors']);
+	  const seen = new WeakSet();
+	  return JSON.stringify(dataset, function replacer(key, value) {
+	    if (circularKeys.has(key)) {
+	      return undefined;
+	    }
+	    if (typeof value === 'object' && value !== null) {
+	      if (seen.has(value)) {
+	        return undefined;
 	      }
-	      return clean;
-	    });
-	    return JSON.stringify(cleanData);
-	  }
+	      seen.add(value);
+	    }
+	    return value;
+	  });
 	}
 
 	// test if browser storage is supported
@@ -497,9 +489,9 @@ var pedigreejs = (function (exports) {
 	  if (opts.store_type === 'local') return localStorage.setItem(name, item);else return sessionStorage.setItem(name, item);
 	}
 
-	// clear all storage items
+	// clear all storage items related to this pedigree instance
 	function clear_browser_store(opts) {
-	  if (opts.store_type === 'local') return localStorage.clear();else return sessionStorage.clear();
+	  clear_pedigree_data(opts);
 	}
 
 	// remove all storage items with keys that have the pedigree history prefix
@@ -1163,23 +1155,47 @@ var pedigreejs = (function (exports) {
 
 	// Global state (to be refactored later)
 	let roots = {};
+	const disallowedKeys = ["id", "parent_node", "parent", "children", "data"];
 	function copy_dataset(dataset) {
-	  if (dataset[0].id) {
-	    // sort by id
-	    dataset.sort(function (a, b) {
-	      return !a.id || !b.id ? 0 : a.id > b.id ? 1 : b.id > a.id ? -1 : 0;
-	    });
-	  }
-	  let disallowed = ["id", "parent_node"];
+	  if (!Array.isArray(dataset)) return [];
 	  let newdataset = [];
 	  for (let i = 0; i < dataset.length; i++) {
-	    let obj = {};
-	    for (let key in dataset[i]) {
-	      if (disallowed.indexOf(key) === -1) obj[key] = dataset[i][key];
+	    let entry = dataset[i];
+	    let clone = {};
+	    for (let key in entry) {
+	      if (!Object.prototype.hasOwnProperty.call(entry, key)) continue;
+	      if (disallowedKeys.indexOf(key) > -1) continue;
+	      let value = entry[key];
+	      if (key === 'mother' || key === 'father') {
+	        if (value && typeof value === 'object') clone[key] = value.name || value.id || null;else clone[key] = value;
+	        continue;
+	      }
+	      if (typeof value === 'function') continue;
+	      clone[key] = deepClone(value);
 	    }
-	    newdataset.push(obj);
+	    newdataset.push(clone);
 	  }
 	  return newdataset;
+	}
+	function deepClone(value, seen) {
+	  if (value === null || typeof value !== 'object') return value;
+	  if (seen === undefined) seen = new WeakMap();
+	  if (seen.has(value)) return seen.get(value);
+	  if (Array.isArray(value)) {
+	    let arr = [];
+	    seen.set(value, arr);
+	    for (let i = 0; i < value.length; i++) arr[i] = deepClone(value[i], seen);
+	    return arr;
+	  }
+	  let cloned = {};
+	  seen.set(value, cloned);
+	  for (let key in value) {
+	    if (Object.prototype.hasOwnProperty.call(value, key)) {
+	      if (key === 'parent' || key === 'children' || key === 'data' || key === 'parent_node') continue;
+	      cloned[key] = deepClone(value[key], seen);
+	    }
+	  }
+	  return cloned;
 	}
 
 	// check if the object contains a key with a given prefix
@@ -4089,7 +4105,7 @@ var pedigreejs = (function (exports) {
 	  // Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
 	  let validate_age_yob_data = function (d) {
 	    // Valider age/yob si les deux sont présents
-	    if (d.data.age && d.data.yob && d.data.status) {
+	    if (d.data.age !== undefined && d.data.yob !== undefined && d.data.status !== undefined) {
 	      return validate_age_yob(d.data.age, d.data.yob, d.data.status);
 	    }
 	    return true; // Valide si données manquantes
@@ -4467,7 +4483,10 @@ var pedigreejs = (function (exports) {
 	  let ptrLinkNodes = linkNodes(flattenNodes, partners);
 	  let clashes = check_ptr_links(opts, ptrLinkNodes); // check for crossing of partner lines (Phase 3.1.2)
 
-	  let node = ped.selectAll(".node").data(nodes.descendants()).enter().append("g").attr("transform", function (d, _i) {
+	  let visibleNodes = flattenNodes.filter(function (d) {
+	    return !d.data.hidden || d.data.name === 'hidden_root';
+	  });
+	  let node = ped.selectAll(".node").data(visibleNodes).enter().append("g").attr("transform", function (d, _i) {
 	    return "translate(" + d.x + "," + d.y + ")";
 	  });
 

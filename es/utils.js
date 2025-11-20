@@ -19,22 +19,66 @@ export {
 // Global state (to be refactored later)
 export let roots = {};
 
-export function copy_dataset(dataset) {
-	if(dataset[0].id) { // sort by id
-		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});
-	}
+const disallowedKeys = ["id", "parent_node", "parent", "children", "data"];
 
-	let disallowed = ["id", "parent_node"];
+export function copy_dataset(dataset) {
+	if(!Array.isArray(dataset))
+		return [];
+
 	let newdataset = [];
 	for(let i=0; i<dataset.length; i++){
-		let obj = {};
-		for(let key in dataset[i]) {
-			if(disallowed.indexOf(key) === -1)
-				obj[key] = dataset[i][key];
+		let entry = dataset[i];
+		let clone = {};
+		for(let key in entry) {
+			if(!Object.prototype.hasOwnProperty.call(entry, key))
+				continue;
+			if(disallowedKeys.indexOf(key) > -1)
+				continue;
+
+			let value = entry[key];
+			if(key === 'mother' || key === 'father') {
+				if(value && typeof value === 'object')
+					clone[key] = value.name || value.id || null;
+				else
+					clone[key] = value;
+				continue;
+			}
+			if(typeof value === 'function')
+				continue;
+			clone[key] = deepClone(value);
 		}
-		newdataset.push(obj);
+		newdataset.push(clone);
 	}
 	return newdataset;
+}
+
+function deepClone(value, seen) {
+	if(value === null || typeof value !== 'object')
+		return value;
+
+	if(seen === undefined)
+		seen = new WeakMap();
+	if(seen.has(value))
+		return seen.get(value);
+
+	if(Array.isArray(value)) {
+		let arr = [];
+		seen.set(value, arr);
+		for(let i=0; i<value.length; i++)
+			arr[i] = deepClone(value[i], seen);
+		return arr;
+	}
+
+	let cloned = {};
+	seen.set(value, cloned);
+	for(let key in value) {
+		if(Object.prototype.hasOwnProperty.call(value, key)) {
+			if(key === 'parent' || key === 'children' || key === 'data' || key === 'parent_node')
+				continue;
+			cloned[key] = deepClone(value[key], seen);
+		}
+	}
+	return cloned;
 }
 
 // check if the object contains a key with a given prefix

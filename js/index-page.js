@@ -92,7 +92,7 @@
 
 			const probandIdx  = pedigreejs.pedigreejs_utils.getProbandIndex(data);
 			let sex = 'F';
-			if (probandIdx) {
+			if (probandIdx !== undefined && probandIdx !== null) {
 				sex = data[probandIdx].sex;
 			}
 

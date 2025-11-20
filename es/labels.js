@@ -18,13 +18,15 @@ export function addLabels(opts, node) {
 	let font_size = parseInt(getPx(opts)) + 4;
 
 	// Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
-	let validate_age_yob_data = function(d) {
-		// Valider age/yob si les deux sont présents
-		if(d.data.age && d.data.yob && d.data.status) {
-			return validate_age_yob(d.data.age, d.data.yob, d.data.status);
-		}
-		return true; // Valide si données manquantes
-	};
+		let validate_age_yob_data = function(d) {
+			// Valider age/yob si les deux sont présents
+			if(d.data.age !== undefined &&
+			   d.data.yob !== undefined &&
+			   d.data.status !== undefined) {
+				return validate_age_yob(d.data.age, d.data.yob, d.data.status);
+			}
+			return true; // Valide si données manquantes
+		};
 
 	// display age/yob label first
 	for(let ilab=0; ilab<opts.labels.length; ilab++) {
