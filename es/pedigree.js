@@ -13,6 +13,7 @@ import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
 import {init_dragging} from './dragging.js';
+import {RENDERING_CONSTANTS as RC} from './rendering-constants.js';
 
 // Protection contre les race conditions lors de rebuilds concurrents
 // (Phase 3.1.1 - Correction UX/UI critique)
@@ -74,6 +75,19 @@ export function build(options) {
 		font_weight: 700,
 		background: "#FAFAFA",
 		node_background: '#fdfdfd',
+		// Color options (Phase 3: Couleurs Configurables)
+		node_border_color: 'darkgrey',
+		node_border_color_with_data: '#303030',
+		node_border_color_no_data: 'grey',
+		link_color: '#000',
+		link_debug_color: 'pink',
+		affected_fill_color: 'darkgrey',
+		clash_indicator_color: '#D5494A',
+		dead_line_color: 'black',
+		// FIX: Interactive feedback colors
+		hover_color: '#FF5722',
+		// FIX: Exclude fill color configurable (Phase 4 Critical Fix #5)
+		exclude_fill_color: 'lightgrey',
 		validate: true,
 		DEBUG: false,
 		VERBOSE: false}, options );
@@ -100,16 +114,26 @@ export function build(options) {
 	let svg = d3.select("#"+opts.targetDiv)
 				 .append("svg:svg")
 				 .attr("width", svg_dimensions.width)
-				 .attr("height", svg_dimensions.height);
+				 .attr("height", svg_dimensions.height)
+				 // FIX: Accessibilité ARIA (WCAG 2.1 conformité)
+				 .attr("role", "img")
+				 .attr("aria-label", "Diagramme de pedigree familial avec " + opts.dataset.length + " personne" + (opts.dataset.length > 1 ? "s" : ""))
+				 .attr("aria-describedby", opts.targetDiv + "_desc");
 
 	svg.append("rect")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("rx", 6)
 		.attr("ry", 6)
-		.attr("stroke", "darkgrey")
+		.attr("stroke", opts.node_border_color)
 		.attr("fill", opts.background) // or none
 		.attr("stroke-width", 1);
+
+	// FIX: Description pour lecteurs d'écran
+	svg.append("desc")
+		.attr("id", opts.targetDiv + "_desc")
+		.text("Arbre généalogique interactif montrant les relations familiales, les statuts de santé et les informations génétiques. " +
+			  "Utilisez la souris ou les touches Tab/Entrée pour naviguer entre les personnes.");
 
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
@@ -148,22 +172,23 @@ export function build(options) {
 	root._dataset = opts.dataset;
 	utils.roots[opts.targetDiv] = root;
 
-	// / get score at each depth used to adjust node separation
+	// get score at each depth used to adjust node separation
 	let tree_dimensions = utils.get_tree_dimensions(opts);
 	if(opts.DEBUG)
 		console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
 					' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
 	let treemap = d3.tree().separation(function(a, b) {
-		return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
+		return a.parent === b.parent || a.data.hidden || b.data.hidden ? RC.SEPARATION_SAME_PARENT : RC.SEPARATION_DIFFERENT;
 	}).size([tree_dimensions.width, tree_dimensions.height]);
 
 	let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 	let flattenNodes = nodes.descendants();
 
 	// check the number of visible nodes equals the size of the pedigree dataset
-	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
-	if(vis_nodes.length !== opts.dataset.length) {
+	let hidden_nodes = $.map(opts.dataset, function(p, _i){return is_hidden_data(p) ? p : null;});
+	let invalid_hidden = hidden_nodes.filter(function(p){return !p.partner_placeholder;});
+	if(invalid_hidden.length > 0) {
 		throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
 
@@ -180,38 +205,136 @@ export function build(options) {
 				  .data(visibleNodes)
 				  .enter()
 				  .append("g")
+					.attr("class", function(d) {
+						let classes = ["node", "person"];
+						if(d.data.sex === 'M') classes.push("male");
+						else if(d.data.sex === 'F') classes.push("female");
+						else classes.push("unknown-sex");
+
+						if(d.data.proband) classes.push("proband");
+						if(is_hidden_data(d.data)) classes.push("hidden");
+						if(d.data.affected) classes.push("affected");
+						if(d.data.adopted_in || d.data.adopted_out) classes.push("adopted");
+						if(d.data.status === "1" || d.data.status === 1) classes.push("deceased");
+
+						return classes.join(" ");
+					})
 					.attr("transform", function(d, _i) {
 						return "translate(" + d.x + "," + d.y + ")";
+					})
+				// FIX: Accessibilité - ARIA attributes pour navigation clavier
+				.attr("role", function(d) {
+					return is_hidden_data(d.data) ? null : "button";
+				})
+				.attr("tabindex", function(d) {
+					return is_hidden_data(d.data) ? null : "0";
+				})
+					.attr("aria-label", function(d) {
+						if(is_hidden_data(d.data)) return null;
+						let label = d.data.display_name || d.data.name;
+						label += ", " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Sexe inconnu');
+						if(d.data.age) label += ", Âge " + d.data.age + " ans";
+						if(d.data.yob) label += ", Né en " + d.data.yob;
+						if(d.data.status === "1" || d.data.status === 1) label += ", Décédé";
+						if(d.data.affected) label += ", Affecté";
+						if(d.data.proband) label += ", Proband";
+						return label;
+					})
+					.each(function(d) {
+						let sel = d3.select(this);
+						sel.attr("data-affected", d.data.affected ? "true" : null);
+						if(Array.isArray(opts.diseases)) {
+							opts.diseases.forEach(function(dis) {
+								if(!dis || !dis.type) return;
+								let attrName = "data-" + dis.type.replace(/_/g, "-");
+								let hasDisease = utils.prefixInObj(dis.type, d.data);
+								sel.attr(attrName, hasDisease ? "true" : null);
+							});
+						}
 					});
 
+	// FIX: Tooltips title pour accessibilité et UX
+	node.filter(function(d) {return !is_hidden_data(d.data);})
+		.append("title")
+		.text(function(d) {
+			let text = d.data.display_name || d.data.name;
+			if(d.data.sex) text += "\nSexe: " + (d.data.sex === 'M' ? 'Homme' : d.data.sex === 'F' ? 'Femme' : 'Inconnu');
+			if(d.data.age) text += "\nÂge: " + d.data.age + " ans";
+			if(d.data.yob) text += "\nNé(e) en: " + d.data.yob;
+			if(d.data.status === "1" || d.data.status === 1) text += "\nStatut: Décédé";
+			if(d.data.affected) text += "\nAffecté: Oui";
+			if(d.data.proband) text += "\n★ Proband";
+			return text;
+		});
+
+	// FIX: Interactive feedback - hover states et cursor
+	node.filter(function(d) {return !is_hidden_data(d.data);})
+		.style("cursor", "pointer")
+		.on("mouseover", function(_event, _d) {
+			d3.select(this).select("path").filter(function() {
+				// Sélectionner seulement le path border, pas les brackets ou pie
+				return !d3.select(this).attr("clip-path") &&
+					   d3.select(this).attr("shape-rendering");
+			})
+			.attr("stroke", opts.hover_color)
+			.attr("stroke-width", function() {
+				// FIX: Hover width = 2x thicker than with-data border (consistent scaling)
+				let baseWidth = opts.symbol_size * 0.05;
+				let withDataWidth = baseWidth * 1.5;
+				return withDataWidth * 2; // 2x for emphasis (= symbol_size * 0.15)
+			});
+		})
+		.on("mouseout", function(event, d) {
+			d3.select(this).select("path").filter(function() {
+				return !d3.select(this).attr("clip-path") &&
+					   d3.select(this).attr("shape-rendering");
+			})
+			.attr("stroke", function() {
+				return d.data.age && d.data.yob && !d.data.exclude ?
+					opts.node_border_color_with_data : opts.node_border_color_no_data;
+			})
+			.attr("stroke-width", function() {
+				// FIX: Use symbol_size-based scaling (same as initial border)
+				let baseWidth = opts.symbol_size * 0.05;
+				return d.data.age && d.data.yob && !d.data.exclude ? baseWidth * 1.5 : baseWidth;
+			});
+		});
+
 	// provide a border to the node
-	node.filter(function (d) {return !d.data.hidden;})
+	node.filter(function (d) {return !is_hidden_data(d.data);})
 		.append("path")
+		.attr("class", "person-shape")
 		.attr("shape-rendering", "geometricPrecision")
 		.attr("transform", function(d) {return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
-		.attr("d", d3.symbol().size(function(_d) { return (opts.symbol_size * opts.symbol_size) + 2;})
+		.attr("d", d3.symbol().size(function(_d) { return (opts.symbol_size * opts.symbol_size) + RC.SYMBOL_BORDER_EXTRA;})
 				.type(function(d) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
 					return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;}))
 		.attr("stroke", function (d) {
-			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+			return d.data.age && d.data.yob && !d.data.exclude ? opts.node_border_color_with_data : opts.node_border_color_no_data;
 		})
 		.attr("stroke-width", function (d) {
-			return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
+			// FIX: Use symbol_size-based scaling instead of em units (Phase 4 Critical Fix #3)
+			let baseWidth = opts.symbol_size * 0.05; // 5% of symbol_size
+			return d.data.age && d.data.yob && !d.data.exclude ? baseWidth * 1.5 : baseWidth;
 		})
 		.attr("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 		.attr("fill", "none");
 
 	// set a clippath
-	node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
+	// FIX: Prefix clipPath IDs with targetDiv to avoid collisions when multiple pedigrees on same page
+	node.filter(function (d) {return !(is_hidden_data(d.data) && !opts.DEBUG);})
 		.append("clipPath")
-		.attr("id", function (d) {return d.data.name;}).append("path")
-		.attr("class", "node")
+		.attr("id", function (d) {return getClipPathId(opts, d.data);}).append("path")
+		.attr("class", "clippath-shape")
 		.attr("transform", function(d) {return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
-		.attr("d", d3.symbol().size(function(d) {
-				if (d.data.hidden)
-					return opts.symbol_size * opts.symbol_size / 5;
+			.attr("d", d3.symbol().size(function(d) {
+				// Hidden nodes get smaller clipPath (scaled) for compact DEBUG rendering
+				let hiddenScale = RC.HIDDEN_NODE_SIZE_FACTOR || 0.2;
+				// Note: Hidden nodes should not have diseases/pie charts, so this is primarily for structure
+				if (is_hidden_data(d.data))
+					return opts.symbol_size * opts.symbol_size * hiddenScale;
 				return opts.symbol_size * opts.symbol_size;
 			})
 			.type(function(d) {
@@ -220,53 +343,59 @@ export function build(options) {
 				return d.data.sex === "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 	// pie plots for disease colours
-	let pienode = node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);}).selectAll("pienode")
+	let pienode = node.filter(function (d) {return !(is_hidden_data(d.data) && !opts.DEBUG);}).selectAll("pienode")
 	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
 		   let cancers = $.map(opts.diseases, function(_val, i){
 			   if(utils.prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 		   });
 		   if(ncancers === 0) cancers = [1];
+		   let clipId = getClipPathId(opts, d.data);
 		   return [$.map(cancers, function(val, _i){
 			   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
 						'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
 						'affected': d.data.affected,
-						'exclude': d.data.exclude};})];
+						'exclude': d.data.exclude,
+						'clipId': clipId};})];
 	   })
 	   .enter()
 		.append("g");
 
+	const pieInnerRadius = (typeof RC.PIE_INNER_RADIUS === 'number' ? RC.PIE_INNER_RADIUS : 0);
+	const pieOuterRadius = opts.symbol_size * (typeof RC.PIE_OUTER_RADIUS_FACTOR === 'number' ? RC.PIE_OUTER_RADIUS_FACTOR : 0.5);
+
 	pienode.selectAll("path")
 		.data(d3.pie().value(function(d) {return d.cancer;}))
 		.enter().append("path")
-			.attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
+			.attr("clip-path", function(d) {return "url(#"+d.data.clipId+")";}) // clip the rectangle (with prefix)
 			.attr("class", "pienode")
-			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
+			.attr("d", d3.arc().innerRadius(pieInnerRadius).outerRadius(pieOuterRadius))
 			.attr("fill", function(d, i) {
 				if(d.data.exclude)
-					return 'lightgrey';
+					return opts.exclude_fill_color; // FIX: Configurable exclude color
 				if(d.data.ncancers === 0) {
 					if(d.data.affected)
-						return 'darkgrey';
+						return opts.affected_fill_color;
 					return opts.node_background;
 				}
 				return opts.diseases[i].colour;
 			});
 
 	// adopted in/out brackets
-	node.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
+	node.filter(function (d) {return !is_hidden_data(d.data) && (d.data.adopted_in || d.data.adopted_out);})
 		.append("path")
 		.attr("d", function(_d) {
-			let dx = -(opts.symbol_size * 0.66);
-			let dy = -(opts.symbol_size * 0.64);
-			let indent = opts.symbol_size/4;
+			let dx = -(opts.symbol_size * RC.BRACKET_X_OFFSET_FACTOR);
+			let dy = -(opts.symbol_size * RC.BRACKET_Y_OFFSET_FACTOR);
+			let indent = opts.symbol_size / RC.BRACKET_INDENT_DIVISOR;
 			return get_bracket(dx, dy, indent, opts)+get_bracket(-dx, dy, -indent, opts);
 			})
 		.attr("stroke", function (d) {
-			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+			return d.data.age && d.data.yob && !d.data.exclude ? opts.node_border_color_with_data : opts.node_border_color_no_data;
 		})
 		.attr("stroke-width", function (_d) {
-			return ".1em";
+			// FIX: Use symbol_size-based scaling for brackets (same base as thin border)
+			return opts.symbol_size * 0.05;
 		})
 		.attr("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 		.attr("fill", "none");
@@ -275,11 +404,11 @@ export function build(options) {
 	// alive status = 0; dead status = 1
 	node.filter(function (d) {return d.data.status === "1" || d.data.status === 1;})
 		.append('line')
-			.attr("stroke", "black")
-			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
-			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
-			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
-			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
+			.attr("stroke", opts.dead_line_color)
+			.attr("x1", function(_d, _i) {return -RC.DEAD_LINE_SIZE_FACTOR*opts.symbol_size;})
+			.attr("y1", function(_d, _i) {return RC.DEAD_LINE_SIZE_FACTOR*opts.symbol_size;})
+			.attr("x2", function(_d, _i) {return RC.DEAD_LINE_SIZE_FACTOR*opts.symbol_size;})
+			.attr("y2", function(_d, _i) {return -RC.DEAD_LINE_SIZE_FACTOR*opts.symbol_size;});
 
 /*
  * let warn = node.filter(function (d) { return (!d.data.age || !d.data.yob) && !d.data.hidden; }).append("text") .attr('font-family', 'FontAwesome')
@@ -296,8 +425,10 @@ export function build(options) {
 
 	// get path looping over node(s)
 	let draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+		// Extend consecutive clash indices to merge nearby clashes
+		// Note: Distance check disabled - merges all consecutive clashes regardless of proximity
 		let extend = function(i, l) {
-			if(i+1 < l)   // && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+			if(i+1 < l)
 				return extend(++i);
 			return i;
 		};
@@ -323,8 +454,22 @@ export function build(options) {
 		.data(ptrLinkNodes)
 		.enter()
 			.insert("path", "g")
+			.attr("class", function(d) {
+				let classes = ["partner", "partner-link"];
+				let node1 = utils.getNodeByName(flattenNodes, d.mother.data.name);
+				let node2 = utils.getNodeByName(flattenNodes, d.father.data.name);
+				let consanguity = utils.consanguity(node1, node2, opts);
+				let divorced = (d.mother.data.divorced && d.mother.data.divorced === d.father.data.name);
+
+				if(consanguity) classes.push("consanguineous");
+				if(divorced) classes.push("divorced");
+				if(d.mother.data.sex === d.father.data.sex && d.mother.data.sex !== 'U')
+					classes.push("same-sex");
+
+				return classes.join(" ");
+			})
 			.attr("fill", "none")
-			.attr("stroke", "#000")
+			.attr("stroke", opts.link_color)
 			.attr("shape-rendering", "auto")
 			.attr('d', function(d, _i) {
 				let node1 = utils.getNodeByName(flattenNodes, d.mother.data.name);
@@ -365,16 +510,20 @@ export function build(options) {
 				}
 
 				let divorce_path = "";
-				if(divorced && !clash)
-					divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
-								   "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
-								   "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
-								   "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
+				if(divorced) {
+					// FIX: Draw divorce symbol even with clash (Phase 4.1)
+					// Adjust Y position when clash to avoid overlap
+					let divorce_y_offset = clash ? 8 : 0;
+					divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6-divorce_y_offset) +
+								   "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6-divorce_y_offset) +
+								   "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6-divorce_y_offset) +
+								   "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6-divorce_y_offset);
+				}
 				if(consanguity) {  // consanguinous, draw double line between partners
 					dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
 					dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
 
-					let cshift = 3;
+					let cshift = RC.CONSANGUINITY_LINE_OFFSET;
 					if(Math.abs(dy1-dy2) > 0.1) {	  // DIFFERENT LEVEL
 						return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 +
 								"M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
@@ -398,7 +547,7 @@ export function build(options) {
 
 			if(hasClash) {
 				d3.select(this)
-					.attr('stroke', '#D5494A')  // Rouge
+					.attr('stroke', opts.clash_indicator_color)  // Rouge
 					.attr('stroke-width', 2.5)
 					.attr('stroke-dasharray', '5,5')
 					.append('title')
@@ -406,21 +555,65 @@ export function build(options) {
 			}
 		});
 
-		// Ajouter un message d'avertissement global si clashes détectés
+		// FIX: Framework compatibility - Use native SVG rather than foreignObject
 		if(!opts.DEBUG) {
-			// Enlever l'ancien warning s'il existe
-			$('#'+opts.targetDiv).parent().find('.pedigree-warning').remove();
-			// Ajouter le nouveau warning
-			$('#'+opts.targetDiv).parent().prepend(
-				'<div class="pedigree-warning" style="background:#FFF3CD;border:1px solid #FFC107;padding:10px;margin-bottom:10px;border-radius:4px;font-size:14px;">' +
-				'<strong>⚠️ Avertissement :</strong> ' + clashes.length +
-				' lien(s) de partenaires se croisent. Les liens en <span style="color:#D5494A;font-weight:bold;">rouge pointillé</span> ont été ajustés pour éviter les chevauchements.' +
-				'</div>'
-			);
+			svg.selectAll('.pedigree-warning-container').remove();
+
+			let warningWidth = Math.min(svg_dimensions.width - 20, 420);
+			let warningHeight = 54;
+			let warningGroup = svg.append("g")
+				.attr("class", "pedigree-warning-container")
+				.attr("pointer-events", "none");
+
+			warningGroup.append("rect")
+				.attr("width", warningWidth)
+				.attr("height", warningHeight)
+				.attr("rx", 6)
+				.attr("ry", 6)
+				.attr("fill", "#FFF3CD")
+				.attr("stroke", "#FFC107")
+				.attr("stroke-width", 1.2);
+
+			warningGroup.append("text")
+				.attr("x", 16)
+				.attr("y", 22)
+				.attr("fill", "#5f3b00")
+				.attr("font-size", "13px")
+				.attr("font-weight", "600")
+				.text("⚠️ Avertissement : " + clashes.length + " lien(s) se croisent.");
+
+			warningGroup.append("text")
+				.attr("x", 16)
+				.attr("y", 40)
+				.attr("fill", "#5f3b00")
+				.attr("font-size", "12px")
+				.text("Les liens en rouge pointillé ont été ajustés pour éviter les chevauchements.");
+
+			let updateWarningOverlay = function(transform) {
+				let targetSvg = d3.select("#"+opts.targetDiv).select("svg");
+				let warning = targetSvg.selectAll(".pedigree-warning-container");
+				if(warning.empty()) return;
+				let svgWidth = targetSvg.node() ? targetSvg.node().clientWidth : svg_dimensions.width;
+				let width = Math.min(svgWidth - 20, 420);
+				warning.select("rect").attr("width", width);
+				let tx = 10;
+				let ty = 10;
+				if(transform) {
+					let scale = transform.k || 1;
+					let x = (tx - transform.x) / scale;
+					let y = (ty - transform.y) / scale;
+					warning.attr("transform", "translate("+x+","+y+") scale("+ (1/scale) +")");
+				} else {
+					warning.attr("transform", "translate("+tx+","+ty+")");
+				}
+			};
+			opts._updateWarningOverlay = updateWarningOverlay;
+			updateWarningOverlay();
 		}
 	} else {
 		// Pas de clashes, enlever le warning s'il existe
-		$('#'+opts.targetDiv).parent().find('.pedigree-warning').remove();
+		svg.selectAll('.pedigree-warning-container').remove();
+		opts._updateWarningOverlay = null;
 	}
 
 	// links to children
@@ -433,6 +626,15 @@ export function build(options) {
 						(d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden));
 			})
 			.insert("path", "g")
+			.attr("class", function(d) {
+				let classes = ["link", "child-link"];
+				if(d.target.data.adopted_in) classes.push("adopted-link");
+				if(d.target.data.mztwin) classes.push("mz-twin-link");
+				if(d.target.data.dztwin) classes.push("dz-twin-link");
+				if(d.target.data.noparents || d.source.parent === null || d.target.data.hidden)
+					classes.push("debug-link");
+				return classes.join(" ");
+			})
 			.attr("fill", "none")
 			.attr("stroke-width", function(d, _i) {
 				if(d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden)
@@ -441,8 +643,8 @@ export function build(options) {
 			})
 			.attr("stroke", function(d, _i) {
 				if(d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden)
-					return 'pink';
-				return "#000";
+					return opts.link_debug_color;
+				return opts.link_color;
 			})
 			.attr("stroke-dasharray", function(d, _i) {
 				if(!d.target.data.adopted_in) return null;
@@ -460,30 +662,30 @@ export function build(options) {
 				return "auto";
 			})
 			.attr("d", function(d, _i) {
+				let forkOffset = RC.CHILD_LINK_FORK_OFFSET || 0;
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
 					let twins = utils.getTwins(opts.dataset, d.target.data);
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
-						//let xmax = d.target.x;
 						for(let t=0; t<twins.length; t++) {
 							let thisx = utils.getNodeByName(flattenNodes, twins[t].name).x;
 							if(xmin > thisx) xmin = thisx;
-							//if(xmax < thisx) xmax = thisx;
 							twinx += thisx;
 						}
 
 						let xmid = ((d.target.x + twinx) / (twins.length+1));
-						let ymid = ((d.source.y + d.target.y) / 2);
+						let ymid = ((d.source.y + d.target.y) / 2) + forkOffset;
 
 						let xhbar = "";
 						if(xmin === d.target.x && d.target.data.mztwin) {
 							// horizontal bar for mztwins
-							let xx = (xmid + d.target.x)/2;
 							let yy = (ymid + (d.target.y-(opts.symbol_size/2)))/2;
-							xhbar = "M" + xx + "," + yy +
-									"L" + (xmid + (xmid-xx)) + " " + yy;
+							let half = opts.symbol_size / (RC.TWIN_BAR_LENGTH_DIVISOR || 6);
+							let start = xmid - half;
+							let end = xmid + half;
+							xhbar = "M" + start + "," + yy + "L" + end + "," + yy;
 						}
 
 						return "M" + (d.source.x) + "," + (d.source.y ) +
@@ -502,15 +704,17 @@ export function build(options) {
 					let pa = utils.getNodeByName(flattenNodes, fatherName);
 
 					if(ma && pa && ma.depth !== pa.depth) {
-						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
+						let forkY = ((ma.y + pa.y) / 2) + forkOffset;
+						return "M" + (d.source.x) + "," + forkY +
 						   "H" + (d.target.x) +
 						   "V" + (d.target.y);
 					}
 				}
 			}
 
+				let forkY = ((d.source.y + d.target.y) / 2) + forkOffset;
 				return "M" + (d.source.x) + "," + (d.source.y ) +
-					   "V" + ((d.source.y + d.target.y) / 2) +
+					   "V" + forkY +
 					   "H" + (d.target.x) +
 					   "V" + (d.target.y);
 			});
@@ -519,26 +723,33 @@ export function build(options) {
 	let probandIdx  = utils.getProbandIndex(opts.dataset);
 	if(typeof probandIdx !== 'undefined') {
 		let probandNode = utils.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-		let triid = "triangle"+utils.makeid(3);
-		ped.append("svg:defs").append("svg:marker")	// arrow head
-			.attr("id", triid)
-			.attr("refX", 6)
-			.attr("refY", 6)
-			.attr("markerWidth", 20)
-			.attr("markerHeight", 20)
-			.attr("orient", "auto")
-			.append("path")
-			.attr("d", "M 0 0 12 6 0 12 3 6")
-			.attr("fill", "black");
+		// Check if probandNode exists (may be undefined if tree not fully built)
+		if(probandNode) {
+			let triid = "triangle"+utils.makeid(3);
+			// FIX: Scale arrow head with symbol_size (Phase 4.4)
+			let arrowHeadSize = Math.max(opts.symbol_size / RC.ARROW_HEAD_SIZE_DIVISOR, 6);
+			let arrowRefPoint = arrowHeadSize / 2;
 
-		ped.append("line")
-			.attr("x1", probandNode.x-(opts.symbol_size/0.7))
-			.attr("y1", probandNode.y+(opts.symbol_size/1.4))
-			.attr("x2", probandNode.x-(opts.symbol_size/1.4))
-			.attr("y2", probandNode.y+(opts.symbol_size/4))
-			.attr("stroke-width", 1)
-			.attr("stroke", "black")
-			.attr("marker-end", "url(#"+triid+")");
+			ped.append("svg:defs").append("svg:marker")	// arrow head
+				.attr("id", triid)
+				.attr("refX", arrowRefPoint)
+				.attr("refY", arrowRefPoint)
+				.attr("markerWidth", arrowHeadSize * 2)
+				.attr("markerHeight", arrowHeadSize * 2)
+				.attr("orient", "auto")
+				.append("path")
+				.attr("d", "M 0 0 " + arrowHeadSize + " " + arrowRefPoint + " 0 " + arrowHeadSize + " " + (arrowHeadSize/4) + " " + arrowRefPoint)
+				.attr("fill", "black");
+
+			ped.append("line")
+				.attr("x1", probandNode.x-(opts.symbol_size/RC.ARROW_X_DIVISOR))
+				.attr("y1", probandNode.y+(opts.symbol_size/RC.ARROW_Y_DIVISOR))
+				.attr("x2", probandNode.x-(opts.symbol_size/RC.ARROW_Y_DIVISOR))
+				.attr("y2", probandNode.y+(opts.symbol_size/4))
+				.attr("stroke-width", 1)
+				.attr("stroke", "black")
+				.attr("marker-end", "url(#"+triid+")");
+		}
 	}
 
 	// drag and zoom
@@ -552,13 +763,60 @@ function has_gender(sex) {
 	return sex === "M" || sex === "F";
 }
 
+function is_hidden_data(data) {
+	return data && (data.hidden || data.partner_placeholder);
+}
+
+function sanitizeIdFragment(value) {
+	let fragment = (value === undefined || value === null ? "" : String(value)).trim();
+	if(fragment === "")
+		fragment = "id";
+	fragment = fragment.replace(/[^A-Za-z0-9_-]/g, "-")
+					   .replace(/-+/g, "-")
+					   .replace(/^-+/, "");
+	if(fragment === "" || !/^[A-Za-z_]/.test(fragment))
+		fragment = "id-" + fragment;
+	return fragment;
+}
+
+function setHiddenMetadata(obj, key, value) {
+	try {
+		Object.defineProperty(obj, key, {
+			value: value,
+			configurable: true,
+			enumerable: false,
+			writable: true
+		});
+	} catch(_err) {
+		obj[key] = value;
+	}
+}
+
+function getClipPathId(opts, person) {
+	if(!person)
+		return opts.targetDiv + "_clip_id-" + utils.makeid(4);
+	if(person.__clipId && person.__clipSource === person.name)
+		return person.__clipId;
+	let fragment = sanitizeIdFragment(person.name);
+	fragment += "-" + utils.makeid(3);
+	let clipId = opts.targetDiv + "_clip_" + fragment;
+	setHiddenMetadata(person, "__clipSource", person.name);
+	setHiddenMetadata(person, "__clipId", clipId);
+	return clipId;
+}
+
 //adopted in/out brackets
+// FIX: Make bracket height relative to symbol_size with better scaling
+// Instead of hardcoded 1.28, use a proportional factor that works for all sizes
 function get_bracket(dx, dy, indent, opts) {
+	// Bracket height scales with symbol: small symbols = shorter brackets, large = taller
+	// Factor defined in RENDERING_CONSTANTS gives good visual balance across sizes
+	let bracket_height = opts.symbol_size * RC.BRACKET_HEIGHT_FACTOR;
+
 	return 	"M" + (dx+indent) + "," + dy +
 			"L" + dx + " " + dy +
-			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-			"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
+			"L" + dx + " " + (dy + bracket_height) +
+			"L" + (dx+indent) + "," + (dy + bracket_height);
 }
 
 // check for crossing of partner lines

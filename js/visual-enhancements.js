@@ -7,172 +7,172 @@
     
     // SVG Gradients and Patterns
     function createSVGDefinitions(svg) {
-        const defs = svg.append('defs');
-        
-        // Disease gradients
-        const breastCancerGradient = defs.append('linearGradient')
-            .attr('id', 'breastCancerGradient')
-            .attr('x1', '0%').attr('y1', '0%')
-            .attr('x2', '100%').attr('y2', '100%');
-        
-        breastCancerGradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', '#f59e0b')
-            .attr('stop-opacity', 1);
-        
-        breastCancerGradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', '#f97316')
-            .attr('stop-opacity', 1);
+        let defs = svg.select('defs');
+        if (defs.empty()) {
+            defs = svg.append('defs');
+        }
 
-        const ovarianCancerGradient = defs.append('linearGradient')
-            .attr('id', 'ovarianCancerGradient')
-            .attr('x1', '0%').attr('y1', '0%')
-            .attr('x2', '100%').attr('y2', '100%');
-        
-        ovarianCancerGradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', '#10b981')
-            .attr('stop-opacity', 1);
-        
-        ovarianCancerGradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', '#059669')
-            .attr('stop-opacity', 1);
+        const ensureGradient = (id, stops) => {
+            let gradient = defs.select(`#${id}`);
+            if (!gradient.empty()) return;
+            gradient = defs.append('linearGradient')
+                .attr('id', id)
+                .attr('x1', '0%').attr('y1', '0%')
+                .attr('x2', '100%').attr('y2', '100%');
+            stops.forEach(stop => {
+                gradient.append('stop')
+                    .attr('offset', stop.offset)
+                    .attr('stop-color', stop.color)
+                    .attr('stop-opacity', stop.opacity ?? 1);
+            });
+        };
 
-        const prostateCancerGradient = defs.append('linearGradient')
-            .attr('id', 'prostateCancerGradient')
-            .attr('x1', '0%').attr('y1', '0%')
-            .attr('x2', '100%').attr('y2', '100%');
-        
-        prostateCancerGradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', '#ef4444')
-            .attr('stop-opacity', 1);
-        
-        prostateCancerGradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', '#dc2626')
-            .attr('stop-opacity', 1);
+        ensureGradient('breastCancerGradient', [
+            {offset: '0%', color: '#f59e0b'},
+            {offset: '100%', color: '#f97316'}
+        ]);
+        ensureGradient('ovarianCancerGradient', [
+            {offset: '0%', color: '#10b981'},
+            {offset: '100%', color: '#059669'}
+        ]);
+        ensureGradient('prostateCancerGradient', [
+            {offset: '0%', color: '#ef4444'},
+            {offset: '100%', color: '#dc2626'}
+        ]);
+        ensureGradient('pancreaticCancerGradient', [
+            {offset: '0%', color: '#4f9bd9'},
+            {offset: '100%', color: '#2a5f96'}
+        ]);
 
         // Glow filter
-        const filter = defs.append('filter')
-            .attr('id', 'glow');
-        
-        filter.append('feGaussianBlur')
-            .attr('stdDeviation', '3')
-            .attr('result', 'coloredBlur');
-        
-        const feMerge = filter.append('feMerge');
-        feMerge.append('feMergeNode').attr('in', 'coloredBlur');
-        feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+        if (defs.select('#glow').empty()) {
+            const filter = defs.append('filter')
+                .attr('id', 'glow');
+            
+            filter.append('feGaussianBlur')
+                .attr('stdDeviation', '3')
+                .attr('result', 'coloredBlur');
+            
+            const feMerge = filter.append('feMerge');
+            feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+            feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+        }
 
         // Pattern for background
-        const pattern = defs.append('pattern')
-            .attr('id', 'gridPattern')
-            .attr('patternUnits', 'userSpaceOnUse')
-            .attr('width', 40)
-            .attr('height', 40);
-        
-        pattern.append('rect')
-            .attr('width', 40)
-            .attr('height', 40)
-            .attr('fill', 'white')
-            .attr('fill-opacity', 0.05);
-        
-        pattern.append('path')
-            .attr('d', 'M 40 0 L 0 0 0 40')
-            .attr('fill', 'none')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 1)
-            .attr('stroke-opacity', 0.1);
+        if (defs.select('#gridPattern').empty()) {
+            const pattern = defs.append('pattern')
+                .attr('id', 'gridPattern')
+                .attr('patternUnits', 'userSpaceOnUse')
+                .attr('width', 40)
+                .attr('height', 40);
+            
+            pattern.append('rect')
+                .attr('width', 40)
+                .attr('height', 40)
+                .attr('fill', 'white')
+                .attr('fill-opacity', 0.05);
+            
+            pattern.append('path')
+                .attr('d', 'M 40 0 L 0 0 0 40')
+                .attr('fill', 'none')
+                .attr('stroke', 'white')
+                .attr('stroke-width', 1)
+                .attr('stroke-opacity', 0.1);
+        }
     }
 
     // Enhanced node styling
     function enhancePersonNodes() {
         if (typeof d3 === 'undefined') return;
         
-        const svg = d3.select('#pedigree svg');
-        if (svg.empty()) return;
+        const svgs = d3.selectAll('svg')
+            .filter(function() { return !d3.select(this).select('.diagram').empty(); });
+        if (svgs.empty()) return;
 
-        // Create definitions if they don't exist
-        if (svg.select('defs').empty()) {
+        svgs.each(function() {
+            const svg = d3.select(this);
             createSVGDefinitions(svg);
-        }
 
-        // Style person nodes
-        svg.selectAll('.person')
-            .style('cursor', 'pointer')
-            .style('transition', 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)')
-            .on('mouseenter', function() {
-                d3.select(this)
-                    .style('filter', 'drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4))')
-                    .style('transform', 'scale(1.05)');
-            })
-            .on('mouseleave', function() {
-                d3.select(this)
-                    .style('filter', null)
-                    .style('transform', null);
-            });
+            const persons = svg.selectAll('.person');
+            persons.on('.enhancer', null);
 
-        // Enhanced shapes
-        svg.selectAll('.person rect, .person circle')
-            .style('stroke-width', '2.5px')
-            .style('stroke', '#2563eb')
-            .style('fill', 'white')
-            .style('transition', 'all 0.3s ease');
+            persons
+                .style('cursor', 'pointer')
+                .style('transition', 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)')
+                .on('mouseenter.enhancer', function() {
+                    d3.select(this)
+                        .style('filter', 'drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4))')
+                        .style('transform', null);
+                })
+                .on('mouseleave.enhancer', function() {
+                    d3.select(this)
+                        .style('filter', null)
+                        .style('transform', null);
+                });
 
-        // Apply disease colors with gradients
-        svg.selectAll('.person')
-            .each(function(d) {
+            persons.selectAll('.person-shape')
+                .style('transition', 'all 0.3s ease');
+
+            persons.each(function(d) {
                 const node = d3.select(this);
-                const shape = node.select('rect, circle');
+                const shape = node.select('.person-shape');
+                const data = d && d.data ? d.data : d;
                 
-                if (d.breast_cancer || d.breast_cancer_diagnosis_age) {
-                    shape.style('fill', 'url(#breastCancerGradient)');
-                } else if (d.ovarian_cancer || d.ovarian_cancer_diagnosis_age) {
-                    shape.style('fill', 'url(#ovarianCancerGradient)');
-                } else if (d.prostate_cancer || d.prostate_cancer_diagnosis_age) {
-                    shape.style('fill', 'url(#prostateCancerGradient)');
+                if (!shape.empty()) {
+                    shape.style('fill', null);
+                    if (data.breast_cancer || data.breast_cancer_diagnosis_age || data.breast_cancer2) {
+                        shape.style('fill', 'url(#breastCancerGradient)');
+                    } else if (data.ovarian_cancer || data.ovarian_cancer_diagnosis_age) {
+                        shape.style('fill', 'url(#ovarianCancerGradient)');
+                    } else if (data.prostate_cancer || data.prostate_cancer_diagnosis_age) {
+                        shape.style('fill', 'url(#prostateCancerGradient)');
+                    } else if (data.pancreatic_cancer || data.pancreatic_cancer_diagnosis_age) {
+                        shape.style('fill', 'url(#pancreaticCancerGradient)');
+                    }
                 }
             });
+        });
     }
 
     // Particle effect for canvas background
     function createParticleEffect() {
-        const canvas = document.querySelector('.pedigree-stage');
-        if (!canvas) return;
+        const canvases = document.querySelectorAll('.pedigree-stage');
+        if (!canvases.length) return;
 
-        const particleContainer = document.createElement('div');
-        particleContainer.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        `;
+        canvases.forEach(canvas => {
+            if (canvas.querySelector('.pedigree-particles')) return;
 
-        // Create floating particles
-        for (let i = 0; i < 15; i++) {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
+            const particleContainer = document.createElement('div');
+            particleContainer.className = 'pedigree-particles';
+            particleContainer.style.cssText = `
                 position: absolute;
-                width: 4px;
-                height: 4px;
-                background: radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%);
-                border-radius: 50%;
-                animation: float-particle ${5 + Math.random() * 10}s infinite linear;
-                left: ${Math.random() * 100}%;
-                top: ${Math.random() * 100}%;
-                animation-delay: ${Math.random() * 5}s;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+                overflow: hidden;
             `;
-            particleContainer.appendChild(particle);
-        }
 
-        canvas.appendChild(particleContainer);
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 4px;
+                    height: 4px;
+                    background: radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%);
+                    border-radius: 50%;
+                    animation: float-particle ${5 + Math.random() * 10}s infinite linear;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation-delay: ${Math.random() * 5}s;
+                `;
+                particleContainer.appendChild(particle);
+            }
+
+            canvas.appendChild(particleContainer);
+        });
     }
 
     // Enhanced loading animations
@@ -198,7 +198,7 @@
                 this.style.boxShadow = '';
             });
 
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(event) {
                 // Ripple effect
                 const ripple = document.createElement('span');
                 ripple.style.cssText = `
@@ -215,7 +215,7 @@
                 ripple.style.width = ripple.style.height = size + 'px';
                 ripple.style.left = (event.clientX - rect.left - size / 2) + 'px';
                 ripple.style.top = (event.clientY - rect.top - size / 2) + 'px';
-                
+
                 this.appendChild(ripple);
                 setTimeout(() => {
                     ripple.remove();
@@ -393,12 +393,21 @@
         addImageLoadEffect();
 
         // Enhance pedigree nodes when they're available
-        setTimeout(enhancePersonNodes, 1000);
+        setTimeout(() => {
+            enhancePersonNodes();
+            createParticleEffect();
+        }, 1000);
         
-        // Re-enhance on pedigree rebuilds
-        document.addEventListener('rebuild', () => {
-            setTimeout(enhancePersonNodes, 100);
-        });
+        // Re-enhance on pedigree rebuilds (listen to jQuery custom event if available)
+        const scheduleEnhance = () => setTimeout(() => {
+            enhancePersonNodes();
+            createParticleEffect();
+        }, 100);
+        if (typeof window !== 'undefined' && window.jQuery && typeof window.jQuery === 'function') {
+            window.jQuery(document).on('rebuild.visualEnhancements', scheduleEnhance);
+        } else {
+            document.addEventListener('rebuild', scheduleEnhance);
+        }
     }
 
     // Initialize when DOM is ready

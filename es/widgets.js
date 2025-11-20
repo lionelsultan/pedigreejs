@@ -8,6 +8,7 @@
 import * as utils from './utils.js';
 import {save} from './popup_form.js';
 import {current as pedcache_current} from './pedcache.js';
+// import {checkTwins} from './twins.js';  // Unused in this file (used in widgets-delete.js)
 import {canChangeSex} from './validation.js';
 import {addchild, addsibling, addparents, addpartner} from './widgets-add.js';
 import {delete_node_dataset} from './widgets-delete.js';
@@ -43,18 +44,8 @@ $(document).on('keydown keyup', function(e) {
 	}
 });
 
-/**
- * Add interactive widgets to pedigree nodes
- * Adds UI controls for:
- * - Adding individuals (male/female/unspecified)
- * - Adding partners
- * - Adding parents
- * - Editing person details
- * - Deleting individuals
- * - Setting proband status
- * @param {Object} opts - Pedigree options object
- * @param {Object} node - D3 selection of nodes to add widgets to
- */
+//
+// Add widgets to nodes and bind events
 export function addWidgets(opts, node) {
 
 	// popup gender selection box
@@ -275,7 +266,8 @@ export function addWidgets(opts, node) {
 	}
 
 	// add sibling or child
-	d3.selectAll(".addsibling, .addchild")
+	// FIX: Use node.selectAll to scope selection to widgets created in this pedigree instance
+	node.selectAll(".addsibling, .addchild")
 	  .on("mouseover", function () {
 		  let type = d3.select(this).attr('class');
 		  d3.selectAll('.popup_selection').attr("opacity", 1);
@@ -290,7 +282,8 @@ export function addWidgets(opts, node) {
 	  });
 
 	// handle widget clicks
-	d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
+	// FIX: Use node.selectAll to scope selection to widgets created in this pedigree instance
+	node.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 	  .on("click", function (e) {
 		  e.stopPropagation();
 
@@ -305,7 +298,7 @@ export function addWidgets(opts, node) {
 		let opt = d3.select(this).attr('class');
 		let d = d3.select(this.parentNode).datum();
 		if(opts.DEBUG) {
-			console.log(opt);
+			console.log('Widget clicked:', opt);
 		}
 
 		// Bloquer les clics pendant l'action (sauf settings qui est instantané)
@@ -313,29 +306,43 @@ export function addWidgets(opts, node) {
 			_widgetClickInProgress = true;
 		}
 
-		let newdataset;
-		if(opt === 'settings') {
-			if(typeof opts.edit === 'function') {
-				opts.edit(opts, d);
-			} else {
-				openEditDialog(opts, d);
+		try {
+			let newdataset;
+			if(opt === 'settings') {
+				if(typeof opts.edit === 'function') {
+					opts.edit(opts, d);
+				} else {
+					openEditDialog(opts, d);
+				}
+			} else if(opt === 'delete') {
+				newdataset = utils.copy_dataset(pedcache_current(opts));
+				delete_node_dataset(newdataset, d.data, opts, onDone);
+			} else if(opt === 'addparents') {
+				newdataset = utils.copy_dataset(pedcache_current(opts));
+				opts.dataset = newdataset;
+				addparents(opts, newdataset, d.data.name);
+				$(document).trigger('rebuild', [opts]);
+			} else if(opt === 'addpartner') {
+				newdataset = utils.copy_dataset(pedcache_current(opts));
+				opts.dataset = newdataset;
+				if(opts.DEBUG) {
+					console.log('Calling addpartner for:', d.data.name);
+				}
+				addpartner(opts, newdataset, d.data.name);
+				if(opts.DEBUG) {
+					console.log('addpartner completed, triggering rebuild');
+				}
+				$(document).trigger('rebuild', [opts]);
 			}
-		} else if(opt === 'delete') {
-			newdataset = utils.copy_dataset(pedcache_current(opts));
-			delete_node_dataset(newdataset, d.data, opts, onDone);
-		} else if(opt === 'addparents') {
-			newdataset = utils.copy_dataset(pedcache_current(opts));
-			opts.dataset = newdataset;
-			addparents(opts, newdataset, d.data.name);
-			$(document).trigger('rebuild', [opts]);
-		} else if(opt === 'addpartner') {
-			newdataset = utils.copy_dataset(pedcache_current(opts));
-			opts.dataset = newdataset;  // Assign BEFORE calling addpartner
-			addpartner(opts, newdataset, d.data.name);
-			$(document).trigger('rebuild', [opts]);
+			// trigger fhChange event
+			$(document).trigger('fhChange', [opts]);
+		} catch(error) {
+			console.error('Error in widget click handler:', error);
+			console.error('Stack:', error.stack);
+			// Réinitialiser le flag immédiatement en cas d'erreur
+			_widgetClickInProgress = false;
+			throw error;  // Re-throw pour que l'erreur soit visible
 		}
-		// trigger fhChange event
-		$(document).trigger('fhChange', [opts]);
 
 		// Réactiver après un délai (sauf settings)
 		if(opt !== 'settings') {

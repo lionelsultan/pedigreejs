@@ -8,6 +8,18 @@
 import * as utils from './utils.js';
 import {checkTwins} from './twins.js';
 
+function purgePlaceholderChildren(dataset) {
+	for(let i = dataset.length - 1; i >= 0; i--) {
+		let node = dataset[i];
+		if(node && node.partner_placeholder) {
+			let motherExists = !!utils.getNodeByName(dataset, node.mother);
+			let fatherExists = !!utils.getNodeByName(dataset, node.father);
+			if(!motherExists || !fatherExists)
+				dataset.splice(i, 1);
+		}
+	}
+}
+
 function adjacent_nodes(root, node, excludes) {
 	let dnodes = utils.getNodesAtDepth(utils.flatten(root), node.depth, excludes);
 	let lhs_node, rhs_node;
@@ -105,23 +117,29 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		}
 	}
 	checkTwins(dataset);
+	purgePlaceholderChildren(dataset);
 
 	let uc;
-	// Use injected messages function for testing, or default to utils.messages
-	let messagesFunc = opts.messages || utils.messages;
+	let baselineDisconnected = [];
 	try	{
 		let newopts = $.extend({}, opts);
 		newopts.dataset = utils.copy_dataset(dataset);
 		utils.validate_pedigree(newopts);
 		uc = utils.unconnected(dataset);
+		if(opts && opts.dataset)
+			baselineDisconnected = utils.unconnected(opts.dataset);
 	} catch(err) {
-		messagesFunc('Warning', 'Deletion of this pedigree member is disallowed.')
+		utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
 		throw err;
 	}
+	let hadDisconnectedBefore = baselineDisconnected.length > 0;
 	if(uc.length > 0) {
-		if(utils.unconnected(opts.dataset).length === 0) {
+		if(!hadDisconnectedBefore) {
 			console.error("individuals unconnected to pedigree ", uc);
-			messagesFunc("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+			let confirmCallback = onDone ? function(localOpts, localDataset){
+				onDone(localOpts, localDataset);
+			} : null;
+			utils.messages("Warning", "Deleting this will split the pedigree. Continue?", confirmCallback, opts, dataset);
 			return;
 		}
 	}

@@ -6,6 +6,7 @@
 
 import {prefixInObj} from './utils.js';
 import {validate_age_yob} from './validation.js';
+import {RENDERING_CONSTANTS as RC} from './rendering-constants.js';
 
 export function addLabels(opts, node) {
 	// names of individuals
@@ -15,7 +16,11 @@ export function addLabels(opts, node) {
 					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 				return 'display_name' in d.data ? d.data.display_name : '';}, undefined, ['display_name']);
 
-	let font_size = parseInt(getPx(opts)) + 4;
+	let baseFontPx = parseFloat(getPx(opts)) || 0;
+	let labelFontSize = RC.LABEL_FONT_SIZE || opts.font_size;
+	let labelFontPx = fontStringToPx(labelFontSize, baseFontPx);
+	let lineSpacing = labelFontPx || baseFontPx || 12;
+	let initialOffset = opts.symbol_size * (RC.LABEL_Y_OFFSET_FACTOR || 1.6);
 
 	// Phase 3.3.4: Fonction de validation age/yob (sortie de la boucle pour éviter no-loop-func)
 		let validate_age_yob_data = function(d) {
@@ -35,7 +40,7 @@ export function addLabels(opts, node) {
 		if(arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
 			// Phase 3.3.4: Ajouter indicateur visuel pour données age/yob invalides
 			addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, arr, font_size); },
+				function(d) { return ypos(d, arr, lineSpacing, initialOffset); },
 				function(d) { return get_text(d, arr); }, 'indi_details', arr,
 				validate_age_yob_data);
 		}
@@ -45,7 +50,7 @@ export function addLabels(opts, node) {
 	for(let i=0;i<opts.diseases.length; i++) {
 		let disease = opts.diseases[i].type;
 		addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, [disease], font_size); },
+				function(d) { return ypos(d, [disease], lineSpacing, initialOffset); },
 				function(d) {
 					let dis = disease.replace('_', ' ').replace('cancer', 'ca.');
 					return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
@@ -58,10 +63,23 @@ export function addLabels(opts, node) {
 		let arr = (Array.isArray(label) ? label : [label]);
 		if(arr.indexOf('age') === -1 && arr.indexOf('yob') === -1) {
 			addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, arr, font_size); },
+				function(d) { return ypos(d, arr, lineSpacing, initialOffset); },
 				function(d) { return get_text(d, arr); }, 'indi_details', arr);
 		}
 	}
+
+	// Monozygote indicator label
+	node.filter(function (d) {
+			return !d.data.hidden && d.data.mztwin;
+		})
+		.append("text")
+		.attr("class", "ped_label mz-indicator")
+		.attr("x", opts.symbol_size * 0.7)
+		.attr("y", -(opts.symbol_size * 0.6))
+		.attr("font-family", opts.font_family)
+		.attr("font-size", RC.MZ_LABEL_FONT_SIZE || '0.8em')
+		.attr("font-weight", opts.font_weight)
+		.text("MZ");
 }
 
 function get_text(d, arr) {
@@ -97,9 +115,9 @@ function get_text(d, arr) {
 	if(txt !== "") return txt;
 }
 
-function ypos(d, arr, font_size) {
+function ypos(d, arr, spacing, initialOffset) {
 	if(!node_has_label(d, arr)) return;
-	d.y_offset = (!d.y_offset ? font_size*2.35 : d.y_offset+font_size);
+	d.y_offset = (!d.y_offset ? initialOffset : d.y_offset+spacing);
 	return d.y_offset;
 }
 
@@ -119,7 +137,7 @@ function addLabel(opts, node, fx, fy, ftext, class_label, labels, validate_fn) {
 	.attr("x", fx)
 	.attr("y", fy)
 	.attr("font-family", opts.font_family)
-	.attr("font-size", opts.font_size)
+	.attr("font-size", RC.LABEL_FONT_SIZE || opts.font_size)
 	.attr("font-weight", opts.font_weight)
 	// Phase 3.3.4: Appliquer style visuel si données invalides
 	.attr("fill", function(d) {
@@ -152,4 +170,18 @@ function getPx(opts){
 		return emVal;
 	emVal = parseFloat(emVal.replace('em', ''));
 	return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
+}
+
+function fontStringToPx(fontSize, basePx) {
+	if(!fontSize) return basePx;
+	if(typeof fontSize === 'number')
+		return fontSize;
+	let size = String(fontSize).trim();
+	if(size.endsWith('px'))
+		return parseFloat(size);
+	if(size.endsWith('em'))
+		return parseFloat(size) * basePx;
+	if(!isNaN(parseFloat(size)))
+		return parseFloat(size);
+	return basePx;
 }

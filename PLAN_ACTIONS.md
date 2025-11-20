@@ -22,7 +22,7 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 |-------|--------|------------|---------------|--------------|
 | Phase 1 - Architecture critique | 🟢 **Terminé** | 100% | 2-3h | ~2h |
 | Phase 2 - Performance | 🟢 **Terminé** | 100% | 1.5-2h | ~1.5h |
-| **Phase 3 - Corrections UX/UI** ⭐ | 🔴 **À faire** | 0% | 6-8h | - |
+| **Phase 3 - Corrections UX/UI** ⭐ | 🟡 **En cours** | 67% | 6-8h | 2h45 |
 | Phase 4 - Tests et documentation | 🔴 **À faire** | 0% | 1-2h | - |
 | Phase 5 - Modernisation | 🔴 **À faire** | 0% | 1-2h | - |
 
@@ -179,11 +179,12 @@ Suite à l'audit de code complet de PedigreeJS, ce plan d'actions détaille la s
 
 ---
 
-## 🎨 Phase 3 - Corrections UX/UI (Priorité P1) ⭐ NOUVEAU
+## 🎨 Phase 3 - Corrections UX/UI (Priorité P1) ⭐
 
 **Objectif** : Corriger les incohérences UX/UI ↔ logique technique identifiées dans l'audit
 **Durée estimée** : 6-8h
-**Statut** : 🔴 **À faire**
+**Statut global** : 🟡 **En cours** (3.1 + 3.2 terminées, 3.3 à lancer)
+**Durée réelle cumulée** : ~2h45 (Phase 3.1 = 165 min, Phase 3.2 = 80 min)
 **Basé sur** : AUDIT_UX_UI_2025-11-11.md (score actuel : 6.9/10)
 
 ### 📋 Plan détaillé disponible
@@ -216,23 +217,32 @@ Un plan d'action complet a été créé dans **`PHASE3_PLAN_ACTIONS_UX.md`** ave
 **Temps passé** : 165 min (objectif : 3-4h) - Sous budget !
 **Validation** : ✅ 151 specs, 0 failures (Tests Jasmine automatisés)
 
-### Phase 3.2 - Améliorations UX (2-3h) - **EN COURS**
+### Phase 3.2 - Améliorations UX (2-3h) - **🟢 TERMINÉE (2025-11-11)**
 
-**Tâches importantes** :
-- Réactivation auto champs pathologie
-- Feedback visuel drag consanguineous
-- Préserver zoom en fullscreen
-- Sélection sexe jumeaux dizygotes
-- Corriger `keep_proband_on_reset`
+**Réalisations clés** (voir `PHASE3.2_COMPLETION_REPORT.md`) :
+- ✅ Réactivation auto des champs pathologie (popup_form.js)
+- ✅ Feedback visuel drag partenaire consanguin (widgets.js)
+- ✅ Préservation zoom/pan en fullscreen (pbuttons.js)
+- ✅ Sélection de sexe pour jumeaux dizygotes (widgets.js)
+- ✅ Correction `keep_proband_on_reset` (pbuttons.js)
 
-### Phase 3.3 - Polish et optimisations (1-2h)
+**Résultats** :
+- Score UX/UI porté de **8.2 → 8.8 / 10**
+- 5 commits distincts, 151 specs Jasmine, 0 échec
+- Phase bouclée en 80 min (44% du budget initial)
 
-**Améliorations cosmétiques** (optionnel) :
-- Tooltips boutons zoom
-- Optimiser triggers `fhChange`
-- Assouplir validation age/yob
-- Documenter mode DEBUG
-- Indicateurs visuels données invalides
+### Phase 3.3 - Polish et optimisations (1-2h) - **🔴 À lancer**
+
+**Objectif** : Finaliser les micro-améliorations UX pour atteindre le score cible 8.5+
+
+**To-do immédiats** :
+1. Tooltips explicites sur les boutons de zoom/reset (widgets.js + CSS)
+2. Réduire les triggers `fhChange` redondants pour éviter les rebuilds inutiles
+3. Assouplir la validation âge/année de naissance (validation.js)
+4. Documenter et exposer le mode DEBUG dans `docs/` + `README`
+5. Ajouter des indicateurs visuels pour champs invalides (popup_form.js / css)
+
+**Livrable attendu** : `PHASE3.3_COMPLETION_REPORT.md` + build/test verts
 
 ### Critères de validation Phase 3
 

@@ -1,172 +1,186 @@
-/* Critical Visual Fixes - Override problematic styles */
+/* Critical Visual Fixes - Override problematic styles (opt-in via body.critical-fixes) */
 
 /* Ensure proper background that doesn't interfere with content */
-body {
+body.critical-fixes {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
   background-attachment: fixed !important;
 }
 
 /* Force all text to be visible */
-body, body * {
+body.critical-fixes,
+body.critical-fixes * {
   color: #1f2937 !important;
 }
 
 /* Specific overrides for headings */
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+body.critical-fixes h1,
+body.critical-fixes h2,
+body.critical-fixes h3,
+body.critical-fixes h4,
+body.critical-fixes h5,
+body.critical-fixes h6,
+body.critical-fixes .h1,
+body.critical-fixes .h2,
+body.critical-fixes .h3,
+body.critical-fixes .h4,
+body.critical-fixes .h5,
+body.critical-fixes .h6 {
   color: #1d4ed8 !important;
 }
 
 /* Ensure navigation is properly visible */
-.navbar {
+body.critical-fixes .navbar {
   background: rgba(255, 255, 255, 0.98) !important;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
-.navbar-brand {
+body.critical-fixes .navbar-brand {
   color: #1d4ed8 !important;
 }
 
-.nav-link {
+body.critical-fixes .nav-link {
   color: #1d4ed8 !important;
 }
 
-.nav-link:hover,
-.nav-link.active {
+body.critical-fixes .nav-link:hover,
+body.critical-fixes .nav-link.active {
   color: #1e40af !important;
 }
 
 /* Ensure header is visible */
-header {
+body.critical-fixes header {
   background: rgba(255, 255, 255, 0.98) !important;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Force cards to be visible with proper contrast */
-.card {
+body.critical-fixes .card {
   background: rgba(255, 255, 255, 0.98) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
-.card-body,
-.card-header,
-.card-footer {
+body.critical-fixes .card-body,
+body.critical-fixes .card-header,
+body.critical-fixes .card-footer {
   color: #1f2937 !important;
 }
 
 /* Ensure buttons are properly styled */
-.btn-primary {
+body.critical-fixes .btn-primary {
   background: #2563eb !important;
   border-color: #2563eb !important;
   color: white !important;
 }
 
-.btn-outline-primary {
+body.critical-fixes .btn-outline-primary {
   color: #2563eb !important;
   border-color: #2563eb !important;
 }
 
-.btn-outline-primary:hover {
+body.critical-fixes .btn-outline-primary:hover {
   background: #2563eb !important;
   color: white !important;
 }
 
 /* Force sections to be visible */
-section {
+body.critical-fixes section {
   position: relative;
   z-index: 10;
   background: transparent !important;
 }
 
-.container {
+body.critical-fixes .container {
   position: relative;
   z-index: 10;
 }
 
 /* Ensure all paragraph text is readable */
-p, li, span:not(.btn):not(.badge), 
-div:not(.btn):not(.badge):not(.toast):not(.modal) {
+body.critical-fixes p,
+body.critical-fixes li,
+body.critical-fixes span:not(.btn):not(.badge), 
+body.critical-fixes div:not(.btn):not(.badge):not(.toast):not(.modal) {
   color: #374151 !important;
 }
 
 /* Fix any text that might be invisible */
-.text-secondary {
+body.critical-fixes .text-secondary {
   color: #6b7280 !important;
 }
 
-.text-muted {
+body.critical-fixes .text-muted {
   color: #6b7280 !important;
 }
 
 /* Ensure form elements are visible */
-.form-control,
-.form-select {
+body.critical-fixes .form-control,
+body.critical-fixes .form-select {
   background: white !important;
   color: #1f2937 !important;
   border: 1px solid #d1d5db !important;
 }
 
 /* Fix accordion styling */
-.accordion-button {
+body.critical-fixes .accordion-button {
   background: white !important;
   color: #1f2937 !important;
 }
 
-.accordion-button:not(.collapsed) {
+body.critical-fixes .accordion-button:not(.collapsed) {
   background: #2563eb !important;
   color: white !important;
 }
 
 /* Ensure pedigree canvas is visible */
-.pedigree-stage {
+body.critical-fixes .pedigree-stage {
   background: white !important;
   border: 1px solid #e5e7eb !important;
 }
 
 /* Fix any toast notifications */
-.toast {
+body.critical-fixes .toast {
   background: rgba(255, 255, 255, 0.98) !important;
   color: #1f2937 !important;
 }
 
 /* Ensure performance badge is visible */
-#performance-info {
+body.critical-fixes #performance-info {
   background: #10b981 !important;
   color: white !important;
 }
 
 /* Override any conflicting Bootstrap classes */
-.bg-body {
+body.critical-fixes .bg-body {
   background: transparent !important;
 }
 
-.bg-white {
+body.critical-fixes .bg-white {
   background: rgba(255, 255, 255, 0.98) !important;
 }
 
 /* Ensure all content sections are visible */
-main {
+body.critical-fixes main {
   position: relative;
   z-index: 10;
   background: transparent !important;
 }
 
 /* Force visibility of phase cards */
-.phase-card {
+body.critical-fixes .phase-card {
   background: rgba(255, 255, 255, 0.98) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Make sure links are always visible */
-a {
+body.critical-fixes a {
   color: #2563eb !important;
 }
 
-a:hover {
+body.critical-fixes a:hover {
   color: #1d4ed8 !important;
 }
 
 /* Final fallback for any invisible elements */
-* {
+body.critical-fixes * {
   visibility: visible !important;
 }
